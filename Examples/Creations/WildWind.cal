@@ -1,0 +1,123 @@
+{
+    Author: Samuele Giraudo
+    Title: Wild Wind
+    Creation: apr. 2017 (initial score),
+              aug. 2020 (transcription and improvements in calimba)
+    Modifications: aug. 2020
+}
+
+put layout = 2 1 2 2 1 2 2 in
+put root = 0 12 -2 in
+put time = 2 1 in
+put duration = 400 in
+
+put synthesizer = 0.21 0.27 1600 10 20 in
+put effect = delay 100 0.25 in
+put effect = delay 200 0.25 in
+put effect = tremolo 200 0.8 in
+
+let figure_I_A = (put time = 3 1 in 0<) # (. * 4<) # (.< * 2') in
+let figure_I_B = figure_I_A @3 2 in
+let figure_I_C = figure_I_A @2 -1 @1 -1 in
+let figure_I_D = figure_I_A @3 2 @2 -1 @1 -1 in
+let figure_I_E = figure_I_A @3 -1 in
+let figure_I_F = figure_I_A @@ -1 in
+
+let figure_II_A = figure_I_A * figure_I_B in
+let figure_II_B = figure_I_C * figure_I_D in
+
+let figure_III_A = figure_I_A * figure_I_E in
+let figure_III_B = figure_I_C * figure_I_F in
+
+let figure_IV_A =
+    6,<< #
+    (. * (put time = 3 1 in 3<)) #
+    (. * . * 1''<) #
+    ((put time = 3 1 in .<) * 0'')
+in
+let figure_IV_B = figure_IV_A @2 1 @1 1 in
+
+let transition_I = 0< * 4< * 0< * 4< * 2'<< in
+
+let riff =
+    let p = (5,<< # (. * (put time = 3 1 in 2<)) # (. * . * 2'<)) in
+    repeat 2 begin
+        p *
+        (p @3 -1 @2 1 @1 1) *
+        (p @3 (0> * -1>) @2 2 @1 2)
+    end
+in
+
+let riff_transition = riff * 4'< * .< in
+
+let riff_final = riff * 0'<< in
+
+let phrase_I =
+    let p = (0<< # (. * (put time = 3 1 in 4<)) # (.< * 0''> * 1''> * 2'')) in
+    (repeat 4 p) *
+    (repeat 2 (p @2 1)) *
+    (repeat 2 (p @5 1 @4 1 @3 1)) *
+    (repeat 4 (p @5 1 @4 1 @3 1 @2 -1 @1 -1))
+in
+
+let phrase_II =
+    let p = (put time = 3 1 in 0<) # (. * 4<) # (.< * 5'') in
+    let f = p * (p @3 -1) * (p @3 -2) * (p @3 -1) in
+    f *
+    (p @2 -1 @1 -1) * (p @@ -1) * (p @3 -2 @2 -1 @1 -1) * (p @@ -1) *
+    f *
+    (p @3 -3) * (p @3 -2) * (p @3 -4) * (p @3 -3) * 1 * 0
+in
+
+let phrase_III =
+    let p =
+        0<<< # (. * (put time = 7 1 in 4<)) #
+        (. * . * 1'> * 2'> * 3'> * 2'> * 1'> * 2'> * 3'> * 2'> * 1'> * 3'> * 4')
+    in
+    (repeat 2 p) *
+    (repeat 2 ((p @1 -1) @2 -1) @13 1)
+in
+
+let phrase_IV = 0<<< # (. < * (put time = 6 1 in 4<)) # (.<< * 4' * 3' * 2' * 1') in
+
+let phrase_V =
+    let p =
+        (put time = 6 1 in 0<) # (. * (put time = 5 1 in 4<)) # (. *. * 0'' * 1'' * 2''<) in
+    (repeat 2 p) *
+    (repeat 2 (p @2 1)) *
+    (repeat 2 (p @5 1 @4 1 @3 1)) *
+    (repeat 2 (p @5 1 @4 1 @3 1 @2 -1 @1 -1)) *
+    (p @5 -2 @3 2)
+in
+
+let piece =
+    (put duration = 800 in riff_transition) *
+    0<< *
+    (repeat 4 figure_I_A) * (repeat 4 figure_I_B) *
+    (repeat 4 figure_I_C) * (repeat 4 figure_I_D) *
+    (repeat 2 ((repeat 4 figure_II_A) * (repeat 4 figure_II_B))) *
+    transition_I *
+    (repeat 4 figure_III_A) *
+    (repeat 4 figure_III_B) *
+    riff_transition *
+    phrase_I *
+    phrase_II *
+    (repeat 2 ((repeat 4 figure_IV_A) * (repeat 4 figure_IV_B))) *
+    riff_transition *
+    transition_I *
+    (repeat 4 figure_II_A) *
+    (repeat 4 figure_II_B) *
+    (repeat 2 phrase_III) *
+    phrase_IV *
+    riff_transition *
+    phrase_V *
+    (repeat 4 figure_I_A) *
+    (repeat 4 figure_I_E) *
+    (repeat 4 figure_I_C) *
+    (repeat 4 figure_I_F) *
+    riff_final *
+    (put duration = 800 in riff_final)
+in
+
+piece
+

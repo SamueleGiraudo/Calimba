@@ -1,0 +1,21 @@
+{
+    Author: Samuele Giraudo
+    Creation: summer 2020
+}
+
+let p1 = (0< * 4 * 2 * 6<<)
+    # (0,<<< # 4,<<< # 0<<<)
+    # (.<< * 6> * 4> * 5> * 2> * 3> * 1> * 0) in
+let p2 = 0 * 0 * 1 * 1 * 0 * 3 * 3 * 1 in
+
+let p = p2 @@ p1 in
+
+put root = 5 12 -2 in
+put layout = 1 2 2 2 1 2 2 in
+put time = 2 1 in
+put duration = 300 in
+put synthesizer = 0.22 0.51 2000 50 100 in
+put effect = delay 120 0.7 in
+
+repeat 64 p
+

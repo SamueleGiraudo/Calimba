@@ -1,0 +1,19 @@
+{
+    Author: Samuele Giraudo
+    Creation: summer 2020
+}
+
+let p1 = 0 * 0 * 4 * 4< * 0 * 0 *  5 * 5<    * 4 * 3 * 3<      * 2 * 1 * 0< in {18}
+let p2 = . * . * . * 0< * . * . *  . * 2 * 2 * 0 * . * 3, * 3, * . * . * 4< in
+let p3 = repeat 3 0,,> * 0,,> * 0,,> * 0,,> * 0,, * . * 0,, * 0,, in
+let p4 = p1 # p2 # (put effect = scale 0.5 in p3) in
+let p = p4 * (-1 @@ p4) * (-2 @@ p4) * (-4 @@ p4) in
+
+put layout = 2 1 2 2 1 2 2 in
+put root = 0 12 -2 in
+put time = 2 1 in
+put duration = 600 in
+put synthesizer = 0.3 0.39 2500 30 50 in
+
+repeat 16 p
+

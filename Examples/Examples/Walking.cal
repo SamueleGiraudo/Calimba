@@ -1,0 +1,19 @@
+{
+    Author: Samuele Giraudo
+    Creation: summer 2020
+}
+
+let p1 = 0 * 0> * 0> in {2}
+let p2 = 2 * 0, * 2,> * 0'> in {3}
+let p3 = 2<< * 1< * 4,< * 2<<< * 2<< * 1< * 4,< * 0<<< in {32}
+let p4 = p3 * (1 @@ p3) in {64}
+let p = (repeat 288 p1) # (repeat 192 p2) # (repeat 9 p4) in
+
+put layout = 3 2 2 3 2 in
+put root = 0 12 -2 in
+put time = 2 1 in
+put duration = 300 in
+put synthesizer = 0.25 0.42 4000 10 200 in
+
+p
+

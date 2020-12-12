@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Usage:"
+echo "    ./Golive PATH"
+echo "where PATH is a path to a .cal file."
+
+ocaml unix.cma -I +threads threads.cma Sources/Live.ml $1
+

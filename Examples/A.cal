@@ -1,0 +1,28 @@
+put layout = 3 2 2 3 2 in
+put root = 0 12 -1 in
+put time = 2 1 in
+put duration = 300 in
+put synthesizer = 0.25 0.4 2500 5 25 in
+
+put effect = delay 125 0.3 in
+put effect = tremolo 225 0.90 in
+
+put effect = clip 0.85 in
+
+{14 units}
+let figure_1 =
+    0:x<< * 2:x< * 1:y * 4:y< * 0:x * (0:x # 3:y)<<
+in
+
+let figure_2 =
+    (0:x # 3:x),< * (0:x # 3:x),<
+    * 2:x,< * 1:y, * (4:y * 4:y), * 0:x, *
+    (0:x # 3:x),< * (0:x # 3:x),<
+in
+
+let piece =
+    (figure_1 * (figure_1 @y 2)) # (figure_2 * (figure_2 @y 2))
+in
+
+piece
+
