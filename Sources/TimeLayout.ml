@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2020
- * Modifications: aug. 2020
+ * Modifications: aug. 2020, dec. 2020
  *)
 
 (* A time layout specifies how the durations of beats and rests are altered. This is a pair
@@ -16,19 +16,22 @@ type time_layout = {
  * (resp. decrements) of times if it is positive (resp. negative). *)
 type time_shift = int
 
-
+(* Tests if tl is a valid time layout. *)
 let is_valid tl =
     tl.multiplier >= 1 && tl.divider >= 1
 
+(* Returns the time layout with the specified attributes. *)
 let construct multiplier divider =
     assert (1 <= multiplier);
     assert (1 <= divider);
     {multiplier = multiplier; divider = divider}
 
+(* Returns a string representation of the time layout tl. *)
 let to_string tl =
     assert (is_valid tl);
     Printf.sprintf "%d/%d" tl.multiplier tl.divider
 
+(* Returns a string representation of the time shift ts. *)
 let time_shift_to_string ts =
     if ts <= 0 then
         String.make (-ts) '<'

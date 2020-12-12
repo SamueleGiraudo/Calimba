@@ -39,8 +39,11 @@ type error =
     |UnboundedName of name
     |InvalidContext of Context.context
 
+(* An exception to handle errors in the computation of the tree pattern specified by the
+ * expression. *)
 exception ValueError
 
+(* Returns a string representation of the error err. *)
 let error_to_string err =
     match err with
         |UnboundedName name -> Printf.sprintf "The name %s is unbounded." name

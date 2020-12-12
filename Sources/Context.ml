@@ -21,6 +21,7 @@ type context = {
     synthesizer : Synthesizer.synthesizer;
 }
 
+(* Returns a string representation of the context ct. *)
 let to_string ct =
     Printf.sprintf "layout: %s; root: %s; time layout:%s, duration: %s; synthesizer: %s"
         (Layout.to_string ct.layout) (Note.to_string ct.root)
@@ -43,37 +44,49 @@ let is_valid ct =
     Layout.nb_steps_by_octave ct.layout = Note.nb_steps_by_octave ct.root
         && ct.unit_duration >= 1
 
+(* Returns the layout of the context ct. *)
 let layout ct =
     ct.layout
 
+(* Returns the root note of the context ct. *)
 let root ct =
     ct.root
 
+(* Returns the time layout of the context ct. *)
 let time_layout ct =
     ct.time_layout
 
+(* Returns the duration in ms of a unit of time of the context ct. *)
 let unit_duration ct =
     ct.unit_duration
 
+(* Returns the synthesizers of the context ct. *)
 let synthesizer ct =
     ct.synthesizer
 
+(* Returns the number of degrees in the layout of the context ct. *)
 let nb_degrees ct =
     Layout.nb_degrees ct.layout
 
+(* Returns the context obtained by changing the layout of the context ct by l. *)
 let update_layout ct l =
     {ct with layout = l}
 
+(* Returns the context obtained by changing the root note of the context ct by r. *)
 let update_root ct r =
     {ct with root = r}
 
+(* Returns the context obtained by changing the time layout of the context ct by tl. *)
 let update_time_layout ct tl =
     {ct with time_layout = tl}
 
+(* Returns the context obtained by changing the duration of a unit of time of the context
+ * ct by d in ms. *)
 let update_unit_duration ct d =
     assert (1 <= d);
     {ct with unit_duration = d}
 
+(* Returns the context obtained by changing the synthesizer of the context ct by s. *)
 let update_synthesizer ct s =
     {ct with synthesizer = s}
 

@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2020
- * Modifications: aug. 2020
+ * Modifications: aug. 2020, dec. 2020
  *)
 
 (* A shift represents an extended degree by specifying its distance from the origin
@@ -31,7 +31,7 @@ let to_extended_degree nb_degrees s =
 let add s1 s2 =
     {degree = s1.degree + s2.degree; octave = s1.octave + s2.octave}
 
-(* Returns the complement shift of the shift s. This is the inverse of s w.r.t. degree 
+(* Returns the complement shift of the shift s. This is the inverse of s w.r.t. degree
  * addition. *)
 let complement s =
     {degree = - s.degree; octave = - s.octave}

@@ -124,14 +124,14 @@ let test () =
     print_string "RootedLayout\n";
 
 (*
-    if to_string (construct Layout.harmonic_minor (Note.construct 4 12 2)) <>
-            "4/11:2 - 2 1 2 2 1 3 1" then
+    let n1 = Note.construct 4 12 2 in
+    let n2 = Note.construct 6 12 2 in
+    let n3 = Note.construct 11 12 2 in
+    let rl1 = construct Layout.harmonic_minor n1 in
+    let rl2 = construct Layout.harmonic_minor n2 in
+    if to_string rl1 <> "4/11:2 - 2 1 2 2 1 3 1" then
         false
-    else if from_string "4/11:2 - 2 1 2 2 1 3 1" <>
-            construct Layout.harmonic_minor (Note.construct 4 12 2) then
-        false
-    else if shift_left (from_string "4/11:2 - 2 1 2 2 1 3 1") <>
-            from_string "6/11:2 - 1 2 2 1 3 1 2" then
+    else if shift_left rl1 <> rl2 then
         false
     else if shift_left (from_string "11/11:2 - 2 1 2 2 1 3 1") <>
             from_string "1/11:3 - 1 2 2 1 3 1 2" then

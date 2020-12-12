@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: (jul. 2015), apr. 2020
- * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020
+ * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020
  *)
 
 (* A timbre is an association list associating with some integers i the weights of the i-th
@@ -27,12 +27,6 @@ type synthesizer = {
      * loudness decreases linearly. *)
     close_duration : int
 }
-
-(* An exception for strings specifying synthesizers which are in bad format. *)
-exception FormatError
-
-(* An exception for data specifying synthesizers which have wrong values. *)
-exception ValueError
 
 (* The minimal nonzero allowed value for the weights in timbres. *)
 let min_weight =
@@ -66,8 +60,7 @@ let construct timbre max_duration open_duration close_duration =
         max_duration = max_duration;
         open_duration = open_duration;
         close_duration = close_duration} in
-    if not (is_valid synth) then
-        raise ValueError;
+    assert (is_valid synth);
     synth
 
 (* Returns a string representation of the synthesizer synth. *)
