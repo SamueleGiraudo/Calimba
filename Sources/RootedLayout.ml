@@ -54,33 +54,44 @@ let nb_steps_by_octave rl =
 
 (* Returns the rooted layout obtained from the rooted layout rl by choosing the next note
  * of the root as new root. *)
-let shift_left rl =
+let transpose_next rl =
     assert (is_valid rl);
     let note = Note.shift rl.root (Layout.distance_next rl.layout 0) in
     {layout = Layout.rotate_left rl.layout; root = note}
 
 (* Returns the rooted layout obtained from the rooted layout rl by choosing the previous
  * note of the root as new root. *)
-let shift_right rl =
+let transpose_previous rl =
     assert (is_valid rl);
     let note = Note.shift rl.root (Layout.distance_previous rl.layout 0) in
     {layout = Layout.rotate_right rl.layout; root = note}
 
-(* Returns the note of extended degree d in the rooted layout rl *)
-let rec extended_degree_to_note rl d =
+(* Returns the rooted layout obtained by setting as new root note the note at the position
+ * delta from the current root. This value delta can be negative. *)
+let rec transpose rl delta =
     assert (is_valid rl);
-    if d = 0 then
-        rl.root
-    else if d >= 1 then
-        extended_degree_to_note (shift_left rl) (d - 1)
+    if delta = 0 then
+        rl
+    else if delta >= 1 then
+        transpose (transpose_next rl) (delta - 1)
     else
-        extended_degree_to_note (shift_right rl) (d + 1)
+        transpose (transpose_previous rl) (delta + 1)
+
+(* Returns the note specified by the layout shift ls in the rooted layout rl. *)
+let layout_shift_to_note rl ls =
+    assert (is_valid rl);
+    let dist = LayoutShift.distance_from_root (nb_degrees rl) ls in
+    root (transpose rl dist)
+
+
+(* Some functions for exploration of rooted layouts. *)
 
 (* Returns the list of the notes corresponding to all the degrees of the rooted layout
  * rs. *)
 let first_notes rl =
     assert (is_valid rl);
-    List.init (nb_degrees rl) (extended_degree_to_note rl)
+    List.init (nb_degrees rl)
+        (fun i -> layout_shift_to_note rl (LayoutShift.construct i 0))
 
 (* Tests if the note n belongs to the notes denoted by the rooted layout rl. *)
 let is_note rl n =
@@ -117,7 +128,6 @@ let generate_nonequivalent l octave_index =
                 res)
         []
         |> List.rev
-
 
 (* The test function of the module. *)
 let test () =

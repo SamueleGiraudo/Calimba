@@ -139,7 +139,7 @@ put:
         else if d <= 0 then
             argument_error "time" 2 "must be positive"
         else
-            Expression.TimeLayout (TimeLayout.construct m d)}
+            Expression.TimeShape (TimeShape.construct m d)}
     |DURATION EQUALS dur=INTEGER
         {if dur <= 0 then
             argument_error "duration" 1 "must be positive"

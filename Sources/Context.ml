@@ -12,7 +12,7 @@ type context = {
     root : Note.note;
 
     (* The time layout. *)
-    time_layout : TimeLayout.time_layout;
+    time_shape : TimeShape.time_shape;
 
     (* The unit duration in ms. *)
     unit_duration : int;
@@ -25,7 +25,7 @@ type context = {
 let to_string ct =
     Printf.sprintf "layout: %s; root: %s; time layout:%s, duration: %s; synthesizer: %s"
         (Layout.to_string ct.layout) (Note.to_string ct.root)
-        (TimeLayout.to_string ct.time_layout)
+        (TimeShape.to_string ct.time_shape)
         (string_of_int ct.unit_duration)
         (Synthesizer.to_string ct.synthesizer)
 
@@ -35,7 +35,7 @@ let default =
     let synth = Synthesizer.construct t 4000 50 20 in
     {layout = Layout.natural_minor;
     root = Note.construct 0 12 (-2);
-    time_layout = TimeLayout.construct 2 1;
+    time_shape = TimeShape.construct 2 1;
     unit_duration = 500;
     synthesizer = synth}
 
@@ -52,9 +52,9 @@ let layout ct =
 let root ct =
     ct.root
 
-(* Returns the time layout of the context ct. *)
-let time_layout ct =
-    ct.time_layout
+(* Returns the time shape of the context ct. *)
+let time_shape ct =
+    ct.time_shape
 
 (* Returns the duration in ms of a unit of time of the context ct. *)
 let unit_duration ct =
@@ -76,9 +76,9 @@ let update_layout ct l =
 let update_root ct r =
     {ct with root = r}
 
-(* Returns the context obtained by changing the time layout of the context ct by tl. *)
-let update_time_layout ct tl =
-    {ct with time_layout = tl}
+(* Returns the context obtained by changing the time shape of the context ct by ts. *)
+let update_time_shape ct ts =
+    {ct with time_shape = ts}
 
 (* Returns the context obtained by changing the duration of a unit of time of the context
  * ct by d in ms. *)
@@ -96,13 +96,14 @@ let to_performance ct =
     fun a ->
         match a with
             |TreePattern.Silence ts ->
-                let dur = TimeLayout.to_duration ts ct.unit_duration ct.time_layout in
+                let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
+                let dur = ConcreteTimeShape.time_shift_to_duration cts ts in
                 Sound.silence dur
-            |TreePattern.Beat (s, ts, _) ->
+            |TreePattern.Beat (ls, ts, _) ->
                 let rl = RootedLayout.construct ct.layout ct.root in
-                let deg = Shift.to_extended_degree (nb_degrees ct) s in
-                let note = RootedLayout.extended_degree_to_note rl deg in
-                let dur = TimeLayout.to_duration ts ct.unit_duration ct.time_layout in
+                let note = RootedLayout.layout_shift_to_note rl ls in
+                let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
+                let dur = ConcreteTimeShape.time_shift_to_duration cts ts in
                 Synthesizer.generate_sound_note ct.synthesizer note dur
 
 

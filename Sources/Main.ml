@@ -47,8 +47,8 @@ else if Tools.has_argument "-t" then begin
     if RootedLayout.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
     if Sound.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
     if Synthesizer.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if Shift.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if TimeLayout.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
+    if LayoutShift.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
+    if TimeShape.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
     if Context.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
     if TreePattern.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
     if Expression.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";

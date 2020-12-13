@@ -7,7 +7,7 @@
 type modification =
     |Layout of Layout.layout
     |Root of Note.note
-    |TimeLayout of TimeLayout.time_layout
+    |TimeShape of TimeShape.time_shape
     |UnitDuration of int
     |Synthesizer of Synthesizer.synthesizer
     |Effect of TreePattern.effect
@@ -58,7 +58,7 @@ let modification_list_to_context lst =
             match m with
                 |Layout l -> Context.update_layout ct l
                 |Root r -> Context.update_root ct r
-                |TimeLayout tl -> Context.update_time_layout ct tl
+                |TimeShape ts -> Context.update_time_shape ct ts
                 |UnitDuration d -> Context.update_unit_duration ct d
                 |Synthesizer s -> Context.update_synthesizer ct s
                 |Effect _ -> ct)
@@ -153,16 +153,16 @@ let to_tree_pattern e =
                 TreePattern.Composition (tp1, tp2)
             |IncreaseOctave e' ->
                 let tp = aux m_lst e' in
-                TreePattern.beat_action (Shift.construct 0 1) 0 tp
+                TreePattern.beat_action (LayoutShift.construct 0 1) 0 tp
             |DecreaseOctave e' ->
                 let tp = aux m_lst e' in
-                TreePattern.beat_action (Shift.construct 0 (-1)) 0 tp
+                TreePattern.beat_action (LayoutShift.construct 0 (-1)) 0 tp
             |IncreaseTime e' ->
                 let tp = aux m_lst e' in
-                TreePattern.beat_action (Shift.construct 0 0) 1 tp
+                TreePattern.beat_action (LayoutShift.construct 0 0) 1 tp
             |DecreaseTime e' ->
                 let tp = aux m_lst e' in
-                TreePattern.beat_action (Shift.construct 0 0) (-1) tp
+                TreePattern.beat_action (LayoutShift.construct 0 0) (-1) tp
             |Insertion (e1, i, e2) ->
                 let tp1 = aux m_lst e1 and tp2 = aux m_lst e2 in
                 TreePattern.extended_partial_composition tp1 i tp2
