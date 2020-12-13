@@ -106,9 +106,3 @@ let to_performance ct =
                 let dur = ConcreteTimeShape.time_shift_to_duration cts ts in
                 Synthesizer.generate_sound_note ct.synthesizer note dur
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "Context\n";
-    true
-

@@ -41,19 +41,6 @@ else
 if Tools.has_argument "-v" then begin
     print_string information
 end
-else if Tools.has_argument "-t" then begin
-    if Note.test () then Printf.printf "-> OK\n" else Printf.printf "->ERROR\n";
-    if Layout.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if RootedLayout.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if Sound.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if Synthesizer.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if LayoutShift.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if TimeShape.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if Context.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if TreePattern.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    if Expression.test () then Printf.printf "-> OK\n" else Printf.printf "-> ERROR\n";
-    print_newline ();
-end
 else if Tools.has_argument "-f" then begin
     let path = Tools.next_argument "-f" in
     if Option.is_none path then begin

@@ -314,9 +314,3 @@ let play s =
     Thread.join thread_writer;
     Thread.join thread_reader
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "Sound\n";
-    true
-

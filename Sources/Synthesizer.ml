@@ -180,10 +180,3 @@ let sequence_timbre seq =
     let inv_seq = seq |> List.map (fun j -> 1.0 /. (float_of_int j)) in
     List.combine (List.init len (fun i -> i + 1)) inv_seq
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "Synthesizer\n";
-
-    true
-

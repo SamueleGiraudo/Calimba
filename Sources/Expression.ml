@@ -289,9 +289,3 @@ let interpret_and_write e path =
     ignore (Sys.command (Printf.sprintf "cp %s %s" Sound.buffer_path path));
     Printf.printf "done.\n"
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "Expression\n";
-    true
-

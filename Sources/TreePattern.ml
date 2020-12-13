@@ -214,9 +214,3 @@ let sound t =
     in
     aux (fun _ -> Sound.silence 0) t
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "TreePattern\n";
-    true
-
