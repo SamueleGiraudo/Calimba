@@ -18,6 +18,7 @@ style. It generates and plays pcm files, so that it does not need any specific s
 ### Main functionalities
 1. TODO
 
+
 ### Complete examples
 + TODO
 
@@ -26,7 +27,7 @@ style. It generates and plays pcm files, so that it does not need any specific s
 The following instructions hold for Linux systems like Debian or Archlinux, after 2020.
 
 1. Clone the repository somewhere by running
-TODO
+   `git clone https://github.com/SamueleGiraudo/Calimba.git`.
 
 2. Install all dependencies (see the section below).
 
@@ -53,13 +54,13 @@ This [page](Help.md) contains the description of the Calimba language.
 Files containing such instructions must have `cal` as extension. Given such a file
 `Program.cal`, the command
 
-`./calimba -f Program.cal`
-
-executes line by line each of its instructions.
++ `./calimba -f Program.cal` plays the file;
++ `./calimba -f Program.cal -w` create the PCM file `Program.pcm`;
++ `./calimba -f Program.cal -l` launches a live loop on the file.
 
 
 ## Theoretical aspects
-
+TODO
 
 
 ## Bibliography
