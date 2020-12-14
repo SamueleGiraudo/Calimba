@@ -54,9 +54,12 @@ This [page](Help.md) contains the description of the Calimba language.
 Files containing such instructions must have `cal` as extension. Given such a file
 `Program.cal`, the command
 
-+ `./calimba -f Program.cal` plays the file;
-+ `./calimba -f Program.cal -w` create the PCM file `Program.pcm`;
-+ `./calimba -f Program.cal -l` launches a live loop on the file.
++ `./calimba -f Program.cal` plays the music specified by the program;
++ `./calimba -f Program.cal -w` creates the PCM file `Program.pcm` containing the music
+  specified by the program;
++ `./calimba -f Program.cal -l` launches a live loop on the program file. This is an
+  infinite loop wherein as soon as `Program.cal` is modified, the music specified by the
+  program is played from its beginning.
 
 
 ## Theoretical aspects
