@@ -28,6 +28,7 @@ let information =
 let help_string =
     ""
 
+(* Plays the .cal file at path path. *)
 let play path =
     Lexer.interpret_file_path
         path
@@ -36,6 +37,8 @@ let play path =
         Expression.interpret_and_play
         (fun t -> Expression.is_error_free t true)
 
+(* Creates a PCM file from the .cal file at path path. Its name is obtained from the one of
+ * the .cal file by replacing its extension by .pcm. *)
 let write path =
     let path' = (String.sub path 0 ((String.length path) - 3)) ^ "pcm" in
     if Sys.file_exists path' then
@@ -48,32 +51,37 @@ let write path =
             (fun t -> Expression.interpret_and_write t path')
             (fun t -> Expression.is_error_free t true)
 
-let rec live_loop path last_modif num_iter =
-    print_string "\r";
-    if num_iter mod 2 = 0 then
-        Printf.printf "-"
-    else
-        Printf.printf "|";
-    flush stdout;
-    Thread.delay 1.0;
-    let last_modif' = (Unix.stat path).Unix.st_mtime in
-    if Option.is_none last_modif
-            || Option.get last_modif < last_modif' then begin
-        Printf.printf "Modification detected: interpreting and playing...";
-        print_newline ();
-        Sys.command "killall aplay" |> ignore;
-        Thread.create (fun _ -> play path) () |> ignore;
-        Printf.printf " done.";
-        print_newline ()
-    end;
-    live_loop path (Some (last_modif')) (num_iter + 1)
-
+(* Creates a live loop reading and playing the .cal file at path path. This inspects if the
+ * file is modified. If this is the case, the file is played (and the current play is
+ * stopped. *)
+let live_loop path =
+    let rec aux path last_modif num_iter =
+        print_string "\r";
+        if num_iter mod 2 = 0 then
+            Printf.printf "-"
+        else
+            Printf.printf "|";
+        flush stdout;
+        Thread.delay 1.0;
+        let last_modif' = (Unix.stat path).Unix.st_mtime in
+        if Option.is_none last_modif
+                || Option.get last_modif < last_modif' then begin
+            Printf.printf "Modification detected: interpreting and playing...";
+            print_newline ();
+            Sys.command "killall aplay" |> ignore;
+            Thread.create (fun _ -> play path) () |> ignore;
+            Printf.printf " done.";
+            print_newline ()
+        end;
+        aux path (Some (last_modif')) (num_iter + 1)
+    in
+    aux path None 1 |> ignore;
 ;;
 
 (* Main expression. *)
 
 (* Creation of the buffer directory if it does not exist. *)
-let cmd = Printf.sprintf "mkdir -p %s" Sound.buffer_path_file in
+let cmd = Printf.sprintf "mkdir -p %s" Sound.buffer_path_directory in
 Sys.command cmd |> ignore;
 
 if Tools.has_argument "-r" then
@@ -102,7 +110,7 @@ else if Tools.has_argument "-f" then begin
                 exit 0
             end
             else if Tools.has_argument "-l" then begin
-                live_loop path None 1 |> ignore;
+                live_loop path;
                 exit 0
             end
             else if Tools.has_argument "-a" then begin
