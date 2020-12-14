@@ -11,27 +11,70 @@
     - Improve comments.
     - Robustness.
     - External documentation.
+    - Information about layouts.
 *)
 
 let name = "Calimba"
 (*let version = "0.0001"*)
 let version = "0.0010"
+let version_date = "2012-12-12"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
 let information =
-    Printf.sprintf "%s\nCopyright (C) 2020--2020 %s\nWritten by %s [%s]\nVersion: %s\n"
-        name author author email version
+    Printf.sprintf "%s\nCopyright (C) 2020--2020 %s\nWritten by %s [%s]\nVersion: %s (%s)\n"
+        name author author email version version_date
 
 let help_string =
     ""
+
+let play path =
+    Lexer.interpret_file_path
+        path
+        Parser.program
+        Lexer.read
+        Expression.interpret_and_play
+        (fun t -> Expression.is_error_free t true)
+
+let write path =
+    let path' = (String.sub path 0 ((String.length path) - 3)) ^ "pcm" in
+    if Sys.file_exists path' then
+        Printf.printf "Error: a file %s exists already.\n" path'
+    else
+        Lexer.interpret_file_path
+            path
+            Parser.program
+            Lexer.read
+            (fun t -> Expression.interpret_and_write t path')
+            (fun t -> Expression.is_error_free t true)
+
+let rec live_loop path last_modif num_iter =
+    print_string "\r";
+    if num_iter mod 2 = 0 then
+        Printf.printf "-"
+    else
+        Printf.printf "|";
+    flush stdout;
+    Thread.delay 1.0;
+    let last_modif' = (Unix.stat path).Unix.st_mtime in
+    if Option.is_none last_modif
+            || Option.get last_modif < last_modif' then begin
+        Printf.printf "Modification detected: interpreting and playing...";
+        print_newline ();
+        Sys.command "killall aplay" |> ignore;
+        Thread.create (fun _ -> play path) () |> ignore;
+        Printf.printf " done.";
+        print_newline ()
+    end;
+    live_loop path (Some (last_modif')) (num_iter + 1)
 
 ;;
 
 (* Main expression. *)
 
 (* Creation of the buffer directory if it does not exist. *)
-ignore (Sys.command("mkdir -p /dev/shm/Synth/"));
+let cmd = Printf.sprintf "mkdir -p %s" Sound.buffer_path_file in
+Sys.command cmd |> ignore;
 
 if Tools.has_argument "-r" then
     Random.init 0
@@ -55,28 +98,18 @@ else if Tools.has_argument "-f" then begin
         end
         else begin
             if Tools.has_argument "-w" then begin
-                let path' = (String.sub path 0 ((String.length path) - 3)) ^ "pcm" in
-                if Sys.file_exists path' then begin
-                    Printf.printf "Error: a file %s exists already.\n" path';
-                     exit 1
-                end
-                else begin
-                    Lexer.interpret_file_path
-                        path
-                        Parser.program
-                        Lexer.read
-                        (fun t -> Expression.interpret_and_write t path')
-                        (fun t -> Expression.is_error_free t true);
-                    exit 0
-                end
+                write path;
+                exit 0
+            end
+            else if Tools.has_argument "-l" then begin
+                live_loop path None 1 |> ignore;
+                exit 0
+            end
+            else if Tools.has_argument "-a" then begin
+                (* TODO *)
             end
             else begin
-                Lexer.interpret_file_path
-                    path
-                    Parser.program
-                    Lexer.read
-                    Expression.interpret_and_play
-                    (fun t -> Expression.is_error_free t true);
+                play path;
                 exit 0
             end
         end

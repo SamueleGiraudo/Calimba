@@ -26,10 +26,14 @@ let sampling_rate =
 let byte_depth =
     4
 
-(* This is the default buffer path, where PCM files are stored. This file is stored in the
- * RAM instead of on the disk. *)
-let buffer_path =
-    "/dev/shm/Synth/Buffer.pcm"
+(* This is the default buffer path, where PCM files are stored. The files stored in this
+ * directory are in RAM instead on the disk. *)
+let buffer_path_directory =
+    "/dev/shm/Synth/"
+
+(* The default buffer PCM file. *)
+let buffer_path_file =
+    buffer_path_directory ^ "Buffer.pcm"
 
 (* Tests if s is a sound. *)
 let is_valid s =
@@ -270,7 +274,7 @@ let print_raw s channel =
 (* Writes the sound s in the buffer file. *)
 let write_buffer s =
     assert (is_valid s);
-    let buffer = open_out buffer_path in
+    let buffer = open_out buffer_path_file in
     print_raw s buffer;
     close_out buffer
 
@@ -286,17 +290,17 @@ let command_play =
             |4 -> "S32_LE"
             |_ -> raise (Failure "Unknown format.")
     in
-    Printf.sprintf "aplay -c 1 -t raw -r %d -f %s" sampling_rate format_string
+    Printf.sprintf "aplay -c 1 -t raw -r %d -f %s &> /dev/null" sampling_rate format_string
 
 (* Plays the sound which is in the buffer. *)
 let play_buffer () =
-    let cmd = Printf.sprintf "%s %s" command_play buffer_path in
+    let cmd = Printf.sprintf "%s %s" command_play buffer_path_file in
     ignore (Sys.command cmd)
 
 (* Remove the buffer file from the file system. *)
 let delete_buffer () =
     try
-        Sys.remove buffer_path;
+        Sys.remove buffer_path_file;
     with
         |_ -> ()
 
@@ -307,7 +311,7 @@ let play s =
     let thread_reader = Thread.create
         (fun _ ->
             Thread.delay 1.0;
-            let cmd = Printf.sprintf "cat %s | %s" buffer_path command_play in
+            let cmd = Printf.sprintf "cat %s | %s" buffer_path_file command_play in
             Sys.command cmd)
         ()
     in

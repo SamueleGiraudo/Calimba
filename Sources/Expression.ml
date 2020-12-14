@@ -275,17 +275,19 @@ let interpret e =
 
 let interpret_and_play e =
     let s = interpret e in
-    Printf.printf "# Playing sound... ";
-    flush stdout;
+    Printf.printf "# Playing sound...";
+    print_newline ();
     Sound.play s;
-    Printf.printf "done.\n"
+    Printf.printf "done.";
+    print_newline ()
 
 let interpret_and_write e path =
     assert (not (Sys.file_exists path));
     let s = interpret e in
-    Printf.printf "# Writing sound... ";
-    flush stdout;
+    Printf.printf "# Writing sound...";
+    print_newline ();
     Sound.write_buffer s;
-    ignore (Sys.command (Printf.sprintf "cp %s %s" Sound.buffer_path path));
-    Printf.printf "done.\n"
+    ignore (Sys.command (Printf.sprintf "cp %s %s" Sound.buffer_path_file path));
+    Printf.printf "done.";
+    print_newline ()
 
