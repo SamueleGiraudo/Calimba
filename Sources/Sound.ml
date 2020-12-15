@@ -63,16 +63,21 @@ let value s i =
     else
         0.0
 
-(* Returns the duration of the sound s in ms. *)
-let duration s =
-    assert (is_valid s);
-    (1000 * s.size) / sampling_rate
-
 (* Returns the size, which the number of points, needed to encode a sound having a duration
  * of duration ms. *)
 let duration_to_size duration =
     assert (0 <= duration);
     (duration * sampling_rate) / 1000
+
+(* Returns the duration in ms of an hypothetical sound of size size. *)
+let size_to_duration size =
+    assert (0 <= size);
+    (1000 * size) / sampling_rate
+
+(* Returns the duration of the sound s in ms. *)
+let duration s =
+    assert (is_valid s);
+    size_to_duration s.size
 
 (* Returns the sound of size size obtained from the sound s by starting at index j. *)
 let factor s j size =
@@ -317,4 +322,34 @@ let play s =
     in
     Thread.join thread_writer;
     Thread.join thread_reader
+
+(* Draw the signal of the sound s in a new window. *)
+let draw s =
+    let width = 920 and height = 220 and border = 16 in
+    let background_color = Graphics.black
+    and foreground_color = Graphics.white
+    and signal_color = Graphics.black
+    and line_color = Graphics.red in
+    let width' = float_of_int (width - 2 * border)
+    and height' = float_of_int (height - 2 * border) in
+    let border' = float_of_int border in
+    let size = float_of_int s.size in
+    Graphics.open_graph (Printf.sprintf " %dx%d" width height);
+    Graphics.set_color background_color;
+    Graphics.fill_rect 0 0 (width - 1) (height -1);
+    Graphics.set_color foreground_color;
+    Graphics.fill_rect border border (width - 2 * border - 1) (height - 2 * border - 1);
+    Graphics.set_color signal_color;
+    List.init s.size Fun.id |> List.iter
+        (fun i ->
+            let x = border' +. width' *. (float_of_int i)  /. size in
+            let y = border' +. height' *. ((s.map i) +. 1.)  /. 2. in
+            Graphics.plot (int_of_float x) (int_of_float y));
+    Graphics.set_color line_color;
+    Graphics.moveto border (height / 2);
+    Graphics.lineto (width - border - 1) (height / 2);
+    Graphics.synchronize ();
+    (Graphics.wait_next_event [Graphics.Button_down; Graphics.Key_pressed]) |> ignore; 
+    Graphics.close_graph ()
+
 

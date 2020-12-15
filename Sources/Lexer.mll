@@ -55,32 +55,18 @@ let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
             raise (Error str)
 
 (* Returns the value contained in the file at path path, interpreted with the parser
- * parser_axiom, and with the lexer lexer_axiom. *)
-let value_from_file_path parser_axiom lexer_axiom path =
+ * parser_axiom, with the lexer lexer_axiom, and with the map error_test to check if it
+ * contains static errors. If an error is found, the exception Error is raised. *)
+let value_from_file_path path parser_axiom lexer_axiom error_test =
     assert (Sys.file_exists path);
-    let lexbuf = Lexing.from_channel (open_in path) in
-    lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
-    parse_lexer_buffer parser_axiom lexer_axiom lexbuf
-
-(* Executes the file at path path, interpreted with the parser parser_axiom, with the lexer
- * lexer_axiom, the map execute to execute it, and the map error_test to check if it
- * contains static errors. *)
-let interpret_file_path path parser_axiom lexer_axiom execute error_test =
-    try
-        let x = value_from_file_path parser_axiom lexer_axiom path in
-        if not (error_test x) then
-            Printf.printf "There are errors in the program.\n"
-        else begin
-            Printf.printf "The program as no errors.\n";
-            Printf.printf "Execution...\n";
-            execute x;
-            Printf.printf "End of execution.\n"
-        end
-    with
-        |Error msg -> begin
-            Printf.printf "Errors:\n";
-            Printf.printf "%s\n" msg
-        end
+    (*try*)
+        let lexbuf = Lexing.from_channel (open_in path) in
+        lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
+        let x = parse_lexer_buffer parser_axiom lexer_axiom lexbuf in
+        if error_test x then
+            x
+        else
+            raise (Error "Static error.")
 
 }
 
