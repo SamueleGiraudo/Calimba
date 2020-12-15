@@ -8,6 +8,10 @@
 (* An exception raised when an error is encountered. *)
 exception Error of string
 
+(* The extension of Calimba files. *)
+let file_extension =
+    ".cal"
+
 (* Raise Tools.SyntaxError with information about the unexpected character c. *)
 let unexpected_character_error c =
     raise (Tools.SyntaxError (Printf.sprintf "unexpected character %c" c))

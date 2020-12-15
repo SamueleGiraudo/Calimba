@@ -26,10 +26,40 @@ let information =
         name author author email version version_date
 
 let help_string =
-    ""
+    "Available arguments:\n"
+        ^ "-v\n"
+        ^ "    -> Print the version of the application.\n"
+        ^ "-h\n"
+        ^ "    -> Print the help.\n"
+        ^ "-f PATH -p\n"
+        ^ "    -> Plays the Calimba file PATH.\n"
+        ^ "-f PATH -w\n"
+        ^ "    -> Writes the associated PCM file from the Calimba file PATH.\n"
+        ^ "-f PATH -l\n"
+        ^ "    -> Launches a live loop on the Calimba file PATH.\n"
+
+(* Returns the extension of the file at path path. *)
+let extension path =
+    let i = String.rindex path '.' in
+    String.sub path i ((String.length path) - i)
+
+(* Tests if the file at path path has the good extension. *)
+let has_good_extension path =
+    if not (String.contains path '.') then
+        false
+    else
+        extension path = Lexer.file_extension
+
+(* Returns the string obtained from the path path by removing its file extension, including
+ * the point. *)
+let remove_extension path =
+    assert (String.contains path '.');
+    let i = String.rindex path '.' in
+    String.sub path 0 i
 
 (* Plays the .cal file at path path. *)
 let play path =
+    assert (has_good_extension path);
     Lexer.interpret_file_path
         path
         Parser.program
@@ -40,7 +70,8 @@ let play path =
 (* Creates a PCM file from the .cal file at path path. Its name is obtained from the one of
  * the .cal file by replacing its extension by .pcm. *)
 let write path =
-    let path' = (String.sub path 0 ((String.length path) - 3)) ^ "pcm" in
+    assert (has_good_extension path);
+    let path' = (remove_extension path) ^ ".pcm" in
     if Sys.file_exists path' then
         Printf.printf "Error: a file %s exists already.\n" path'
     else
@@ -55,6 +86,7 @@ let write path =
  * file is modified. If this is the case, the file is played (and the current play is
  * stopped. *)
 let live_loop path =
+    assert (has_good_extension path);
     let rec aux path last_modif num_iter =
         print_string "\r";
         if num_iter mod 2 = 0 then
@@ -76,6 +108,7 @@ let live_loop path =
         aux path (Some (last_modif')) (num_iter + 1)
     in
     aux path None 1 |> ignore;
+
 ;;
 
 (* Main expression. *)
@@ -90,7 +123,12 @@ else
     Random.self_init ();
 
 if Tools.has_argument "-v" then begin
-    print_string information
+    print_string information;
+    exit 0
+end
+else if Tools.has_argument "-h" then begin
+    print_string help_string;
+    exit 0
 end
 else if Tools.has_argument "-f" then begin
     let path = Tools.next_argument "-f" in
@@ -104,8 +142,16 @@ else if Tools.has_argument "-f" then begin
             Printf.printf "Error: there is no file %s.\n" path;
             exit 1
         end
+        else if not (has_good_extension path) then begin
+            Printf.printf "Error: the file %s has not .cal as extension.\n" path;
+            exit 1
+        end
         else begin
-            if Tools.has_argument "-w" then begin
+            if Tools.has_argument "-p" then begin
+                play path;
+                exit 0
+            end
+            else if Tools.has_argument "-w" then begin
                 write path;
                 exit 0
             end
@@ -113,12 +159,22 @@ else if Tools.has_argument "-f" then begin
                 live_loop path;
                 exit 0
             end
+            else if Tools.has_argument "-d" then begin
+                let dur = Tools.next_argument "-p" in
+                if Option.is_none dur then begin
+                    print_string "Error: a positive integer must follow the -p argument.\n";
+                    exit 1
+                end
+                else begin
+                    (* TODO *)
+                end
+            end
             else if Tools.has_argument "-a" then begin
                 (* TODO *)
             end
             else begin
-                play path;
-                exit 0
+                Printf.printf "Error: unknown argument configuration.\n";
+                exit 1
             end
         end
     end

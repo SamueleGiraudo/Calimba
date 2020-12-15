@@ -45,14 +45,12 @@ Debian or Archlinux, after 2020.
 + `ocaml-findlib`
 + `opam`
 + `extlib` (Available by `opam install extlib`. Do not forget to run `opam init` first.)
-+ `rlwrap` (Optional.)
 
 
 ## User guide
 This [page](Help.md) contains the description of the Calimba language.
 
-Files containing such instructions must have `cal` as extension. Given such a file
-`Program.cal`, the command
+Calimba file have `cal` as extension. Given such a file `Program.cal`, the command
 
 + `./calimba -f Program.cal` plays the music specified by the program;
 + `./calimba -f Program.cal -w` creates the PCM file `Program.pcm` containing the music
