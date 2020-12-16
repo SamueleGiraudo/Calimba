@@ -8,10 +8,6 @@
 (* An exception raised when an error is encountered. *)
 exception Error of string
 
-(* The extension of Calimba files. *)
-let file_extension =
-    ".cal"
-
 (* Raise Tools.SyntaxError with information about the unexpected character c. *)
 let unexpected_character_error c =
     raise (Tools.SyntaxError (Printf.sprintf "unexpected character %c" c))
@@ -43,30 +39,23 @@ let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
         parser_axiom lexer_axiom lexbuf
     with
         |Parser.Error ->
-            let str = Printf.sprintf "Syntax error in %s\n" (position lexbuf) in
+            let str = Printf.sprintf "syntax error in %s" (position lexbuf) in
             raise (Error str)
-        |Tools.SyntaxError msg -> begin
-            let str = Printf.sprintf "Syntax error in %s: %s\n" (position lexbuf) msg in
+        |Tools.SyntaxError msg ->
+            let str = Printf.sprintf "syntax error in %s: %s" (position lexbuf) msg in
             raise (Error str)
-        end
-        |Tools.ValueError msg -> begin
-            let str = Printf.sprintf "Value error in %s: %s\n" (position lexbuf) msg in
+        |Tools.ValueError msg ->
+            let str = Printf.sprintf "value error in %s: %s" (position lexbuf) msg in
             raise (Error str)
-        end
 
 (* Returns the value contained in the file at path path, interpreted with the parser
- * parser_axiom, with the lexer lexer_axiom, and with the map error_test to check if it
- * contains static errors. If an error is found, the exception Error is raised. *)
-let value_from_file_path path parser_axiom lexer_axiom error_test =
+ * parser_axiom, with the lexer lexer_axiom. If an error is found, the exception Error is
+ * raised. *)
+let value_from_file_path path parser_axiom lexer_axiom =
     assert (Sys.file_exists path);
     let lexbuf = Lexing.from_channel (open_in path) in
     lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
-    let x = parse_lexer_buffer parser_axiom lexer_axiom lexbuf in
-    if error_test x then
-        x
-    else
-        let str = Printf.sprintf "Static error in %s\n" (position lexbuf) in
-        raise (Error str)
+    parse_lexer_buffer parser_axiom lexer_axiom lexbuf
 
 }
 

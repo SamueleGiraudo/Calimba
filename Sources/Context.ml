@@ -23,7 +23,7 @@ type context = {
 
 (* Returns a string representation of the context ct. *)
 let to_string ct =
-    Printf.sprintf "layout: %s; root: %s; time layout:%s, duration: %s; synthesizer: %s"
+    Printf.sprintf "[layout: %s; root: %s; time layout:%s; duration: %s; synthesizer: %s]"
         (Layout.to_string ct.layout) (Note.to_string ct.root)
         (TimeShape.to_string ct.time_shape)
         (string_of_int ct.unit_duration)

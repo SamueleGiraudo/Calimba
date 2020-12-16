@@ -46,9 +46,9 @@ exception ValueError
 (* Returns a string representation of the error err. *)
 let error_to_string err =
     match err with
-        |UnboundedName name -> Printf.sprintf "The name %s is unbounded." name
+        |UnboundedName name -> Printf.sprintf "the name %s is unbounded" name
         |InvalidContext ct ->
-            Printf.sprintf "The context %s is invalid." (Context.to_string ct)
+            Printf.sprintf "the context\n%s\nis invalid" (Context.to_string ct)
 
 (* Returns the context specified by the list lst of modifications. The modifications come
  * from the newest to the oldest one. *)
@@ -240,54 +240,51 @@ let errors e =
             |> List.map (fun ct -> InvalidContext ct) in
         List.concat [tmp_1; tmp_2]
 
-(* Tests if the expression e has no errors. When e has errors, error messages are printed
- * on the standard output. *)
-let is_error_free e verbose =
-    let errors = errors e in
-    if errors = [] then
-        true
-    else begin
-        if verbose then begin
-            errors |> List.iter (fun r -> Printf.printf "Error: %s\n" (error_to_string r));
-            flush stdout
-        end;
-        false
-    end
-
-let interpret e =
-    Printf.printf "# Generating sound... ";
+(* Returns the sound obtained by interpreting the expression e. *)
+let interpret e verbose =
+    if verbose then
+        Tools.print_information "Generating sound.";
     let clock_start = Sys.time () in
     let sound = sound e in
     let clock_end = Sys.time () in
     let time_ms = int_of_float ((clock_end -. clock_start) *. 1000.0) in
     let tp = to_tree_pattern e in
-    Printf.printf "done in %d ms.\n" time_ms;
+    if verbose then
+        Tools.print_information (Printf.sprintf "Sound generated in %d ms:" time_ms);
     let dur_ms = Sound.duration sound in
     let dur_hour = (dur_ms / 1000) / 3600
     and dur_min = ((dur_ms / 1000) / 60) mod 60
     and dur_sec = (dur_ms / 1000) mod 60 in
-    Printf.printf "## Duration: %d ms (%dh %dm %ds)\n" dur_ms dur_hour dur_min dur_sec;
-    Printf.printf "## Arity: %d\n" (TreePattern.arity tp);
-    Printf.printf "## Size: %d leaves\n" (TreePattern.nb_leaves tp);
-    Printf.printf "## Height: %d\n" (TreePattern.height tp);
-    print_newline ();
+    if verbose then begin
+        Tools.print_information
+            (Printf.sprintf "    Duration: %d ms (%dh %dm %ds)"
+                dur_ms dur_hour dur_min dur_sec);
+        Tools.print_information
+            (Printf.sprintf "    Arity: %d" (TreePattern.arity tp));
+        Tools.print_information
+            (Printf.sprintf "    Size: %d leaves" (TreePattern.nb_leaves tp));
+        Tools.print_information
+            (Printf.sprintf "    Height: %d" (TreePattern.height tp))
+    end;
     sound
 
-let interpret_and_play e =
-    let s = interpret e in
-    Printf.printf "# Playing sound...";
-    print_newline ();
+(* Interprets the expression e and plays the specified sound. *)
+let interpret_and_play e verbose =
+    let s = interpret e verbose in
+    if verbose then
+        Tools.print_information "Playing sound.";
     Sound.play s;
-    Printf.printf "done.";
-    print_newline ()
+    if verbose then
+        Tools.print_information "End of play."
 
-let interpret_and_write e path =
+(* Interprets the expression e and write the specified sound as a PCM file at path path. *)
+let interpret_and_write e path verbose =
     assert (not (Sys.file_exists path));
-    let s = interpret e in
-    Printf.printf "# Writing sound...";
-    print_newline ();
+    let s = interpret e verbose in
+    if verbose then
+        Tools.print_information (Printf.sprintf "Writing sound in file %s." path);
     Sound.write_buffer s;
     ignore (Sys.command (Printf.sprintf "cp %s %s" Sound.buffer_path_file path));
-    Printf.printf "done.";
-    print_newline ()
+    if verbose then
+        Tools.print_information "Writing done."
 

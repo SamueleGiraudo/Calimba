@@ -49,3 +49,19 @@ let colorize_string str col =
     assert ((30 <= col && col <= 37) || (90 <= col && col <= 97));
     Printf.sprintf "\027[1m\027[%dm%s\027[0m" col str
 
+
+(* Prints the string str as an error. *)
+let print_error str =
+    print_string (colorize_string str 91);
+    print_newline ()
+
+(* Prints the string str as an information. *)
+let print_information str =
+    print_string (colorize_string str 94);
+    print_newline ()
+
+(* Prints the string str as an important information. *)
+let print_important str =
+    print_string (colorize_string str 92);
+    print_newline ()
+

@@ -46,7 +46,9 @@ let scale_timbre v t =
 (* Returns a string representation of the timbre t. *)
 let timbre_to_string t =
     assert (is_valid_timbre t);
-    t |> List.map (fun (i, c) -> Printf.sprintf "%d: %.4f" i c) |> String.concat ", "
+    let str = t |> List.map
+        (fun (i, c) -> Printf.sprintf "%d: %.2f" i c) |> String.concat "; " in
+    "[" ^ str ^ "]"
 
 (* Tests if synth is a synthesizer. *)
 let is_valid synth =
@@ -67,7 +69,7 @@ let construct timbre max_duration open_duration close_duration =
 let to_string synth =
     assert (is_valid synth);
     Printf.sprintf
-        "Timbre: %s\nMax duration: %d ms\nOpen duration: %d ms\nClose duration: %d ms"
+        "[timbre: %s; max duration: %d ms; open duration: %d ms; close duration: %d ms]"
         (timbre_to_string synth.timbre) synth.max_duration synth.open_duration
         synth.close_duration
 

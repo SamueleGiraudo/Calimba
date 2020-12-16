@@ -40,11 +40,12 @@ This creates an executable `calimba`.
 The following programs are needed and they are available for most of the Linux systems like
 Debian or Archlinux, after 2020.
 
-+ `ocaml` (Version `>= 4.11.1`.)
-+ `ocamlbuild`
++ `ocaml` (Version `>= 4.11.1`. Inferior versions may be suitable.)
 + `ocaml-findlib`
 + `opam`
-+ `extlib` (Available by `opam install extlib`. Do not forget to run `opam init` first.)
++ `ocamlbuild` (Available by `opam install ocamlbuild`.)
++ `extlib` (Available by `opam install extlib`.)
++ `graphics` (Available by `opam install graphics`.)
 
 
 ## User guide
@@ -58,6 +59,7 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 + `./calimba -f Program.cal -l` launches a live loop on the program file. This is an
   infinite loop wherein as soon as `Program.cal` is modified, the music specified by the
   program is played from its beginning.
+TODO
 
 
 ## Theoretical aspects
