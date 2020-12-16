@@ -37,11 +37,14 @@ let position lexbuf =
         (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)
 
 (* Returns the value computed by the parser parser_axiom, with the lexer lexer_axiom, and
- * with the buffer lexbuf. *)
+ * with the buffer lexbuf. If there is an error, the exception Error is raised. *)
 let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
     try
         parser_axiom lexer_axiom lexbuf
     with
+        |Parser.Error ->
+            let str = Printf.sprintf "Syntax error in %s\n" (position lexbuf) in
+            raise (Error str)
         |Tools.SyntaxError msg -> begin
             let str = Printf.sprintf "Syntax error in %s: %s\n" (position lexbuf) msg in
             raise (Error str)
@@ -50,23 +53,20 @@ let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
             let str = Printf.sprintf "Value error in %s: %s\n" (position lexbuf) msg in
             raise (Error str)
         end
-        |_ ->
-            let str = Printf.sprintf "Other error in %s\n" (position lexbuf) in
-            raise (Error str)
 
 (* Returns the value contained in the file at path path, interpreted with the parser
  * parser_axiom, with the lexer lexer_axiom, and with the map error_test to check if it
  * contains static errors. If an error is found, the exception Error is raised. *)
 let value_from_file_path path parser_axiom lexer_axiom error_test =
     assert (Sys.file_exists path);
-    (*try*)
-        let lexbuf = Lexing.from_channel (open_in path) in
-        lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
-        let x = parse_lexer_buffer parser_axiom lexer_axiom lexbuf in
-        if error_test x then
-            x
-        else
-            raise (Error "Static error.")
+    let lexbuf = Lexing.from_channel (open_in path) in
+    lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
+    let x = parse_lexer_buffer parser_axiom lexer_axiom lexbuf in
+    if error_test x then
+        x
+    else
+        let str = Printf.sprintf "Static error in %s\n" (position lexbuf) in
+        raise (Error str)
 
 }
 

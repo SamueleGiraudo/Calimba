@@ -12,7 +12,7 @@
     - Robustness.
     - External documentation.
     - Information about layouts.
-    - Error gestion for program is broken.
+    - Improve input / output.
 *)
 
 let name = "Calimba"
@@ -58,6 +58,14 @@ let remove_extension path =
     let i = String.rindex path '.' in
     String.sub path 0 i
 
+(* Prints the string str as an error. *)
+let print_error str =
+    print_string (Tools.colorize_string str 91)
+
+(* Prints the string str as an information. *)
+let print_information str =
+    print_string (Tools.colorize_string str 94)
+
 (* Returns the expression specified by the .cal file at path path. *)
 let path_to_expression path =
     assert (has_good_extension path);
@@ -67,33 +75,36 @@ let path_to_expression path =
             Parser.program
             Lexer.read
             (fun t -> Expression.is_error_free t true) in
-        print_string "There are errors in the program.";
+        print_information "The program is correct.";
         print_newline ();
         t
     with
         |Lexer.Error msg ->
-            print_string "There are errors in the program.";
-            print_newline ();
-            print_string msg;
-            print_newline ();
-            Expression.Atom (TreePattern.Silence 0)
+            let str = Printf.sprintf "There are errors in the program: %s.\n" msg in
+            raise (Lexer.Error str)
 
 (* Plays the .cal file at path path. *)
 let play path =
     assert (has_good_extension path);
-    let t = path_to_expression path in
-    Expression.interpret_and_play t
+    try
+        let t = path_to_expression path in
+        Expression.interpret_and_play t
+    with
+        |Lexer.Error msg -> print_error msg
 
 (* Creates a PCM file from the .cal file at path path. Its name is obtained from the one of
  * the .cal file by replacing its extension by .pcm. *)
 let write path =
     assert (has_good_extension path);
-    let path' = (remove_extension path) ^ ".pcm" in
-    if Sys.file_exists path' then
-        Printf.printf "Error: a file %s exists already.\n" path'
-    else
-        let t = path_to_expression path in
-        Expression.interpret_and_write t path'
+    try
+        let path' = (remove_extension path) ^ ".pcm" in
+        if Sys.file_exists path' then
+            Printf.printf "Error: a file %s exists already.\n" path'
+        else
+            let t = path_to_expression path in
+            Expression.interpret_and_write t path'
+    with
+    |Lexer.Error msg -> print_error msg
 
 (* Creates a live loop reading and playing the .cal file at path path. This inspects if the
  * file is modified. If this is the case, the file is played (and the current play is
@@ -103,14 +114,13 @@ let live_loop path =
     let rec aux path last_modif num_iter =
         print_string "\r";
         if num_iter mod 2 = 0 then
-            Printf.printf "-"
+            print_string (Tools.colorize_string "-" 31)
         else
-            Printf.printf "|";
+            print_string (Tools.colorize_string "|" 34);
         flush stdout;
         Thread.delay 1.0;
         let last_modif' = (Unix.stat path).Unix.st_mtime in
-        if Option.is_none last_modif
-                || Option.get last_modif < last_modif' then begin
+        if Option.is_none last_modif || Option.get last_modif < last_modif' then begin
             Printf.printf "Modification detected: interpreting and playing...";
             print_newline ();
             Sys.command "killall aplay" |> ignore;
@@ -120,7 +130,22 @@ let live_loop path =
         end;
         aux path (Some (last_modif')) (num_iter + 1)
     in
-    aux path None 1 |> ignore;
+    aux path None 1 |> ignore
+
+let draw path start_ms len_ms =
+    assert (has_good_extension path);
+    try
+        let t = path_to_expression path in
+        let s = Expression.interpret t in
+        let dur = Sound.duration s in
+        let start_ms = max 0 (min start_ms dur) in
+        let len_ms = max 0 (min len_ms (dur - start_ms)) in
+        let start_x = Sound.duration_to_size start_ms in
+        let len_x = Sound.duration_to_size len_ms in
+        let s' = Sound.factor s start_x len_x in
+        Sound.draw s'
+    with
+        |Lexer.Error msg -> print_error msg
 
 ;;
 
@@ -129,6 +154,7 @@ let live_loop path =
 (* Creation of the buffer directory if it does not exist. *)
 let cmd = Printf.sprintf "mkdir -p %s" Sound.buffer_path_directory in
 Sys.command cmd |> ignore;
+
 
 if Tools.has_argument "-r" then
     Random.init 0
@@ -146,17 +172,21 @@ end
 else if Tools.has_argument "-f" then begin
     let arg_lst = Tools.next_arguments "-f" 1 in
     if not (List.length arg_lst >= 1) then begin
-        print_string "Error: a path must follow the -f argument.\n";
+        print_error "Error: a path must follow the -f argument.\n";
         exit 1
     end
     else begin
         let path = List.nth arg_lst 0 in
         if not (Sys.file_exists path) then begin
-            Printf.printf "Error: there is no file %s.\n" path;
+            print_error "Error: there is no file ";
+            print_string path;
+            print_error ".\n";
             exit 1
         end
         else if not (has_good_extension path) then begin
-            Printf.printf "Error: the file %s has not .cal as extension.\n" path;
+            print_error "Error: the file ";
+            print_string path;
+            print_error " has not .cal as extension.\n ";
             exit 1
         end
         else begin
@@ -179,33 +209,19 @@ else if Tools.has_argument "-f" then begin
             else if Tools.has_argument "-d" then begin
                 let arg_lst = Tools.next_arguments "-d" 2 in
                 if not (List.length arg_lst >= 2) then begin
-                    print_string
+                    print_error
                         "Error: two positive integers must follow the -d argument.\n";
                     exit 1
                 end
                 else begin
                     try
-                        let t = path_to_expression path in
-                        let s = Expression.interpret t in
                         let start_ms = int_of_string (List.nth arg_lst 0) in
-                        if not (0 <= start_ms && start_ms < (Sound.duration s)) then begin
-                            print_string "Error: incorrect start time.\n";
-                            exit 1
-                        end;
                         let len_ms = int_of_string (List.nth arg_lst 1) in
-                        if not (1 <= len_ms && start_ms + len_ms - 1 < (Sound.duration s))
-                                then begin
-                            print_string "Error: incorrect duration.\n";
-                            exit 1
-                        end;
-                        let start_x = Sound.duration_to_size start_ms in
-                        let len_x = Sound.duration_to_size len_ms in
-                        let s' = Sound.factor s start_x len_x in
-                        Sound.draw s';
+                        draw path start_ms len_ms;
                         exit 0
                     with
                         |Failure _ -> begin
-                            print_string
+                            print_error
                                 "Error: the two argument of -d must be integers.\n";
                             exit 1
                         end
@@ -216,7 +232,7 @@ else if Tools.has_argument "-f" then begin
                 (* TODO *)
             end
             else begin
-                Printf.printf "Error: unknown argument configuration.\n";
+                print_error "Error: unknown argument configuration.\n";
                 exit 1
             end
         end

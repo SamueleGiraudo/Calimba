@@ -43,5 +43,9 @@ let next_arguments arg nb =
     in
     prefix_list (search_suffix args) nb
 
-
+(* Returns the coloration of the string str by the color specified by the color code col.
+ * From 30 to 37, these are dark colors, and from 90 to 97, these are bright colors. *)
+let colorize_string str col =
+    assert ((30 <= col && col <= 37) || (90 <= col && col <= 97));
+    Printf.sprintf "\027[1m\027[%dm%s\027[0m" col str
 

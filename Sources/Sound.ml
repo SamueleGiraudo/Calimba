@@ -326,9 +326,15 @@ let play s =
 (* Draw the signal of the sound s in a new window. *)
 let draw s =
     let width = 920 and height = 220 and border = 16 in
-    let background_color = Graphics.black
+    (*
+    let background_color = Graphics.red
     and foreground_color = Graphics.white
     and signal_color = Graphics.black
+    and line_color = Graphics.red in
+    *)
+    let background_color = Graphics.red
+    and foreground_color = Graphics.black
+    and signal_color = Graphics.white
     and line_color = Graphics.red in
     let width' = float_of_int (width - 2 * border)
     and height' = float_of_int (height - 2 * border) in
