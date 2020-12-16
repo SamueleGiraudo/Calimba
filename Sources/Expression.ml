@@ -288,3 +288,19 @@ let interpret_and_write e path verbose =
     if verbose then
         Tools.print_information "Writing done."
 
+(* Draws the signal of the sound specified by the expression e. The drawn portion starts at
+ * start_ms ms and lasts len_ms ms. *)
+let interpret_and_draw e start_ms len_ms verbose =
+    if verbose then
+        Tools.print_information "Drawing sound.";
+    let s = interpret e true in
+    let dur = Sound.duration s in
+    let start_ms = max 0 (min start_ms dur) in
+    let len_ms = max 0 (min len_ms (dur - start_ms)) in
+    let start_x = Sound.duration_to_size start_ms in
+    let len_x = Sound.duration_to_size len_ms in
+    let s' = Sound.factor s start_x len_x in
+    Sound.draw s';
+    if verbose then
+        Tools.print_information "Drawing done."
+

@@ -23,7 +23,7 @@ let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
 let information =
-    Printf.sprintf "%s\nCopyright (C) 2020--2020 %s\nWritten by %s [%s]\nVersion: %s (%s)\n"
+    Printf.sprintf "%s\nCopyright (C) 2020--2020 %s\nWritten by %s [%s]\nVersion: %s (%s)"
         name author author email version version_date
 
 let help_string =
@@ -37,7 +37,7 @@ let help_string =
         ^ "-f PATH -w\n"
         ^ "    -> Writes the associated PCM file from the Calimba file PATH.\n"
         ^ "-f PATH -l\n"
-        ^ "    -> Launches a live loop on the Calimba file PATH.\n"
+        ^ "    -> Launches a live loop on the Calimba file PATH."
 
 (* The extension of Calimba files. *)
 let file_extension =
@@ -139,16 +139,9 @@ let live_loop path =
  * starts at start_ms ms and lasts len_ms ms. *)
 let draw path start_ms len_ms =
     assert (has_good_extension path);
-        let t = path_to_expression path in
+    let t = path_to_expression path in
     if Option.is_some t then
-        let s = Expression.interpret (Option.get t) true in
-        let dur = Sound.duration s in
-        let start_ms = max 0 (min start_ms dur) in
-        let len_ms = max 0 (min len_ms (dur - start_ms)) in
-        let start_x = Sound.duration_to_size start_ms in
-        let len_x = Sound.duration_to_size len_ms in
-        let s' = Sound.factor s start_x len_x in
-        Sound.draw s'
+        Expression.interpret_and_draw (Option.get t) start_ms len_ms true
 
 ;;
 
@@ -165,11 +158,11 @@ else
     Random.self_init ();
 
 if Tools.has_argument "-v" then begin
-    print_string information;
+    Tools.print_important information;
     exit 0
 end
 else if Tools.has_argument "-h" then begin
-    print_string help_string;
+    Tools.print_information help_string;
     exit 0
 end
 else if Tools.has_argument "-f" then begin

@@ -29,7 +29,7 @@ let byte_depth =
 (* This is the default buffer path, where PCM files are stored. The files stored in this
  * directory are in RAM instead on the disk. *)
 let buffer_path_directory =
-    "/dev/shm/Synth/"
+    "/dev/shm/Calimba/"
 
 (* The default buffer PCM file. *)
 let buffer_path_file =
@@ -326,36 +326,24 @@ let play s =
 (* Draw the signal of the sound s in a new window. *)
 let draw s =
     let width = 920 and height = 220 and border = 16 in
-    (*
-    let background_color = Graphics.red
-    and foreground_color = Graphics.white
-    and signal_color = Graphics.black
-    and line_color = Graphics.red in
-    *)
-    let background_color = Graphics.red
-    and foreground_color = Graphics.black
-    and signal_color = Graphics.white
-    and line_color = Graphics.red in
+    Graphics.open_graph (Printf.sprintf " %dx%d" width height);
+    let color_point y =
+        let y' = 255 - int_of_float (255.0 *. ((Float.abs y) ** 0.25)) in
+        Graphics.rgb y' y' y'
+    in
     let width' = float_of_int (width - 2 * border)
     and height' = float_of_int (height - 2 * border) in
     let border' = float_of_int border in
     let size = float_of_int s.size in
-    Graphics.open_graph (Printf.sprintf " %dx%d" width height);
-    Graphics.set_color background_color;
-    Graphics.fill_rect 0 0 (width - 1) (height -1);
-    Graphics.set_color foreground_color;
-    Graphics.fill_rect border border (width - 2 * border - 1) (height - 2 * border - 1);
-    Graphics.set_color signal_color;
     List.init s.size Fun.id |> List.iter
         (fun i ->
+            let k = s.map i in
             let x = border' +. width' *. (float_of_int i)  /. size in
-            let y = border' +. height' *. ((s.map i) +. 1.)  /. 2. in
+            let y = border' +. height' *. (k +. 1.)  /. 2. in
+            Graphics.set_color (color_point k);
             Graphics.plot (int_of_float x) (int_of_float y));
-    Graphics.set_color line_color;
-    Graphics.moveto border (height / 2);
-    Graphics.lineto (width - border - 1) (height / 2);
     Graphics.synchronize ();
-    (Graphics.wait_next_event [Graphics.Button_down; Graphics.Key_pressed]) |> ignore; 
+    (Graphics.wait_next_event [Graphics.Key_pressed]) |> ignore;
     Graphics.close_graph ()
 
 
