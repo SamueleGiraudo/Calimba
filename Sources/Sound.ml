@@ -328,8 +328,12 @@ let draw s =
     let width = 920 and height = 220 and border = 16 in
     Graphics.open_graph (Printf.sprintf " %dx%d" width height);
     let color_point y =
-        let y' = 255 - int_of_float (255.0 *. ((Float.abs y) ** 0.25)) in
-        Graphics.rgb y' y' y'
+        let y' = int_of_float (255.0 *. ((Float.abs y) ** 0.5)) in
+        let y'' = 255 - y' in
+        if y >= 0.0 then
+            Graphics.rgb y' y'' y''
+        else
+            Graphics.rgb y'' y' y'
     in
     let width' = float_of_int (width - 2 * border)
     and height' = float_of_int (height - 2 * border) in
