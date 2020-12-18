@@ -352,8 +352,8 @@ let interpret_and_analyse e =
             let sub  = Layout.sub_layouts l in
             List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter
                 (fun n ->
-                    let sub' = sub |> List.filter (fun l' -> Layout.nb_degrees l' = n) 
-                        |> List.filter Layout.is_minimal_in_rotation_class
+                    let sub' = sub |> List.filter (fun l' -> Layout.nb_degrees l' = n)
+                        (*|> List.filter Layout.is_minimal_in_rotation_class*)
                     in
                     Tools.print_information
                         (Printf.sprintf "        With %d degrees:" n);
@@ -366,14 +366,7 @@ let interpret_and_analyse e =
                                     (Layout.to_string l')
                                     (Layout.multiplicity l' l)
                                     ((Layout.degrees_for_inclusion l' l) |> List.map
-                                        string_of_int |> String.concat " ")
-
-                                    )
-                        ))
-
-
-
-        )
+                                        string_of_int |> String.concat " ")))))
 
 
 

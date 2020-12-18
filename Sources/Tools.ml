@@ -9,6 +9,16 @@ exception SyntaxError of string
 (* To handle errors in the values read from parsed files. *)
 exception ValueError of string
 
+type color =
+    |Black
+    |Red
+    |Green
+    |Yellow
+    |Blue
+    |Magenta
+    |Cyan
+    |White
+
 (* If x is none, def is returned. Otherwise, the image by the map tr of the value contained
 * in x is returned. *)
 let transform_option_default tr x def =
@@ -43,24 +53,34 @@ let next_arguments arg nb =
     in
     prefix_list (search_suffix args) nb
 
-(* Returns the coloration of the string str by the color specified by the color code col.
- * From 30 to 37, these are dark colors, and from 90 to 97, these are bright colors. *)
-let colorize_string str col =
-    assert ((30 <= col && col <= 37) || (90 <= col && col <= 97));
-    Printf.sprintf "\027[%dm%s\027[39m" col str
+(* Returns the code for each color corresponding to the coloration code in the terminal. *)
+let color_code col =
+    match col with
+        |Black -> 90
+        |Red -> 91
+        |Green -> 92
+        |Yellow -> 93
+        |Blue -> 94
+        |Magenta -> 95
+        |Cyan -> 96
+        |White -> 97
+
+(* Returns the coloration of the string str by the color specified by the color col. *)
+let csprintf col str =
+    Printf.sprintf "\027[%dm%s\027[39m" (color_code col) str
 
 (* Prints the string str as an error. *)
 let print_error str =
-    print_string (colorize_string str 91);
+    print_string (csprintf Red str);
     print_newline ()
 
 (* Prints the string str as an information. *)
 let print_information str =
-    print_string (colorize_string str 94);
+    print_string (csprintf Blue str);
     print_newline ()
 
 (* Prints the string str as an important information. *)
 let print_important str =
-    print_string (colorize_string str 92);
+    print_string (csprintf Green str);
     print_newline ()
 

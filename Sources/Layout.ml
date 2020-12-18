@@ -20,7 +20,7 @@ let construct l =
 (* Returns a string representation of the layout l. For instance, "3 2 2 3 2" is the string
  * representation of the minor pentatonic layout. *)
 let to_string l =
-    Tools.colorize_string (l |> List.map string_of_int |> String.concat " ") 92
+    Tools.csprintf Tools.Yellow (l |> List.map string_of_int |> String.concat " ")
 
 (* Returns the number of degrees in the layout l. *)
 let nb_degrees l =

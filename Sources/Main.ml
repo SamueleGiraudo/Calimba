@@ -120,9 +120,9 @@ let live_loop path =
     let rec aux path last_modif num_iter =
         print_string "\r";
         if num_iter mod 2 = 0 then
-            print_string (Tools.colorize_string "-" 31)
+            print_string (Tools.csprintf Tools.Cyan "-")
         else
-            print_string (Tools.colorize_string "|" 34);
+            print_string (Tools.csprintf Tools.Magenta "|");
         flush stdout;
         Thread.delay 1.0;
         let last_modif' = (Unix.stat path).Unix.st_mtime in
