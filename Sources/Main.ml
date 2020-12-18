@@ -135,13 +135,21 @@ let live_loop path =
     in
     aux path None 1 |> ignore
 
-(* Draws the signal of the sound specified by the .cal file at path PATH. The drawn portion
+(* Draws the signal of the sound specified by the .cal file at path path. The drawn portion
  * starts at start_ms ms and lasts len_ms ms. *)
 let draw path start_ms len_ms =
     assert (has_good_extension path);
     let t = path_to_expression path in
     if Option.is_some t then
         Expression.interpret_and_draw (Option.get t) start_ms len_ms true
+
+(* Print an analysis of each layout used in the expression specified by the .cal file at
+ * path path. *)
+let print_layout_analyses path =
+    assert (has_good_extension path);
+    let t = path_to_expression path in
+    if Option.is_some t then
+        Expression.interpret_and_analyse (Option.get t)
 
 ;;
 
@@ -223,7 +231,7 @@ else if Tools.has_argument "-f" then begin
             end
             (* Analysis of the used layouts. *)
             else if Tools.has_argument "-a" then begin
-                (* TODO *)
+                print_layout_analyses path
             end
             else begin
                 Tools.print_error "Error: unknown argument configuration.";

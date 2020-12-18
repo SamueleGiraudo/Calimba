@@ -80,6 +80,14 @@ let rec nb_leaves t =
         |Concatenation (t1, t2) |Composition (t1, t2) -> nb_leaves t1 + nb_leaves t2
         |Performance (_, t') |Effect (_, t') -> nb_leaves t'
 
+(* Returns the number of internal nodes of the tree pattern t. *)
+let rec nb_internal_nodes t =
+    match t with
+        |Atom _ -> 0
+        |Concatenation (t1, t2) |Composition (t1, t2) ->
+            1 + nb_internal_nodes t1 + nb_internal_nodes t2
+        |Performance (_, t') |Effect (_, t') -> 1 + nb_internal_nodes t'
+
 (* Returns the height of the tree pattern t. A tree consisting in a single atom has 0 as
  * height. *)
 let rec height t =

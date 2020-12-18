@@ -64,6 +64,27 @@ let modification_list_to_context lst =
                 |Effect _ -> ct)
         Context.default
 
+(* Returns the list of all layouts used in the expression e. *)
+let rec layouts e =
+    match e with
+        |Name _ -> []
+        |Atom _ -> []
+        |Concatenation (e1, e2) -> List.append (layouts e1) (layouts e2)
+        |Composition (e1, e2) -> List.append (layouts e1) (layouts e2)
+        |IncreaseOctave e' -> layouts e'
+        |DecreaseOctave e' -> layouts e'
+        |IncreaseTime e' -> layouts e'
+        |DecreaseTime e' -> layouts e'
+        |Insertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
+        |LabelInsertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
+        |BinaryInsertion (e1, e2) -> List.append (layouts e1) (layouts e2)
+        |Repeat (_, e') -> layouts e'
+        |Reverse e' -> layouts e'
+        |Complement e' -> layouts e'
+        |Let (_, e1, e2) -> List.append (layouts e1) (layouts e2)
+        |Put (Layout l, e') -> l :: (layouts e')
+        |Put (_, e') -> layouts e'
+
 (* Returns the free names in the expression e. *)
 let rec free_names e =
     match e with
@@ -262,7 +283,9 @@ let interpret e verbose =
         Tools.print_information
             (Printf.sprintf "    Arity: %d" (TreePattern.arity tp));
         Tools.print_information
-            (Printf.sprintf "    Size: %d leaves" (TreePattern.nb_leaves tp));
+            (Printf.sprintf "    Nb. leaves: %d" (TreePattern.nb_leaves tp));
+        Tools.print_information
+            (Printf.sprintf "    Nb. int. nodes: %d" (TreePattern.nb_internal_nodes tp));
         Tools.print_information
             (Printf.sprintf "    Height: %d" (TreePattern.height tp))
     end;
@@ -303,4 +326,63 @@ let interpret_and_draw e start_ms len_ms verbose =
     Sound.draw s';
     if verbose then
         Tools.print_information "Drawing done."
+
+(* Prints some analysis information about the expression e. *)
+let interpret_and_analyse e =
+    let l_lst = layouts e |> List.sort_uniq compare in
+    l_lst |> List.iter
+        (fun l ->
+            Tools.print_information (Printf.sprintf "Layout: %s" (Layout.to_string l));
+            Tools.print_information
+                (Printf.sprintf "    Nb steps by octave: %d" (Layout.nb_steps_by_octave l));
+            Tools.print_information
+                (Printf.sprintf "    Nb degrees: %d" (Layout.nb_degrees l));
+            let rot_class = Layout.rotation_class l in
+            Tools.print_information
+                (Printf.sprintf "    Mirror: %s" (Layout.to_string (Layout.mirror l)));
+            Tools.print_information
+                (Printf.sprintf "    Dual: %s" (Layout.to_string (Layout.dual l)));
+            Tools.print_information "    Rotation class:";
+            Tools.print_information
+                (Printf.sprintf "        Cardinal: %d" (List.length rot_class));
+            let rot_class_str = rot_class |> List.map Layout.to_string
+                |> String.concat ", " in
+            Tools.print_information ("        Layouts: " ^ rot_class_str);
+            Tools.print_information "    Sub-layouts:";
+            let sub  = Layout.sub_layouts l in
+            List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter
+                (fun n ->
+                    let sub' = sub |> List.filter (fun l' -> Layout.nb_degrees l' = n) 
+                        |> List.filter Layout.is_minimal_in_rotation_class
+                    in
+                    Tools.print_information
+                        (Printf.sprintf "        With %d degrees:" n);
+                    Tools.print_information
+                        (Printf.sprintf "            Cardinal: %d" (List.length sub'));
+                    sub' |> List.iter
+                        (fun l' ->
+                            Tools.print_information
+                                (Printf.sprintf "            %s [%d occ. @ %s]"
+                                    (Layout.to_string l')
+                                    (Layout.multiplicity l' l)
+                                    ((Layout.degrees_for_inclusion l' l) |> List.map
+                                        string_of_int |> String.concat " ")
+
+                                    )
+                        ))
+
+
+
+        )
+
+
+
+
+
+
+
+
+
+
+
 

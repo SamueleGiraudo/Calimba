@@ -20,7 +20,7 @@ let construct l =
 (* Returns a string representation of the layout l. For instance, "3 2 2 3 2" is the string
  * representation of the minor pentatonic layout. *)
 let to_string l =
-    l |> List.map string_of_int |> String.concat " "
+    Tools.colorize_string (l |> List.map string_of_int |> String.concat " ") 92
 
 (* Returns the number of degrees in the layout l. *)
 let nb_degrees l =
@@ -100,7 +100,6 @@ let rotation_class l =
         (fun res _ -> (rotate_left (List.hd res)) :: res) [l]
         |> List.sort_uniq compare
 
-
 (* Tests if the layouts l1 and l2 are in the same rotation class. *)
 let are_rotation_equivalent l1 l2 =
     assert (is_valid l1);
@@ -130,10 +129,9 @@ let rec dual l =
             ((List.hd tmp) + 1) :: (List.tl tmp)
         |a :: l' -> 1 :: (dual ((a - 1) :: l'))
 
-(* Tests if the layout l1 is included into the layout l2 in the sense that the set of
- * distances from the origin of l1 is included into the set of distances from the origin
- * of l2. *)
-let is_included l1 l2 =
+(* Tests if the set of the distances from the origin of the layout l1 is included into the
+ * set of distances from the origin of the layout l2. *)
+let is_coarser l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
@@ -148,15 +146,21 @@ let degrees_for_inclusion l1 l2 =
     assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
     let rec rotation l n = if n = 0 then l else rotation (rotate_left l) (n - 1) in
-    List.init (nb_degrees l2)
-        (fun d -> if is_included l1 (rotation l2 d) then Some d else None)
-        |> ExtLib.List.filter_map Fun.id
+    List.init (nb_degrees l2) Fun.id |> List.filter (fun d -> is_coarser l1 (rotation l2 d))
 
-(* Tests if the layout l1 is contained in one of the rotations of the layout l2. *)
-let is_included_with_rotation l1 l2 =
+(* Returns the multiplicity of the layout l1 inside the layout l2. This is the number of
+ * ways to put l1 into l2 as a sub-layout. *)
+let multiplicity l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
-    degrees_for_inclusion l1 l2 <> []
+    assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
+    List.length (degrees_for_inclusion l1 l2)
+
+(* Tests if the layout l1 is contained in one of the rotations of the layout l2. *)
+let is_included l1 l2 =
+    assert (is_valid l1);
+    assert (is_valid l2);
+    multiplicity l1 l2 <> 0
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_degrees degrees. *)
@@ -173,6 +177,16 @@ let rec generate nb_steps_by_octave nb_degrees =
                 generate (nb_steps_by_octave - x - 1) (nb_degrees - 1) |> List.map
                     (fun l -> (x + 1) :: l))
             |> List.flatten
+
+(* Returns the list of all the layouts included into the layout l. *)
+let sub_layouts l =
+    assert (is_valid l);
+    let tmp = List.init ((nb_degrees l) - 1) (fun n -> n + 1) |> List.map
+        (fun n ->
+            generate (nb_steps_by_octave l) n |> List.filter
+                (fun l' -> is_included l' l))
+        |> List.flatten in
+    l :: tmp
 
 (* Some layouts. *)
 
