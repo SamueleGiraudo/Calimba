@@ -77,6 +77,12 @@ let rec transpose rl delta =
     else
         transpose (transpose_previous rl) (delta + 1)
 
+(*
+let transpose rl delta =
+    assert (is_valid rl);
+    let note = Note.shift rl.root (
+*)
+
 (* Returns the note specified by the layout shift ls in the rooted layout rl. *)
 let layout_shift_to_note rl ls =
     assert (is_valid rl);

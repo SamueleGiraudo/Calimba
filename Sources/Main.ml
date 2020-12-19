@@ -149,7 +149,7 @@ let print_layout_analyses path =
     assert (has_good_extension path);
     let t = path_to_expression path in
     if Option.is_some t then
-        Expression.interpret_and_analyse (Option.get t)
+        Expression.interpret_and_analyse (Option.get t) true
 
 ;;
 

@@ -45,6 +45,14 @@ let rotate_right l =
     let tmp = List.rev l in
     (List.hd tmp) :: (List.rev (List.tl tmp))
 
+let rec rotate l delta =
+    assert (is_valid l);
+    if delta = 0 then
+        l
+    else if delta >= 1 then
+        rotate (rotate_left l) (delta - 1)
+    else
+        rotate (rotate_right l) (delta + 1)
 
 (* Some functions for exploration of layouts. *)
 
@@ -131,7 +139,7 @@ let rec dual l =
 
 (* Tests if the set of the distances from the origin of the layout l1 is included into the
  * set of distances from the origin of the layout l2. *)
-let is_coarser l1 l2 =
+let is_sub_layout l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
@@ -139,28 +147,35 @@ let is_coarser l1 l2 =
     and dist2 = List.init (nb_degrees l2) (distance_from_origin l2) in
     dist1 |> List.for_all (fun d -> List.mem d dist2)
 
+(* Returns the list of the sub_layouts of the layout l. *)
+let sub_layouts l =
+    assert (is_valid l);
+    List.tl l |> List.fold_left
+        (fun res v ->
+            List.append
+                (res |> List.map (fun l' -> v :: l'))
+                (res |> List.map (fun l' -> (v + List.hd l') :: List.tl l')))
+        [[List.hd l]]
+    |> List.map List.rev |> List.sort compare
+
 (* Returns the list of the degrees d of which the layout l1 is included into the layout l2
  * by putting in correspondence the degree 0 of l1 and the degree d of l2. *)
-let degrees_for_inclusion l1 l2 =
+let degrees_for_circular_inclusion l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
-    let rec rotation l n = if n = 0 then l else rotation (rotate_left l) (n - 1) in
-    List.init (nb_degrees l2) Fun.id |> List.filter (fun d -> is_coarser l1 (rotation l2 d))
-
-(* Returns the multiplicity of the layout l1 inside the layout l2. This is the number of
- * ways to put l1 into l2 as a sub-layout. *)
-let multiplicity l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
-    assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
-    List.length (degrees_for_inclusion l1 l2)
+    List.init (nb_degrees l2) Fun.id |> List.filter
+        (fun d -> is_sub_layout l1 (rotate l2 d))
 
 (* Tests if the layout l1 is contained in one of the rotations of the layout l2. *)
-let is_included l1 l2 =
+let is_circular_sub_layout l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
-    multiplicity l1 l2 <> 0
+    degrees_for_circular_inclusion l1 l2 <> []
+
+(* Returns the list of all the layouts circularly included into the layout l. *)
+let circular_sub_layouts l =
+    rotation_class l |> List.map sub_layouts |> List.flatten |> List.sort_uniq compare
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_degrees degrees. *)
@@ -177,16 +192,6 @@ let rec generate nb_steps_by_octave nb_degrees =
                 generate (nb_steps_by_octave - x - 1) (nb_degrees - 1) |> List.map
                     (fun l -> (x + 1) :: l))
             |> List.flatten
-
-(* Returns the list of all the layouts included into the layout l. *)
-let sub_layouts l =
-    assert (is_valid l);
-    let tmp = List.init ((nb_degrees l) - 1) (fun n -> n + 1) |> List.map
-        (fun n ->
-            generate (nb_steps_by_octave l) n |> List.filter
-                (fun l' -> is_included l' l))
-        |> List.flatten in
-    l :: tmp
 
 (* Some layouts. *)
 

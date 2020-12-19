@@ -50,7 +50,8 @@ let octave_index n =
  * 3 as step index, 4 as octave index, and having 12 steps by octave. *)
 let to_string n =
     assert (is_valid n);
-    Printf.sprintf "%d/%d:%d" n.step_index (n.nb_steps_by_octave - 1) n.octave_index
+    Tools.csprintf Tools.Cyan
+        (Printf.sprintf "%d/%d:%d" n.step_index (n.nb_steps_by_octave - 1) n.octave_index)
 
 (* Tests if the notes n1 and n2 are equivalent. This is the case if n1 and n2 have the same
  * step_index. *)
