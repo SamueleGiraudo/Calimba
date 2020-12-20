@@ -52,36 +52,13 @@ let nb_steps_by_octave rl =
     assert (is_valid rl);
     Layout.nb_steps_by_octave rl.layout
 
-(* Returns the rooted layout obtained from the rooted layout rl by choosing the next note
- * of the root as new root. *)
-let transpose_next rl =
-    assert (is_valid rl);
-    let note = Note.shift rl.root (Layout.distance_next rl.layout 0) in
-    {layout = Layout.rotate_left rl.layout; root = note}
-
-(* Returns the rooted layout obtained from the rooted layout rl by choosing the previous
- * note of the root as new root. *)
-let transpose_previous rl =
-    assert (is_valid rl);
-    let note = Note.shift rl.root (Layout.distance_previous rl.layout 0) in
-    {layout = Layout.rotate_right rl.layout; root = note}
-
 (* Returns the rooted layout obtained by setting as new root note the note at the position
  * delta from the current root. This value delta can be negative. *)
-let rec transpose rl delta =
-    assert (is_valid rl);
-    if delta = 0 then
-        rl
-    else if delta >= 1 then
-        transpose (transpose_next rl) (delta - 1)
-    else
-        transpose (transpose_previous rl) (delta + 1)
-
-(*
 let transpose rl delta =
     assert (is_valid rl);
-    let note = Note.shift rl.root (
-*)
+    let nt = Note.shift rl.root (Layout.distance_from_origin rl.layout delta) in
+    let l = Layout.rotate rl.layout delta in
+    {layout = l; root = nt}
 
 (* Returns the note specified by the layout shift ls in the rooted layout rl. *)
 let layout_shift_to_note rl ls =
@@ -147,9 +124,9 @@ let accuracy_ratio rl ls ratio =
     assert (is_valid rl);
     (frequency_ratio rl ls) -. ratio
 
-(* Returns the layout shift approximating in the best way among all other shifts the
- * ratio ratio in the rooted layout rl as an interval between the layout shift ls and the
- * root note in rl. *)
+(* Returns the layout shift approximating in the best way among all other shifts the ratio
+ * ratio in the rooted layout rl as an interval between the layout shift ls and the root
+ * note in rl. *)
 let best_layout_shift_for_ratio rl ratio =
     assert (is_valid rl);
     let log2 x = (Float.log x) /. (Float.log 2.0) in

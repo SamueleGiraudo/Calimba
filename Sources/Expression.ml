@@ -357,33 +357,27 @@ let interpret_and_analyse e verbose =
                     let notes = RootedLayout.first_notes rl in
                     Printf.printf " %s\n"
                         (notes |> List.map Note.to_string |> String.concat ", "));
-            Printf.printf "    Rotation class:\n";
-            let rot_class = Layout.rotation_class l in
-            Printf.printf "        Cardinal: %d\n" (List.length rot_class);
-            let rot_class_str = rot_class |> List.map Layout.to_string
-                |> String.concat ", " in
-            Printf.printf "        Layouts: %s\n" rot_class_str;
-            let circ_sub_l = Layout.circular_sub_layouts l in
-            Printf.printf "    Number of circular sub-layouts:\n";
+            Printf.printf "    Circular sub-layouts:\n";
+            let csl = Layout.circular_sub_layouts l in
             List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter
                 (fun n ->
-                    let nb = circ_sub_l |> List.filter (fun l' -> Layout.nb_degrees l' = n)
-                        |> List.length in
-                    Printf.printf "        With %d degrees: %d\n" n nb);
-            rot_class |> List.iter
-                (fun l' ->
-                    Printf.printf "    Sub-layouts of %s:\n" (Layout.to_string l');
-                    let sub  = Layout.sub_layouts l' in
-                    List.init (Layout.nb_degrees l') (fun n -> n + 1) |> List.rev
-                        |> List.iter
-                        (fun n ->
-                            let sub' = sub |> List.filter
-                                (fun l'' -> Layout.nb_degrees l'' = n) in
-                            Printf.printf "        With %d degrees:\n" n;
-                            Printf.printf "            Cardinal: %d\n" (List.length sub');
-                            let sub_layout_str = sub' |> List.map Layout.to_string
-                                |> String.concat ", " in
-                            Printf.printf "            Layouts: %s\n" sub_layout_str)));
+                    let csl' = csl |> List.filter (fun l' -> Layout.nb_degrees l' = n) in
+                    Printf.printf "        With %d degrees:\n" n;
+                    Printf.printf "            Cardinal: %d\n" (List.length csl');
+                    csl' |> List.iter
+                        (fun l' ->
+                            Printf.printf "            %s: " (Layout.to_string l');
+                            let shifts =
+                                Layout.layout_shifts_for_circular_inclusion l' l in
+                            Printf.printf "%d occ." (List.length shifts);
+                            let str_shifts = shifts |> List.map
+                                (fun lst ->
+                                    let str = lst |> List.map LayoutShift.to_string
+                                        |> String.concat ", " in
+                                    "[" ^ str ^ "]")
+                                |> String.concat ", "
+                            in
+                            Printf.printf " at %s\n" str_shifts)));
     if verbose then
-        Tools.print_information "Printing done."
+        Tools.print_information "Printing done.";
 

@@ -26,6 +26,15 @@ let transform_option_default tr x def =
         |Some x' -> tr x'
         |None -> def
 
+(* Returns the remainder of the Euclidean division of a by b. This value is always
+ * positive. *)
+let remainder a b =
+    let res = a mod b in
+    if res >= 0 then
+        res
+    else
+        res + b
+
 (* Returns the prefix of length n of the list lst. *)
 let rec prefix_list lst n =
     match lst, n with

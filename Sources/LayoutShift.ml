@@ -17,6 +17,16 @@ type layout_shift = {
 let construct degree octave =
     {degree = degree; octave = octave}
 
+(* Returns the layout shift encoding the extended degree d in a layout having nb_degrees
+ * degrees. The returned layout shift has a degree between 0 and nb_degrees - 1. *)
+let from_extended_degree nb_degrees d =
+    assert (nb_degrees >= 1);
+    let deg = Tools.remainder d nb_degrees in
+    if d >= 0 then
+        {degree = deg; octave = d / nb_degrees}
+    else
+        {degree = deg; octave = (d + 1) / nb_degrees - 1}
+
 (* Returns a string representation of the layout shift ls. *)
 let to_string ls =
     Tools.csprintf Tools.Magenta (Printf.sprintf "%d:%d" ls.degree ls.octave)

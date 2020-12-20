@@ -56,44 +56,35 @@ let rec rotate l delta =
     else
         rotate (rotate_right l) (delta + 1)
 
-(* Returns the distance in steps from the degree d to the next in the layout l. *)
+(* Returns the distance in steps from the extended degree d to the next one in the layout
+ * l. *)
 let distance_next l d =
     assert (is_valid l);
-    assert (0 <= d && d < nb_degrees l);
-    List.nth l d
+    List.nth l (Tools.remainder d (nb_degrees l))
 
-(* Returns the distance in steps from the degree d to the previous in the layout l. The
- * returned value is negative. *)
+(* Returns the distance in steps from the extended degree d to the previous one in the
+ * layout l. The returned value is negative. *)
 let distance_previous l d =
     assert (is_valid l);
-    assert (0 <= d && d < nb_degrees l);
+    - (distance_next l (d - 1))
+
+(* Returns the distance in steps from the origin to the extended degree d in the layout
+ * l. This value is negative iff d is negative. *)
+let rec distance_from_origin l d =
+    assert (is_valid l);
     if d = 0 then
-        - List.nth l ((nb_degrees l) - 1)
+        0
+    else if d >= 1 then
+        (distance_next l 0) + (distance_from_origin (rotate_left l) (d - 1))
     else
-        - List.nth l (d - 1)
+        (distance_previous l 0) + (distance_from_origin (rotate_right l) (d + 1))
 
-(* Returns the distance in steps from the origin to the degree d in the layout l. *)
-let distance_from_origin l d =
-    assert (is_valid l);
-    assert (0 <= d && d < nb_degrees l);
-    List.init d Fun.id |> List.fold_left (fun res d' -> res + (distance_next l d')) 0
-
-(* Returns the distance in steps from the degree d to the end in the layout l. *)
-let distance_to_end l d =
-    assert (is_valid l);
-    assert (0 <= d && d < nb_degrees l);
-    (nb_steps_by_octave l) - (distance_from_origin l d)
-
-(* Returns the distance between the two degrees d1 and d2 of the layout l. This value is
- * always positive. *)
+(* Returns the distance between the two extended degrees d1 and d2 of the layout l. The
+ * first one must be not greater than the second one. *)
 let distance_between l d1 d2 =
     assert (is_valid l);
-    assert (0 <= d1 && d1 < nb_degrees l);
-    assert (0 <= d2 && d1 < nb_degrees l);
-    if d1 <= d2 then
-        (distance_from_origin l d2) - (distance_from_origin l d1)
-    else
-        (distance_to_end l d1) + (distance_from_origin l d2)
+    assert (d1 <= d2);
+    distance_from_origin l d2 - distance_from_origin l d1
 
 (* Returns the mirror of the layout l. *)
 let mirror l =
@@ -137,15 +128,30 @@ let rec dual l =
             ((List.hd tmp) + 1) :: (List.tl tmp)
         |a :: l' -> 1 :: (dual ((a - 1) :: l'))
 
+(* Returns an option on a list of lists of integers obtained graphically by inserting
+ * brackets into the list of integers l2 such that, by taking the sums of the values of the
+ * lists, one obtain the list of integers l2. None is returned is this is not possible. *)
+let rec gather_as_sub_layout l1 l2 =
+    match l1, l2 with
+        |[], [] -> Some []
+        |a1 :: l1', a2 :: l2' when a1 = a2 ->
+            let tmp = gather_as_sub_layout l1' l2' in
+            Tools.transform_option_default (fun x -> Some ([a2] :: x)) tmp None
+        |a1 :: l1', a2 :: l2' when a1 > a2 ->
+            let tmp = gather_as_sub_layout ((a1 - a2) :: l1') l2' in
+            Tools.transform_option_default
+                (fun x ->  Some ((a2 :: (List.hd x)) :: (List.tl x)))
+                tmp
+                None
+        |_ -> None
+
 (* Tests if the set of the distances from the origin of the layout l1 is included into the
  * set of distances from the origin of the layout l2. *)
 let is_sub_layout l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
-    let dist1 = List.init (nb_degrees l1) (distance_from_origin l1)
-    and dist2 = List.init (nb_degrees l2) (distance_from_origin l2) in
-    dist1 |> List.for_all (fun d -> List.mem d dist2)
+    Option.is_some (gather_as_sub_layout l1 l2)
 
 (* Returns the list of the sub_layouts of the layout l. *)
 let sub_layouts l =
@@ -158,24 +164,35 @@ let sub_layouts l =
         [[List.hd l]]
     |> List.map List.rev |> List.sort compare
 
-(* Returns the list of the degrees d of which the layout l1 is included into the layout l2
- * by putting in correspondence the degree 0 of l1 and the degree d of l2. *)
-let degrees_for_circular_inclusion l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
-    assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
-    List.init (nb_degrees l2) Fun.id |> List.filter
-        (fun d -> is_sub_layout l1 (rotate l2 d))
-
-(* Tests if the layout l1 is contained in one of the rotations of the layout l2. *)
-let is_circular_sub_layout l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
-    degrees_for_circular_inclusion l1 l2 <> []
-
 (* Returns the list of all the layouts circularly included into the layout l. *)
 let circular_sub_layouts l =
     rotation_class l |> List.map sub_layouts |> List.flatten |> List.sort_uniq compare
+
+(* Returns the list of the lists of layout shifts such that the layout l1 is a circular
+ * sub-layout of the layout l2. Each list of layout shifts specifies a choice of extended
+ * degrees of l2 in order to obtain l1. *)
+let layout_shifts_for_circular_inclusion l1 l2 =
+    assert (is_valid l1);
+    assert (is_valid l2);
+    let nb_deg = nb_degrees l2 in
+    List.init (List.length l2) Fun.id |> List.map
+        (fun delta ->
+            let l2' = rotate l2 delta in
+            let g = gather_as_sub_layout l1 l2' in
+            Tools.transform_option_default
+                (fun x ->
+                     Some (x |> List.map List.length |> List.fold_left
+                        (fun res v -> (v + (List.hd res)) :: res)
+                        [0]
+                        |> List.tl
+                        |> List.rev
+                        |> List.map (fun v -> v + delta)))
+                g
+                None)
+        |> List.filter Option.is_some
+        |> List.map Option.get
+        |> List.map
+            (fun lst -> lst |> List.map (LayoutShift.from_extended_degree nb_deg))
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_degrees degrees. *)
