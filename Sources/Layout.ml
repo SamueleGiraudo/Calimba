@@ -191,8 +191,17 @@ let layout_shifts_for_circular_inclusion l1 l2 =
                 None)
         |> List.filter Option.is_some
         |> List.map Option.get
-        |> List.map
-            (fun lst -> lst |> List.map (LayoutShift.from_extended_degree nb_deg))
+        |> List.map (fun lst -> lst |> List.map (LayoutShift.from_extended_degree nb_deg))
+
+(* Returns the interval vector of the layout l. This is the list of length the number of
+ * steps by octave minus 1 such that each value at position i is the number of intervals of
+ * i + 1 steps in l. *)
+let interval_vector l =
+    let nbs = nb_steps_by_octave l in
+    List.init (nbs - 1) (fun n -> n + 1) |> List.map
+        (fun n ->
+            let l' = [n; nbs - n] in
+            List.length (layout_shifts_for_circular_inclusion l' l))
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_degrees degrees. *)

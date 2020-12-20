@@ -42,6 +42,11 @@ let rec prefix_list lst n =
         |[], _ -> []
         |x :: lst', n -> x :: (prefix_list lst' (n - 1))
 
+(* Returns the accuracy of the observed value observed w.r.t. the expected value expected.
+ * These values are floats. *)
+let accuracy expected observed =
+    (observed -. expected) /. expected
+
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =
     Array.mem arg Sys.argv

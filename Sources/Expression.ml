@@ -342,9 +342,9 @@ let interpret_and_analyse e verbose =
             ratios_and_names |> List.iter
                 (fun (ratio, name) ->
                     let ls = RootedLayout.best_layout_shift_for_ratio rl ratio in
-                    let acc = RootedLayout.accuracy_ratio rl ls ratio in
-                    Printf.printf "        For %.2f %-11s: %s with error of %+.4f\n"
-                        ratio name (LayoutShift.to_string ls) acc);
+                    let acc = Tools.accuracy ratio (RootedLayout.frequency_ratio rl ls) in
+                    Printf.printf "        For %.2f %-11s: %s with error of %+.2f%%\n"
+                        ratio name (LayoutShift.to_string ls) (100.0 *. acc));
             Printf.printf "    Mirror: %s\n" (Layout.to_string (Layout.mirror l));
             Printf.printf "    Dual: %s\n" (Layout.to_string (Layout.dual l));
             let rl_lst = RootedLayout.generate_nonequivalent l 0 in
@@ -357,6 +357,8 @@ let interpret_and_analyse e verbose =
                     let notes = RootedLayout.first_notes rl in
                     Printf.printf " %s\n"
                         (notes |> List.map Note.to_string |> String.concat ", "));
+            Printf.printf "    Interval vector: %s\n"
+                (Layout.interval_vector l |> List.map string_of_int |> String.concat " ");
             Printf.printf "    Circular sub-layouts:\n";
             let csl = Layout.circular_sub_layouts l in
             List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter

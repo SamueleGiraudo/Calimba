@@ -117,18 +117,12 @@ let frequency_ratio rl ls =
     let nt = layout_shift_to_note rl ls in
     (Note.frequency nt) /. (Note.frequency rl.root)
 
-(* Returns the accuracy (smaller in absolute value is better) of the approximation of the
- * ratio ratio by the interval specified by the layout shift ls and the root note in the
- * rooted layout rl. *)
-let accuracy_ratio rl ls ratio =
-    assert (is_valid rl);
-    (frequency_ratio rl ls) -. ratio
-
 (* Returns the layout shift approximating in the best way among all other shifts the ratio
  * ratio in the rooted layout rl as an interval between the layout shift ls and the root
  * note in rl. *)
 let best_layout_shift_for_ratio rl ratio =
     assert (is_valid rl);
+    assert (ratio > 0.0);
     let log2 x = (Float.log x) /. (Float.log 2.0) in
     let octave =
         if ratio >= 1.0 then
@@ -139,8 +133,8 @@ let best_layout_shift_for_ratio rl ratio =
     let ls_lst = List.init (nb_degrees rl) (fun i -> LayoutShift.construct i octave) in
     List.tl ls_lst |> List.fold_left
         (fun res ls ->
-            if Float.abs (accuracy_ratio rl ls ratio)
-                    < Float.abs (accuracy_ratio rl res ratio) then
+            if Float.abs (Tools.accuracy ratio (frequency_ratio rl ls))
+                    < Float.abs (Tools.accuracy ratio (frequency_ratio rl res)) then
                 ls
             else
                 res)
