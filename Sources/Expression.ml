@@ -271,23 +271,18 @@ let interpret e verbose =
     let time_ms = int_of_float ((clock_end -. clock_start) *. 1000.0) in
     let tp = to_tree_pattern e in
     if verbose then
-        Tools.print_information (Printf.sprintf "Sound generated in %d ms:" time_ms);
+        Tools.print_information (Printf.sprintf "Sound generated in %d ms." time_ms);
     let dur_ms = Sound.duration sound in
     let dur_hour = (dur_ms / 1000) / 3600
     and dur_min = ((dur_ms / 1000) / 60) mod 60
     and dur_sec = (dur_ms / 1000) mod 60 in
     if verbose then begin
-        Tools.print_information
-            (Printf.sprintf "    Duration: %d ms (%dh %dm %ds)"
-                dur_ms dur_hour dur_min dur_sec);
-        Tools.print_information
-            (Printf.sprintf "    Arity: %d" (TreePattern.arity tp));
-        Tools.print_information
-            (Printf.sprintf "    Nb. leaves: %d" (TreePattern.nb_leaves tp));
-        Tools.print_information
-            (Printf.sprintf "    Nb. int. nodes: %d" (TreePattern.nb_internal_nodes tp));
-        Tools.print_information
-            (Printf.sprintf "    Height: %d" (TreePattern.height tp))
+        Printf.printf "Characteristics:\n";
+        Printf.printf "    Duration: %d ms (%dh %dm %ds)\n" dur_ms dur_hour dur_min dur_sec;
+        Printf.printf "    Arity: %d\n" (TreePattern.arity tp);
+        Printf.printf "    Nb. leaves: %d\n" (TreePattern.nb_leaves tp);
+        Printf.printf "    Nb. int. nodes: %d\n" (TreePattern.nb_internal_nodes tp);
+        Printf.printf "    Height: %d\n" (TreePattern.height tp)
     end;
     sound
 
@@ -337,14 +332,31 @@ let interpret_and_analyse e verbose =
             Printf.printf "Layout: %s\n" (Layout.to_string l);
             Printf.printf "    Nb steps by octave: %d\n" (Layout.nb_steps_by_octave l);
             Printf.printf "    Nb degrees: %d\n" (Layout.nb_degrees l);
+            Printf.printf "    Approximations of just intonation intervals:\n";
+            let ratios_and_names =
+                [(1.0, "unison"); (6.0 /. 5.0, "minor third"); (5.0 /. 4.0, "major third");
+                 (4.0 /. 3.0, "fourth"); (3.0 /. 2.0, "fifth"); (8.0 /. 5.0, "minor sixth");
+                 (5. /. 3., "major sixth"); (2.0, "octave")] in
+            let rl = RootedLayout.construct l
+                (Note.construct 0 (Layout.nb_steps_by_octave l) 0) in
+            ratios_and_names |> List.iter
+                (fun (ratio, name) ->
+                    let ls = RootedLayout.best_layout_shift_for_ratio rl ratio in
+                    let acc = RootedLayout.accuracy_ratio rl ls ratio in
+                    Printf.printf "        For %.2f %-11s: %s with error of %+.4f\n"
+                        ratio name (LayoutShift.to_string ls) acc);
             Printf.printf "    Mirror: %s\n" (Layout.to_string (Layout.mirror l));
             Printf.printf "    Dual: %s\n" (Layout.to_string (Layout.dual l));
             let rl_lst = RootedLayout.generate_nonequivalent l 0 in
             Printf.printf "    Nonequivalent rooted layouts:\n";
             Printf.printf "        Cardinal: %d\n" (List.length rl_lst);
-            let rl_lst_str = rl_lst |> List.map RootedLayout.to_string
-                |> String.concat ", " in
-            Printf.printf "        Rooted layouts: %s\n" rl_lst_str;
+            Printf.printf "        Rooted layouts:\n";
+            rl_lst |> List.iter
+                (fun rl ->
+                    Printf.printf "            %s with notes" (RootedLayout.to_string rl);
+                    let notes = RootedLayout.first_notes rl in
+                    Printf.printf " %s\n"
+                        (notes |> List.map Note.to_string |> String.concat ", "));
             Printf.printf "    Rotation class:\n";
             let rot_class = Layout.rotation_class l in
             Printf.printf "        Cardinal: %d\n" (List.length rot_class);
@@ -373,5 +385,5 @@ let interpret_and_analyse e verbose =
                                 |> String.concat ", " in
                             Printf.printf "            Layouts: %s\n" sub_layout_str)));
     if verbose then
-        Tools.print_information "Printing done.";
+        Tools.print_information "Printing done."
 

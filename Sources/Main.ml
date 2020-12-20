@@ -81,7 +81,7 @@ let path_to_expression path =
     else
         let errors = Expression.errors (Option.get t) in
         if errors = [] then begin
-            Tools.print_important "The program is correct.";
+            Tools.print_success "The program is correct.";
             t
         end
         else begin
@@ -127,7 +127,7 @@ let live_loop path =
         Thread.delay 1.0;
         let last_modif' = (Unix.stat path).Unix.st_mtime in
         if Option.is_none last_modif || Option.get last_modif < last_modif' then begin
-            Tools.print_important "Modification detected.";
+            Tools.print_success "Modification detected.";
             Sys.command "killall aplay" |> ignore;
             Thread.create (fun _ -> play path) () |> ignore
         end;
@@ -166,7 +166,7 @@ else
     Random.self_init ();
 
 if Tools.has_argument "-v" then begin
-    Tools.print_important information;
+    Tools.print_success information;
     exit 0
 end
 else if Tools.has_argument "-h" then begin

@@ -19,7 +19,7 @@ let construct degree octave =
 
 (* Returns a string representation of the layout shift ls. *)
 let to_string ls =
-    Printf.sprintf "%d:%d" ls.degree ls.octave
+    Tools.csprintf Tools.Magenta (Printf.sprintf "%d:%d" ls.degree ls.octave)
 
 (* Returns the distance from the root encoded by the layout shift ls in the context of a
  * layout having nb_degrees degrees. *)

@@ -33,18 +33,6 @@ let rec prefix_list lst n =
         |[], _ -> []
         |x :: lst', n -> x :: (prefix_list lst' (n - 1))
 
-let rec suffix_list lst n =
-    List.rev (prefix_list (List.rev lst) n)
-
-let factor_list lst i n =
-    suffix_list (prefix_list lst (n + i)) n
-
-let rec set_value_list lst i x =
-    if i = 0 then
-        x :: (List.tl lst)
-    else
-        (List.hd lst) :: (set_value_list (List.tl lst) (i - 1) x)
-
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =
     Array.mem arg Sys.argv
@@ -91,8 +79,8 @@ let print_information str =
     print_string (csprintf Blue str);
     print_newline ()
 
-(* Prints the string str as an important information. *)
-let print_important str =
+(* Prints the string str as a success. *)
+let print_success str =
     print_string (csprintf Green str);
     print_newline ()
 

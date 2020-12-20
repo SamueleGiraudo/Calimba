@@ -89,9 +89,6 @@ let layout_shift_to_note rl ls =
     let dist = LayoutShift.distance_from_root (nb_degrees rl) ls in
     root (transpose rl dist)
 
-
-(* Some functions for exploration of rooted layouts. *)
-
 (* Returns the list of the notes corresponding to all the degrees of the rooted layout
  * rs. *)
 let first_notes rl =
@@ -126,6 +123,7 @@ let generate l octave_index =
 (* Returns the list of all non pairwise equivalent rooted layouts consisting in the layout l
  * and any root having octave_index as octave index. *)
 let generate_nonequivalent l octave_index =
+    assert (Layout.is_valid l);
     generate l octave_index |> List.fold_left
         (fun res rl ->
             if res |> List.for_all (fun rl' -> not (are_equivalent rl rl')) then
@@ -134,4 +132,40 @@ let generate_nonequivalent l octave_index =
                 res)
         []
         |> List.rev
+
+(* Returns the ratio between the frequency of note specified by the layout shift ls and the
+ * the frequency of the root note in the rooted layout rl. *)
+let frequency_ratio rl ls =
+    assert (is_valid rl);
+    let nt = layout_shift_to_note rl ls in
+    (Note.frequency nt) /. (Note.frequency rl.root)
+
+(* Returns the accuracy (smaller in absolute value is better) of the approximation of the
+ * ratio ratio by the interval specified by the layout shift ls and the root note in the
+ * rooted layout rl. *)
+let accuracy_ratio rl ls ratio =
+    assert (is_valid rl);
+    (frequency_ratio rl ls) -. ratio
+
+(* Returns the layout shift approximating in the best way among all other shifts the
+ * ratio ratio in the rooted layout rl as an interval between the layout shift ls and the
+ * root note in rl. *)
+let best_layout_shift_for_ratio rl ratio =
+    assert (is_valid rl);
+    let log2 x = (Float.log x) /. (Float.log 2.0) in
+    let octave =
+        if ratio >= 1.0 then
+            int_of_float (log2 ratio)
+        else
+            -1 - int_of_float (log2 (1.0 /. ratio))
+    in
+    let ls_lst = List.init (nb_degrees rl) (fun i -> LayoutShift.construct i octave) in
+    List.tl ls_lst |> List.fold_left
+        (fun res ls ->
+            if Float.abs (accuracy_ratio rl ls ratio)
+                    < Float.abs (accuracy_ratio rl res ratio) then
+                ls
+            else
+                res)
+        (List.hd ls_lst)
 

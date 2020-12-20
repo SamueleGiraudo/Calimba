@@ -45,6 +45,8 @@ let rotate_right l =
     let tmp = List.rev l in
     (List.hd tmp) :: (List.rev (List.tl tmp))
 
+(* Returns the layout obtained by rotating from delta step to the left the layout l if
+ * delta is positive and to the right otherwise. *)
 let rec rotate l delta =
     assert (is_valid l);
     if delta = 0 then
@@ -53,8 +55,6 @@ let rec rotate l delta =
         rotate (rotate_left l) (delta - 1)
     else
         rotate (rotate_right l) (delta + 1)
-
-(* Some functions for exploration of layouts. *)
 
 (* Returns the distance in steps from the degree d to the next in the layout l. *)
 let distance_next l d =
