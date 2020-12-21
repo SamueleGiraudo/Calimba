@@ -355,6 +355,8 @@ let interpret_and_analyse e verbose =
             Printf.printf "    Rotation class: %s\n"
                 (Layout.rotation_class l |> List.map Layout.to_string
                     |> String.concat ", ");
+            Printf.printf "    Minimal in rotation class: %s\n"
+                (if Layout.is_minimal_in_rotation_class l then "yes" else "no");
 
             (* Prints the best approximations of just intonation intervals. *)
             Printf.printf "    Approximations of just intonation intervals:\n";

@@ -97,8 +97,7 @@ let mirror l =
     assert (is_valid l);
     List.rev l
 
-(* Returns the list of all rotations of the layout l. Each element of this list is a mode,
- * also called as an inversion of l. *)
+(* Returns the list of all rotations of the layout l. *)
 let rotation_class l =
     assert (is_valid l);
     List.init (nb_degrees l) Fun.id |> List.fold_left
@@ -172,6 +171,7 @@ let sub_layouts l =
 
 (* Returns the list of all the layouts circularly included into the layout l. *)
 let circular_sub_layouts l =
+    assert (is_valid l);
     rotation_class l |> List.map sub_layouts |> List.flatten |> List.sort_uniq compare
 
 (* Returns the list of the lists of layout shifts such that the layout l1 is a circular
@@ -187,12 +187,13 @@ let layout_shifts_for_circular_inclusion l1 l2 =
             let g = gather_as_sub_layout l1 l2' in
             Tools.transform_option_default
                 (fun x ->
-                     Some (x |> List.map List.length |> List.fold_left
+                    let res = x |> List.map List.length |> List.fold_left
                         (fun res v -> (v + (List.hd res)) :: res)
                         [0]
                         |> List.tl
                         |> List.rev
-                        |> List.map (fun v -> v + delta)))
+                        |> List.map (fun v -> v + delta) in
+                    Some res)
                 g
                 None)
         |> List.filter Option.is_some
@@ -214,14 +215,14 @@ let interval_vector l =
  * and ls2 in the layout l. *)
 let frequency_ratio l ls1 ls2 =
     assert (is_valid l);
-    let nbs = nb_steps_by_octave l in
-    let nbd = nb_degrees l in
-    let d1 = LayoutShift.distance_from_root nbd ls1
-    and d2 = LayoutShift.distance_from_root nbd ls2 in
-    let dist_1 = distance_from_origin l d1 and dist_2 = distance_from_origin l d2 in
-    let nt1 = Note.shift (Note.construct 0 nbs 0) dist_1
-    and nt2 = Note.shift (Note.construct 0 nbs 0) dist_2 in
-    (Note.frequency nt2) /. (Note.frequency nt1)
+    let nbs = nb_steps_by_octave l and nbd = nb_degrees l in
+    let freq ls =
+        let deg = LayoutShift.distance_from_root nbd ls in
+        let dist = distance_from_origin l deg in
+        let nt = Note.shift (Note.construct 0 nbs 0) dist in
+        Note.frequency nt
+    in
+    (freq ls2) /. (freq ls1)
 
 (* Returns the pair of layout shifts such that the frequency ratio of the interval of the
  * layout l they specify approximates in the best way the ratio ratio.*)
