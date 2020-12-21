@@ -410,5 +410,5 @@ let interpret_and_analyse e verbose =
                             Printf.printf " at %s\n" str_shifts)));
 
     if verbose then
-        Tools.print_information "Printing done.";
+        Tools.print_information "Printing done."
 

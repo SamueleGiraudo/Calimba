@@ -53,7 +53,9 @@ let nb_steps_by_octave rl =
     Layout.nb_steps_by_octave rl.layout
 
 (* Returns the rooted layout obtained by setting as new root note the note at the position
- * delta from the current root. This value delta can be negative. *)
+ * delta, expressed as an extended degree from the current root. This value delta can be
+ * negative. For instance, if rl is the rooted layout 9/11:0 - 2 1 2 2 1 2 2 and delta is 2,
+  * the returned rooted layout is 0/11:1 - 2 2 1 2 2 2 1. *)
 let transpose rl delta =
     assert (is_valid rl);
     let nt = Note.shift rl.root (Layout.distance_from_origin rl.layout delta) in
@@ -85,23 +87,23 @@ let is_note rl n =
 let are_equivalent rl1 rl2 =
     assert (is_valid rl1);
     assert (is_valid rl2);
+    assert (nb_steps_by_octave rl1 = nb_steps_by_octave rl2);
     let notes_1 = first_notes rl1 and notes_2 = first_notes rl2 in
     notes_1 |> List.for_all (fun n -> is_note rl2 n)
         && notes_2 |> List.for_all (fun n -> is_note rl1 n)
 
-(* Returns the list of all rooted layouts consisting in the layout l and any root having
- * octave_index as octave index. *)
-let generate l octave_index =
+(* Returns the list of all rooted layouts consisting in the layout l and any root of the
+ * octave octave. *)
+let generate l octave =
     assert (Layout.is_valid l);
     let nb_steps_by_octave = Layout.nb_steps_by_octave l in
-    Note.generate nb_steps_by_octave octave_index |> List.map
-        (fun n -> {layout = l; root = n})
+    Note.generate nb_steps_by_octave octave |> List.map (fun n -> {layout = l; root = n})
 
 (* Returns the list of all non pairwise equivalent rooted layouts consisting in the layout l
- * and any root having octave_index as octave index. *)
-let generate_nonequivalent l octave_index =
+ * and any root of the octave octave. *)
+let generate_nonequivalent l octave =
     assert (Layout.is_valid l);
-    generate l octave_index |> List.fold_left
+    generate l octave |> List.fold_left
         (fun res rl ->
             if res |> List.for_all (fun rl' -> not (are_equivalent rl rl')) then
                 rl :: res
