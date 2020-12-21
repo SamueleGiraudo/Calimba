@@ -48,7 +48,7 @@ let rec prefix_list lst n =
         |x :: lst', n -> x :: (prefix_list lst' (n - 1))
 
 (* Returns the Cartesian product of the two lists lst1 and lst2. *)
-let rec cartesian_product lst1 lst2 =
+let cartesian_product lst1 lst2 =
     lst1 |> List.map (fun a -> lst2 |> List.map (fun b -> (a, b))) |> List.flatten
 
 (* Returns the accuracy of the observed value observed w.r.t. the expected value expected.
