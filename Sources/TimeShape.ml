@@ -18,29 +18,22 @@ let is_valid ts =
 
 (* Returns the time shape with the specified attributes. *)
 let construct multiplier divider =
-    assert (1 <= multiplier);
-    assert (1 <= divider);
-    {multiplier = multiplier; divider = divider}
+    let ts = {multiplier = multiplier; divider = divider} in
+    assert (is_valid ts);
+    ts
 
 (* Returns a string representation of the time shape ts. *)
 let to_string ts =
     assert (is_valid ts);
-    Printf.sprintf "%d/%d" ts.multiplier ts.divider
+    Tools.csprintf Tools.Green (Printf.sprintf "%d/%d" ts.multiplier ts.divider)
 
 (* Returns the multiplier of the time shape ts. *)
 let multiplier ts =
+    assert (is_valid ts);
     ts.multiplier
 
 (* Returns the divider of the time shape ts. *)
 let divider ts =
+    assert (is_valid ts);
     ts.divider
-
-(* Returns the duration in ms specified by the shift s, the duration of a unit of time
- * unit_duration in ms, and the time shape ts. *)
-let to_duration ts unit_duration tl =
-    assert (1 <= unit_duration);
-    assert (is_valid tl);
-    let coeff = (float_of_int tl.multiplier) /. (float_of_int tl.divider) in
-    let len = coeff ** (float_of_int ts) in
-    int_of_float (len *. (float_of_int unit_duration))
 

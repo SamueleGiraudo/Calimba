@@ -32,6 +32,7 @@ type synthesizer = {
 let min_weight =
     2.0 ** (-. 16.0)
 
+(* Tests if the timbre t is valid. *)
 let is_valid_timbre t =
     List.length (t |> List.map fst |> List.sort_uniq compare) = List.length t
         && t |> List.map fst |> List.for_all (fun i -> i >= 1)

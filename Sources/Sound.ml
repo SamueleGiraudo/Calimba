@@ -84,10 +84,7 @@ let factor s j size =
     assert (is_valid s);
     assert (0 <= j && j < s.size);
     assert (0 <= size && j + size - 1 < s.size);
-    let map i =
-        s.map (j + i)
-    in
-    {map = map; size = size}
+    {map = (fun i -> s.map (j + i)); size = size}
 
 (* Returns the sounds obtained by keeping the first size points of the sound s. *)
 let prefix s size =
@@ -125,7 +122,7 @@ let apply_shape s sh =
         let i' = (float_of_int i) /. size in
         (s.map i) *. (sh i')
     in
-    {map = map; size = s.size}
+    {s with map = map}
 
 (* Returns the composition of the two shapes sh1 and sh2. *)
 let compose_shapes sh1 sh2 =
@@ -349,5 +346,4 @@ let draw s =
     Graphics.synchronize ();
     (Graphics.wait_next_event [Graphics.Key_pressed]) |> ignore;
     Graphics.close_graph ()
-
 
