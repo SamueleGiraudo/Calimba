@@ -110,33 +110,3 @@ let generate_nonequivalent l octave_index =
         []
         |> List.rev
 
-(* Returns the ratio between the frequency of note specified by the layout shift ls and the
- * the frequency of the root note in the rooted layout rl. *)
-let frequency_ratio rl ls =
-    assert (is_valid rl);
-    let nt = layout_shift_to_note rl ls in
-    (Note.frequency nt) /. (Note.frequency rl.root)
-
-(* Returns the layout shift approximating in the best way among all other shifts the ratio
- * ratio in the rooted layout rl as an interval between the layout shift ls and the root
- * note in rl. *)
-let best_layout_shift_for_ratio rl ratio =
-    assert (is_valid rl);
-    assert (ratio > 0.0);
-    let log2 x = (Float.log x) /. (Float.log 2.0) in
-    let octave =
-        if ratio >= 1.0 then
-            int_of_float (log2 ratio)
-        else
-            -1 - int_of_float (log2 (1.0 /. ratio))
-    in
-    let ls_lst = List.init (nb_degrees rl) (fun i -> LayoutShift.construct i octave) in
-    List.tl ls_lst |> List.fold_left
-        (fun res ls ->
-            if Float.abs (Tools.accuracy ratio (frequency_ratio rl ls))
-                    < Float.abs (Tools.accuracy ratio (frequency_ratio rl res)) then
-                ls
-            else
-                res)
-        (List.hd ls_lst)
-

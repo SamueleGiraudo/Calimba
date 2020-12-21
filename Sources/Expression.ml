@@ -330,23 +330,49 @@ let interpret_and_analyse e verbose =
     l_lst |> List.iter
         (fun l ->
             Printf.printf "Layout: %s\n" (Layout.to_string l);
+
+            (* Prints the number of steps by octave. *)
             Printf.printf "    Nb steps by octave: %d\n" (Layout.nb_steps_by_octave l);
+
+            (* Prints the number of degrees. *)
             Printf.printf "    Nb degrees: %d\n" (Layout.nb_degrees l);
+
+            (* Prints the distance vector. *)
+            Printf.printf "    Distance vector: %s\n"
+                (Layout.distance_vector l |> List.map string_of_int |> String.concat " ");
+
+            (* Prints the interval vector. *)
+            Printf.printf "    Interval vector: %s\n"
+                (Layout.interval_vector l |> List.map string_of_int |> String.concat " ");
+
+            (* Prints the mirror layout. *)
+            Printf.printf "    Mirror: %s\n" (Layout.to_string (Layout.mirror l));
+
+            (* Prints the dual layout. *)
+            Printf.printf "    Dual: %s\n" (Layout.to_string (Layout.dual l));
+
+            (* Prints the rotation class. *)
+            Printf.printf "    Rotation class: %s\n"
+                (Layout.rotation_class l |> List.map Layout.to_string
+                    |> String.concat ", ");
+
+            (* Prints the best approximations of just intonation intervals. *)
             Printf.printf "    Approximations of just intonation intervals:\n";
             let ratios_and_names =
                 [(1.0, "unison"); (6.0 /. 5.0, "minor third"); (5.0 /. 4.0, "major third");
                  (4.0 /. 3.0, "fourth"); (3.0 /. 2.0, "fifth"); (8.0 /. 5.0, "minor sixth");
-                 (5. /. 3., "major sixth"); (2.0, "octave")] in
-            let rl = RootedLayout.construct l
-                (Note.construct 0 (Layout.nb_steps_by_octave l) 0) in
+                 (5.0 /. 3.0, "major sixth"); (2.0, "octave")] in
             ratios_and_names |> List.iter
                 (fun (ratio, name) ->
-                    let ls = RootedLayout.best_layout_shift_for_ratio rl ratio in
-                    let acc = Tools.accuracy ratio (RootedLayout.frequency_ratio rl ls) in
-                    Printf.printf "        For %.2f %-11s: %s with error of %+.2f%%\n"
-                        ratio name (LayoutShift.to_string ls) (100.0 *. acc));
-            Printf.printf "    Mirror: %s\n" (Layout.to_string (Layout.mirror l));
-            Printf.printf "    Dual: %s\n" (Layout.to_string (Layout.dual l));
+                    let (ls1, ls2) = Layout.best_interval_for_ratio l ratio in
+                    let acc = Tools.accuracy ratio (Layout.frequency_ratio l ls1 ls2) in
+                    Printf.printf "        For %.2f %-11s: %s - %s with error of %+.2f%%\n"
+                        ratio name
+                        (LayoutShift.to_string ls1)
+                        (LayoutShift.to_string ls2)
+                        (100.0 *. acc));
+
+            (* Prints all the nonequivalent induced rooted layouts. *)
             let rl_lst = RootedLayout.generate_nonequivalent l 0 in
             Printf.printf "    Nonequivalent rooted layouts:\n";
             Printf.printf "        Cardinal: %d\n" (List.length rl_lst);
@@ -356,9 +382,9 @@ let interpret_and_analyse e verbose =
                     Printf.printf "            %s with notes" (RootedLayout.to_string rl);
                     let notes = RootedLayout.first_notes rl in
                     Printf.printf " %s\n"
-                        (notes |> List.map Note.to_string |> String.concat ", "));
-            Printf.printf "    Interval vector: %s\n"
-                (Layout.interval_vector l |> List.map string_of_int |> String.concat " ");
+                        (notes |> List.map Note.to_string |> String.concat " "));
+
+            (* Prints all the circular sub-layouts and all the shifts to obtain these. *)
             Printf.printf "    Circular sub-layouts:\n";
             let csl = Layout.circular_sub_layouts l in
             List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter
@@ -375,11 +401,12 @@ let interpret_and_analyse e verbose =
                             let str_shifts = shifts |> List.map
                                 (fun lst ->
                                     let str = lst |> List.map LayoutShift.to_string
-                                        |> String.concat ", " in
+                                        |> String.concat " " in
                                     "[" ^ str ^ "]")
-                                |> String.concat ", "
+                                |> String.concat " "
                             in
                             Printf.printf " at %s\n" str_shifts)));
+
     if verbose then
         Tools.print_information "Printing done.";
 

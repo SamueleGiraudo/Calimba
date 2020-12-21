@@ -19,6 +19,11 @@ type color =
     |Cyan
     |White
 
+
+(* Return the binary logarithm of x. *)
+let log2 x =
+    (Float.log x) /. (Float.log 2.0)
+
 (* If x is none, def is returned. Otherwise, the image by the map tr of the value contained
 * in x is returned. *)
 let transform_option_default tr x def =
@@ -42,10 +47,22 @@ let rec prefix_list lst n =
         |[], _ -> []
         |x :: lst', n -> x :: (prefix_list lst' (n - 1))
 
+(* Returns the Cartesian product of the two lists lst1 and lst2. *)
+let rec cartesian_product lst1 lst2 =
+    lst1 |> List.map (fun a -> lst2 |> List.map (fun b -> (a, b))) |> List.flatten
+
 (* Returns the accuracy of the observed value observed w.r.t. the expected value expected.
  * These values are floats. *)
 let accuracy expected observed =
     (observed -. expected) /. expected
+
+(* Returns -1 (resp. 1) if the value candidate_1 (candidate_2) approximate better than
+ * candidate_2 (resp. candidate_1) the value expected. If candidate_1 and candidate_2 are
+ * equal, 0 is returned. *)
+let compare_accuracies expected candidate_1 candidate_2 =
+    compare
+        (Float.abs (accuracy expected candidate_1))
+        (Float.abs (accuracy expected candidate_2))
 
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =

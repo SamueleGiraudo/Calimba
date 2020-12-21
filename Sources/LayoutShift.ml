@@ -17,6 +17,10 @@ type layout_shift = {
 let construct degree octave =
     {degree = degree; octave = octave}
 
+(* Returns the octave of the layout shift ls. *)
+let octave ls =
+    ls.octave
+
 (* Returns the layout shift encoding the extended degree d in a layout having nb_degrees
  * degrees. The returned layout shift has a degree between 0 and nb_degrees - 1. *)
 let from_extended_degree nb_degrees d =
@@ -36,6 +40,10 @@ let to_string ls =
 let distance_from_root nb_degrees ls =
     assert (1 <= nb_degrees);
     ls.degree + nb_degrees * ls.octave
+
+(* Returns the layout shift ls wherein the octave is set to octave. *)
+let change_octave ls octave =
+    {ls with octave = octave}
 
 (* Returns the layout shift obtained by adding the layout shifts ls1 and ls2. *)
 let add ls1 ls2 =

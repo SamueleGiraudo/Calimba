@@ -86,6 +86,12 @@ let distance_between l d1 d2 =
     assert (d1 <= d2);
     distance_from_origin l d2 - distance_from_origin l d1
 
+(* Returns the list of integers of length the number of degrees in the layout l such that
+ * the i-th value is the distance from the origin of the i-th degree of l. *)
+let distance_vector l =
+    assert (is_valid l);
+    List.init (nb_degrees l) (fun d -> distance_from_origin l d)
+
 (* Returns the mirror of the layout l. *)
 let mirror l =
     assert (is_valid l);
@@ -197,11 +203,44 @@ let layout_shifts_for_circular_inclusion l1 l2 =
  * steps by octave minus 1 such that each value at position i is the number of intervals of
  * i + 1 steps in l. *)
 let interval_vector l =
+    assert (is_valid l);
     let nbs = nb_steps_by_octave l in
     List.init (nbs - 1) (fun n -> n + 1) |> List.map
         (fun n ->
             let l' = [n; nbs - n] in
             List.length (layout_shifts_for_circular_inclusion l' l))
+
+(* Returns the ratio between the frequency of the notes specified by the layout shifts ls1
+ * and ls2 in the layout l. *)
+let frequency_ratio l ls1 ls2 =
+    assert (is_valid l);
+    let nbs = nb_steps_by_octave l in
+    let nbd = nb_degrees l in
+    let d1 = LayoutShift.distance_from_root nbd ls1
+    and d2 = LayoutShift.distance_from_root nbd ls2 in
+    let dist_1 = distance_from_origin l d1 and dist_2 = distance_from_origin l d2 in
+    let nt1 = Note.shift (Note.construct 0 nbs 0) dist_1
+    and nt2 = Note.shift (Note.construct 0 nbs 0) dist_2 in
+    (Note.frequency nt2) /. (Note.frequency nt1)
+
+(* Returns the pair of layout shifts such that the frequency ratio of the interval of the
+ * layout l they specify approximates in the best way the ratio ratio.*)
+let best_interval_for_ratio l ratio =
+    assert (is_valid l);
+    assert (ratio >= 1.0);
+    let oc = int_of_float (Tools.log2 ratio) in
+    let shifts_1 = List.init (nb_degrees l) (fun d -> LayoutShift.construct d 0) in
+    let shifts_2 = shifts_1 |> List.map (fun ls -> LayoutShift.change_octave ls oc) in
+    let shifts_3 = shifts_1 |> List.map (fun ls -> LayoutShift.change_octave ls (oc + 1)) in
+    let intervals = Tools.cartesian_product shifts_1 (List.append shifts_2 shifts_3) in
+    List.tl intervals |> List.fold_left
+        (fun res candidate ->
+            let r = frequency_ratio l (fst candidate) (snd candidate)
+            and r_res = frequency_ratio l (fst res) (snd res) in
+            match Tools.compare_accuracies ratio r_res r with
+                |1 -> candidate
+                |_ -> res)
+        (List.hd intervals)
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_degrees degrees. *)
