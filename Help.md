@@ -17,9 +17,9 @@ default, `0` is the note $A$ of frequency $110$ Hz. Each positive integer `d` sp
 note located `d` steps above the root `0`. Negative integers specify notes symmetrically.
 Here is a part of this correspondence
 
-|  -7 | ... |  -3 |  -2 |  -1 | **0** |   1 |   2 |   3 | ... |   7 |   8 |
-|-----|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|-----|
-| $A,$| ... | $E$ | $F$ | $G$ |   $A$ | $B$ | $C$ | $D$ | ... | $A'$| $B'$|
+| ... |  -7 | ... |  -3 |  -2 |  -1 | **0** |   1 |   2 |   3 | ... |   7 |   8 | ... |
+|-----|-----|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|-----|-----|
+| ... | $A,$| ... | $E$ | $F$ | $G$ |   $A$ | $B$ | $C$ | $D$ | ... | $A'$| $B'$| ... |
 
 where $A,$ is the note $A$ one octave below, and $A'$ and $B'$ are the notes $A$ and $B$ one
 octave above.
@@ -27,7 +27,7 @@ octave above.
 Such integers specifying notes are called _shifts_.
 
 ### Rests
-A rest is specified by a "`.`".
+A rest is specified by a `.`. It is interpreted as an absence of a sound.
 
 
 ### Atoms
@@ -71,13 +71,33 @@ is a correct phrase.
 
 Without brackets, `*` has an higher priority than `#`.
 
-If `p1` and `p2` are two phrases having different durations, `p1 # p2` is also
-well-defined and the result is obtained by adding the right amount of rest after the shorter
-phrase.
+If `p1` and `p2` are two phrases having different durations, `p1 # p2` is also well-defined
+and the result is obtained by adding the right amount of rests after the shorter phrase.
 
 
 ### Durations
+Given an atom `a`, `a<` is the same atom lasting $2$ units of time instead of $1$.
+Similarly, `a>` is the same atom lasting $\frac{1}{2}$ units of time. These operators `<`
+and `>` can be stacked so that `<` doubles the duration and `>` divides it by half.
+
+| ... | `a>>>` |`a>>` | `a>` | `a` | `a<` | `a<<` | `a<<<` | ... |
+|-----|--------|------|------|-----|------|-------|--------|-----|
+| ... |  $1/8$ | $1/4$| $1/2$| $1$ |  $2$ |  $4$  |   $8$  | ... |
+
+These operators can be applied also on phrases to change all their durations. For instance,
+```
+(0 # 2 # 4) * .< * (0 # 2 # 4)<< * (1< * 2 * 3)>
+```
+is a phrase wherein an $A$ minor chord is played for $1$ unit of time, then a rest of $2$
+units of time, then the same chord is played for $4$ units of time, and finally the sequence
+of notes $B$, $C$ and $D$ is played where the first lasts $1$ unit of time and the second
+and third last $\frac{1}{2}$ unit of time.
+
+
+### Octaves
 TODO
+
+
 
 
 ## Basic notions
@@ -96,6 +116,10 @@ TODO
 
 ### Let in
 TODO
+
+### Built-in structures
+TODO
+
 
 
 ## Intermediate notions
