@@ -51,6 +51,13 @@ let rec prefix_list lst n =
 let cartesian_product lst1 lst2 =
     lst1 |> List.map (fun a -> lst2 |> List.map (fun b -> (a, b))) |> List.flatten
 
+(* Returns the list of integers such that the i-th value is the number of occurrences of
+ * the element first + i in the list of integers lst. The returned list has length
+ * last - first + 1. *)
+let occurrence_vector lst first last =
+    List.init (last - first + 1) (fun i -> i + first) |> List.map
+        (fun i -> lst |> List.filter (fun x -> x = i) |> List.length)
+
 (* Returns the accuracy of the observed value observed w.r.t. the expected value expected.
  * These values are floats. *)
 let accuracy expected observed =

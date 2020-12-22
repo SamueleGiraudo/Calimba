@@ -200,16 +200,41 @@ let layout_shifts_for_circular_inclusion l1 l2 =
         |> List.map Option.get
         |> List.map (fun lst -> lst |> List.map (LayoutShift.from_extended_degree nb_deg))
 
+(* Returns the list of pairs of layout shifts forming intervals in the layout l. The octaves
+ * of these layout shifts are 0 or 1. *)
+let layout_shifts_for_intervals l =
+    assert (is_valid l);
+    let nbd = nb_degrees l in
+    let dist = LayoutShift.distance_from_root nbd in
+    let shifts_1 = List.init nbd (fun d -> LayoutShift.construct d 0) in
+    let shifts_2 = shifts_1 |> List.map (fun ls -> LayoutShift.change_octave ls 1) in
+    let tmp =
+        List.append
+            (Tools.cartesian_product shifts_1 shifts_1)
+            (Tools.cartesian_product shifts_1 shifts_2) in
+    tmp |> List.filter (fun (ls1, ls2) -> dist ls1 <= dist ls2)
+
 (* Returns the interval vector of the layout l. This is the list of length the number of
  * steps by octave minus 1 such that each value at position i is the number of intervals of
  * i + 1 steps in l. *)
 let interval_vector l =
     assert (is_valid l);
-    let nbs = nb_steps_by_octave l in
-    List.init (nbs - 1) (fun n -> n + 1) |> List.map
-        (fun n ->
-            let l' = [n; nbs - n] in
-            List.length (layout_shifts_for_circular_inclusion l' l))
+    let dist = LayoutShift.distance_from_root (nb_degrees l) in
+    let intervals = layout_shifts_for_intervals l in
+    let interval_values = intervals |> List.map
+        (fun (ls1, ls2) -> distance_between l (dist ls1) (dist ls2)) in
+    Tools.occurrence_vector interval_values 1 (nb_steps_by_octave l - 1)
+
+(* Returns the internal interval vector of the layout l. This follows the same idea as the
+ * interval vector of l but it takes into account only the intervals in a same octave. *)
+let internal_interval_vector l =
+    assert (is_valid l);
+    let dist = LayoutShift.distance_from_root (nb_degrees l) in
+    let intervals = layout_shifts_for_intervals l |> List.filter
+        (fun (ls1, ls2) -> LayoutShift.octave ls1 = 0 && LayoutShift.octave ls2 = 0) in
+    let interval_values = intervals |> List.map
+        (fun (ls1, ls2) -> distance_between l (dist ls1) (dist ls2)) in
+    Tools.occurrence_vector interval_values 1 (nb_steps_by_octave l - 1)
 
 (* Returns the ratio between the frequency of the notes specified by the layout shifts ls1
  * and ls2 in the layout l. *)

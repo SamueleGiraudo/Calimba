@@ -342,8 +342,11 @@ let interpret_and_analyse e verbose =
                 (Layout.distance_vector l |> List.map string_of_int |> String.concat " ");
 
             (* Prints the interval vector. *)
-            Printf.printf "    Interval vector: %s\n"
+            Printf.printf "    Interval vector:          %s\n"
                 (Layout.interval_vector l |> List.map string_of_int |> String.concat " ");
+            Printf.printf "    Internal interval vector: %s\n"
+                (Layout.internal_interval_vector l |> List.map string_of_int
+                    |> String.concat " ");
 
             (* Prints the mirror layout. *)
             Printf.printf "    Mirror: %s\n" (Layout.to_string (Layout.mirror l));
