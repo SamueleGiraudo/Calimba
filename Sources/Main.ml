@@ -11,8 +11,6 @@
     - Improve comments.
     - Robustness.
     - External documentation.
-    - Information about layouts.
-    - Improve input / output.
 *)
 
 let name = "Calimba"
@@ -27,17 +25,23 @@ let information =
         name author author email version version_date
 
 let help_string =
-    "Available arguments:\n"
+    "Here, PATH is the path to a Calimba file.\n"
+    ^ "Available arguments:\n"
         ^ "-v\n"
         ^ "    -> Print the version of the application.\n"
         ^ "-h\n"
         ^ "    -> Print the help.\n"
         ^ "-f PATH -p\n"
-        ^ "    -> Plays the Calimba file PATH.\n"
+        ^ "    -> Plays tPATH.\n"
         ^ "-f PATH -w\n"
-        ^ "    -> Writes the associated PCM file from the Calimba file PATH.\n"
+        ^ "    -> Writes the associated PCM file from PATH.\n"
         ^ "-f PATH -l\n"
-        ^ "    -> Launches a live loop on the Calimba file PATH."
+        ^ "    -> Launches a live loop on PATH.\n"
+        ^ "-f PATH -d START DURATION\n"
+        ^ "    -> Draw the sound signal of PATH starting at START and lasting DURATION.\n"
+        ^ "       These values are in ms.\n"
+        ^ "-f PATH -a\n"
+        ^ "    -> Prints some analysis information of the used layouts in FILE.\n"
 
 (* The extension of Calimba files. *)
 let file_extension =
@@ -120,11 +124,11 @@ let live_loop path =
     let rec aux path last_modif num_iter =
         print_string "\r";
         if num_iter mod 2 = 0 then
-            print_string (Tools.csprintf Tools.Cyan "-")
+            print_string (Tools.csprintf Tools.Red "-")
         else
-            print_string (Tools.csprintf Tools.Magenta "|");
+            print_string (Tools.csprintf Tools.Green "|");
         flush stdout;
-        Thread.delay 1.0;
+        Thread.delay 0.5;
         let last_modif' = (Unix.stat path).Unix.st_mtime in
         if Option.is_none last_modif || Option.get last_modif < last_modif' then begin
             Tools.print_success "Modification detected.";
