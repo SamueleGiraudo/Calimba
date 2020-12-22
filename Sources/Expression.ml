@@ -3,7 +3,7 @@
  * Modifications: jul. 2020, aug. 2020, dec. 2020
  *)
 
-(* A modification brings an element to modify the sound specified by an expression. *)
+(* A modification encode a way to modify the sound specified by an expression. *)
 type modification =
     |Layout of Layout.layout
     |Root of Note.note
@@ -341,7 +341,7 @@ let interpret_and_analyse e verbose =
             Printf.printf "    Distance vector: %s\n"
                 (Layout.distance_vector l |> List.map string_of_int |> String.concat " ");
 
-            (* Prints the interval vector. *)
+            (* Prints the interval vectors. *)
             Printf.printf "    Interval vector:          %s\n"
                 (Layout.interval_vector l |> List.map string_of_int |> String.concat " ");
             Printf.printf "    Internal interval vector: %s\n"

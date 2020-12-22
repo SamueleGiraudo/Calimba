@@ -19,7 +19,7 @@ type performance = atom -> Sound.sound
  * have a separate way to encode effects because one cannot put this information into a
  * performance. Indeed, a performance encodes how to send a single atom onto a sound while
  * in an effect, the whole sound resulting in the performance of several atoms may be
- * processed.*)
+ * processed (for instance for delays). *)
 type effect = Sound.sound -> Sound.sound
 
 (* A tree pattern is either a leaf (a silence or a beat) or the concatenation of two trees,
