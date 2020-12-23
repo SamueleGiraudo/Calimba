@@ -275,10 +275,12 @@ let interpret e verbose =
     let dur_ms = Sound.duration sound in
     let dur_hour = (dur_ms / 1000) / 3600
     and dur_min = ((dur_ms / 1000) / 60) mod 60
-    and dur_sec = (dur_ms / 1000) mod 60 in
+    and dur_sec = (dur_ms / 1000) mod 60
+    and dur_ms' = dur_ms mod 1000 in
     if verbose then begin
         Printf.printf "Characteristics:\n";
-        Printf.printf "    Duration: %d ms (%dh %dm %ds)\n" dur_ms dur_hour dur_min dur_sec;
+        Printf.printf "    Duration: %d ms (%dh %dm %ds %dms)\n"
+            dur_ms dur_hour dur_min dur_sec dur_ms';
         Printf.printf "    Arity: %d\n" (TreePattern.arity tp);
         Printf.printf "    Nb. leaves: %d\n" (TreePattern.nb_leaves tp);
         Printf.printf "    Nb. int. nodes: %d\n" (TreePattern.nb_internal_nodes tp);

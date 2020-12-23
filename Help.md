@@ -1,14 +1,3 @@
----
-title: "Calimba language"
-date: "December 2020"
-author: "Samuele Giraudo"
-institute: ""
-mainfont: "Serif"
-fontsize: 10pt
-geometry: margin=3cm
-output: pdf_document
----
-
 # Calimba language
 This page describes all the instructions of the calimba language
 
@@ -24,7 +13,7 @@ with an alphabetic symbol or `_`.
 
 ### Notes
 Any integer (positive as well as negative) expressed in decimal specifies a note. By
-default, `0` is the note $A$ of frequency $110$ Hz. Each positive integer `d` specifies a
+default, `0` is the note $A$ of frequency $440$ Hz. Each positive integer `d` specifies a
 note located `d` steps above the root `0`. Negative integers specify notes symmetrically.
 Here is a part of this correspondence
 
@@ -127,27 +116,77 @@ brackets. For this reason, we can use `begin` and `end`, acting respectively as 
 
 
 ### Layouts
-By default, each shift refers to the $A$ minor layout. It is possible to change it with
+A _layout_ is formed by a sequence of positive integers specifying an interval structure.
+Here are some common layouts in the $12$ tones equal temperament:
+
+| Layout        | Name              | Notes                                               |
+|---------------|-------------------|-----------------------------------------------------|
+| 2 1 2 2 1 2 2 | Natural minor     | $A$, $B$, $C$, $D$, $E$, $F$, $G$                   |
+| 2 2 1 2 2 2 1 | Natural major     | $A$, $B$, $C\sharp$, $D$, $E$, $F\sharp$, $G\sharp$ |
+| 2 1 2 2 1 3 1 | Harmonic minor    | $A$, $B$, $C$, $D$, $E$, $F$, $G\sharp$             |
+| 1 3 1 2 1 2 2 | Phrygian dominant | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G$        |
+| 1 3 1 2 1 3 1 | Double harmonic minor | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G\sharp$ |
+| 3 2 2 3 2     | Pentatonic minor  | $A$, $C$, $D$, $E$, $G$                             |
+| 2 2 3 2 3     | Pentatonic major  | $A$, $B$, $C\sharp$, $E$, $F\sharp$                 |
+| 2 1 4 1 4     | Hirajoshi         | $A$, $B$, $C$, $E$, $F$                             |
+| 4 1 2 4 1     | Ryukyu            | $A$, $C\sharp$, $D$, $E$, $G\sharp$                 |
+
+The default layout is the natural minor one. It is possible to change the underlying layout
+with
 ```
-put layout = i1 i2 ... ik in
+put layout = i1 i2 ... ik in phr
 ```
-where `i1 i2 ... ik` is the interval structure of  the desired layout. For instance
+where `i1 i2 ... ik` is the desired layout, and `phr` is the phrase on which this layout
+applies. For instance
 ```
 put layout = 2 3 2 2 3 in 0< * 4,< * 1> * 2>
 *
 put layout = 2 1 2 2 1 3 1 in 0< * 4,< * 1> * 2>
 ```
-plays a phrase in the $A$ minor pentatonic layout (with interval structure `2 3 2 2 3`) an
-d then the same phrase in the $A$ harmonic minor scale (with interval structure
-`2 1 2 2 1 3 1`).
+plays a phrase in the $A$ minor pentatonic layout and then the same phrase in the $A$
+harmonic minor layout.
 
 
 ### Root notes
-TODO
+By default, the note specified by the shift `0` is the note $A$ of frequency $440$ Hz. It is
+possible to change it with
+```
+put root = st nst oct in phr
+```
+where `st` is the step number of the note, `nst` is the number of steps by octave in the
+`nst`-tone equal temperament, `oct` is the octave number (this number can be negative to
+reach low pitched notes), and `phr` is the phrase on which this root note applies. For
+instance,
+```
+put root = 2 12 -2 in 0 * 1 * 2
+*
+put root = 3 12 1 in 0 * 1 * 2
+```
+plays a phrase in the minor layout first with $B$ as root note two octaves below the octave
+$0$ and then with $C$ as root note one octave above the octave $0$.
 
 
 ### Time layouts
-TODO
+A _time layout_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. The operator
+`<` (resp. `>`) multiplies by `m / d` (resp. `d / m`) the duration of each atom on the
+phrase it applies. In the default time layout, the time multiplier is `2` and the time
+divider is `1`. It is possible to change the underlying time layout with
+```
+put time = m d in phr
+```
+where `m` and `d` specify the time layout and `phr` is a phrase. For
+instance,
+```
+put time = 2 1 in 0<< * 0'> * . * 4
+*
+put time = 3 2 in 0<< * 0'> * . * 4
+```
+plays first a phrase such that the atom $0$ is played on $(2 / 1)^2 = 4$ times, then $0'$ is
+played on $(2 / 1)^{-1} = 1 / 2$ times, then a rest of $(2 / 1)^0 = 1$ time is played, and
+the atom $4$ is played on $(2 / 1)^0 = 1$ time. In the second phrase, the atom $0$ is played
+on $(3 / 2)^2 = 9 / 4$ times, then $0'$ is played on $(3 / 2)^{-1} = 2 / 3$ times, then a
+rest of $(3 / 2)^0 = 1$ times is played, and the atom $4$ is played on $(3 / 2)^0 = 1$
+times.
 
 
 ### Transpositions
@@ -176,5 +215,8 @@ TODO
 ### Named atoms and compositions
 TODO
 
+
+### Microtonality
+TODO
 
 
