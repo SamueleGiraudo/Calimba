@@ -1,3 +1,14 @@
+---
+title: "Calimba language"
+date: "December 2020"
+author: "Samuele Giraudo"
+institute: ""
+mainfont: "Serif"
+fontsize: 10pt
+geometry: margin=3cm
+output: pdf_document
+---
+
 # Calimba language
 This page describes all the instructions of the calimba language
 
@@ -76,9 +87,9 @@ and the result is obtained by adding the right amount of rests after the shorter
 
 
 ### Durations
-Given an atom `a`, `a<` is the same atom lasting $2$ units of time instead of $1$.
-Similarly, `a>` is the same atom lasting $\frac{1}{2}$ units of time. These operators `<`
-and `>` can be stacked so that `<` doubles the duration and `>` divides it by half.
+Given an atom `a`, `a<` is the same atom but lasting $2$ units of time instead of $1$.
+Similarly, `a>` is the same atom but lasting $\frac{1}{2}$ units of time. These operators
+`<` and `>` can be stacked so that `<` doubles the duration and `>` divides it by half.
 
 | ... | `a>>>` |`a>>` | `a>` | `a` | `a<` | `a<<` | `a<<<` | ... |
 |-----|--------|------|------|-----|------|-------|--------|-----|
@@ -95,14 +106,43 @@ and third last $\frac{1}{2}$ unit of time.
 
 
 ### Octaves
-TODO
+Given a shift `s`, `s'` is the same shift but one octave higher. Similarly, `a,` is the same
+shift but one octave below. These operators `'` and `,` can be stacked to express shifts in
+different octaves.
 
-
+These operators can be applied also on phrases to change the octave of their shifts. For
+instance,
+```
+(0 * 2 * 4 * (0' # 4')) * (0 * 2 * 4 * (0' # 4')),,
+```
+is a phrase wherein a first phrase is played and then the same phrase is played two octaves
+below.
 
 
 ## Basic notions
 
+### Begin end
+To clarify some parts of a program, it can be useful to have at disposal different kinds of
+brackets. For this reason, we can use `begin` and `end`, acting respectively as `(` and `)`.
+
+
 ### Layouts
+By default, each shift refers to the $A$ minor layout. It is possible to change it with
+```
+put layout = i1 i2 ... ik in
+```
+where `i1 i2 ... ik` is the interval structure of  the desired layout. For instance
+```
+put layout = 2 3 2 2 3 in 0< * 4,< * 1> * 2>
+*
+put layout = 2 1 2 2 1 3 1 in 0< * 4,< * 1> * 2>
+```
+plays a phrase in the $A$ minor pentatonic layout (with interval structure `2 3 2 2 3`) an
+d then the same phrase in the $A$ harmonic minor scale (with interval structure
+`2 1 2 2 1 3 1`).
+
+
+### Root notes
 TODO
 
 
@@ -116,6 +156,7 @@ TODO
 
 ### Let in
 TODO
+
 
 ### Built-in structures
 TODO
@@ -132,7 +173,7 @@ TODO
 TODO
 
 
-### Named atoms
+### Named atoms and compositions
 TODO
 
 
