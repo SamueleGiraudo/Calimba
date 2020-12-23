@@ -12,15 +12,24 @@ Copyright (C) 2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 ## Quick overview and examples
 This program offers a complete language allowing to create music in a functional programming
-style. It generates and plays pcm files, so that it does not need any specific sound server.
+style. Musical phrases can be composed (or inserted one into another) by using operators
+coming from operad and clone theory. The program generates and plays pcm files, so that it
+does not need any specific sound server It comes with its own synthesizer and its own sound
+manipulation tools. This language does no depend on any heavy external library.
 
 
 ### Main functionalities
-1. TODO
+1. Interprets and plays a file written in Calimba language (see specification below).
+1. Offers an environment for live coding.
+1. Analyses the music by drawing its signal and printing some information about the used
+   layouts.
 
 
 ### Complete examples
-+ TODO
+1. A simple melody. (TODO)
+1. A harmonic progression. (TODO)
+1. A phasing based music. (TODO)
+1. Microtonal exploration. (TODO)
 
 
 ## Building
