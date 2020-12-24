@@ -28,6 +28,7 @@ manipulation tools. This language does no depend on any heavy external library.
 ### Complete examples
 1. A simple melody. (TODO)
 1. A harmonic progression. (TODO)
+1. Three patterns in interaction (TODO)
 1. A phasing based music. (TODO)
 1. Microtonal exploration. (TODO)
 
@@ -69,13 +70,19 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
   infinite loop wherein as soon as `Program.cal` is modified, the music specified by the
   program is played from its beginning.
 + `./calimba -f Program.cal -d start duration` draws in a graphical window the fragment of
-  the signal of the music specified by the program, start from `start` ms and lasting
+  the signal of the music specified by the program, starting from `start` ms and lasting
   `duration` ms.
 + `./calimba -f Program.cal -a` prints some analysis information about the used layouts in
   the program.
 
 
 ## Theoretical aspects
+
+### Functional programming style
+TODO
+
+
+### Tree patterns and composition
 TODO
 
 
@@ -89,5 +96,5 @@ TODO
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
 
-TODO
+TODO (cite Paul Hudak)
 

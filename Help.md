@@ -174,8 +174,7 @@ divider is `1`. It is possible to change the underlying time layout with
 ```
 put time = m d in phr
 ```
-where `m` and `d` specify the time layout and `phr` is a phrase. For
-instance,
+where `m` and `d` specify the time layout and `phr` is a phrase. For instance,
 ```
 put time = 2 1 in 0<< * 0'> * . * 4
 *
@@ -190,7 +189,17 @@ times.
 
 
 ### Transpositions
-TODO
+To transpose a phrase `phr` of `d` degrees (where `d` can be negative), use the _composition
+operator_ `@@`.  In `phr @@ d`, each is atom of `phr` is incremented by `d`. For instance,
+```
+(0 * 2 * 4 @@ 0)
+*
+(0 * 2 * 4 @@ 3)
+*
+(0 * 2 * 4 @@ -2)
+```
+is a phrase wherein `0 * 2 * 4` is played, then `3 * 5 * 7`, and then `-2 * 0 * 2` are
+played.
 
 
 ### Let in
@@ -205,6 +214,10 @@ TODO
 ## Intermediate notions
 
 ### Synthesizers
+TODO
+
+
+### Effects
 TODO
 
 
