@@ -76,7 +76,7 @@ and the result is obtained by adding the right amount of rests after the shorter
 
 ### Durations
 Given an atom `a`, `a<` is the same atom but lasting $2$ units of time instead of $1$.
-Similarly, `a>` is the same atom but lasting $\frac{1}{2}$ units of time. These operators
+Similarly, `a>` is the same atom but lasting $1 / 2$ units of time. These operators
 `<` and `>` can be stacked so that `<` doubles the duration and `>` divides it by half.
 
 | ... | `a>>>` |`a>>` | `a>` | `a` | `a<` | `a<<` | `a<<<` | ... |
@@ -90,7 +90,7 @@ These operators can be applied also on phrases to change all their durations. Fo
 is a phrase wherein an $A$ minor chord is played for $1$ unit of time, then a rest of $2$
 units of time, then the same chord is played for $4$ units of time, and finally the sequence
 of notes $B$, $C$ and $D$ is played where the first lasts $1$ unit of time and the second
-and third last $\frac{1}{2}$ unit of time.
+and third last $1 / 2$ units of time.
 
 
 ### Octaves
@@ -384,13 +384,62 @@ Here are some examples of the first harmonics coefficients given some values for
 
 |  `p`  |  `r`  | Harmonics coefficients                                                   |
 |-------|-------|--------------------------------------------------------------------------|
-| $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$ |
-| $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$ |
-| $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$ |
+| $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$                                  |
+| $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$                               |
+| $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$              |
 | $1.0$ | $0.3$ | $1.0$, $0.3$, $0.09$, $0.027$, $0.0081$, $0.0024$, $7.10^{-4}$, $2.10^{-4}$, $10^{-4}$, $\sim 0.0$
 
 ### Effects
-TODO
+If `phr` is a phrase, the phrase
+```
+put effect = eff a1 ... ak in phr
+```
+plays it under the effect `eff` with the arguments `a1 ... ak`. Let us list the available
+effects.
+
+
+#### Scale
+The _scale effect_ `scale` admits one argument `s` which is a nonnegative floating number.
+This multiplies by `s` the signal of the sound specified by `phr`. If the amplitude of the
+signal is too high at some parts, this amplitude is reduced to a maximal threshold. For this
+reason, a scaling can produce some interesting clipping effects. Here is an example:
+```
+put effect = scale 1.5 in 1 * 1 * (0 # 4)
+```
+
+
+#### Delay
+The _delay effect_ `delay` admits two arguments: a first `d` which is a nonnegative integer
+and a second `s` which a nonnegative floating number. This stacks to the sound specified by
+`phr` the same sound delayed by `d` ms and scaled by `s`. Here is an example:
+```
+put effect = delay 100 0.75 in
+0 * (0 # 4) * 1 * 2
+```
+
+
+#### Clip
+The _clip effect_ `clip` admits one argument `s` which is a floating number strictly between
+$0$ and $1$. This reduce to `s` the amplitude of the signal of the sound specified by `phr`.
+Depending of the original sound of `phr`, an adequate value for `s` can produce some
+distortion effects. Here is an example:
+```
+put effect = clip 0.7 in
+0 * (0 # 4 # 0, # 4')<, * 0
+```
+
+
+#### Tremolo
+The _tremolo effect_ `tremolo` admits two arguments: a first `t` which is a positive integer
+and a second `v` which is a floating number between $0$ and $1$. This changes the sound
+specified by `phr` in order to introduce a tremolo effect so that, periodically each `t` ms,
+the volume of the sound decreases and increases to its original value. The sound decreases
+to the value specified by `v`: if `v` is close to `1.0`, the tremolo effect is slight, and
+if `v` is close to `0.0`, the tremolo effect becomes more pronounced. Here is an example:
+```
+put effect = tremolo 125 0.7 in
+0 * 2 * 4 * (0 # 2 # 4)< * (-1 # 1 # 3)<
+```
 
 
 ### Compositions

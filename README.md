@@ -5,6 +5,10 @@ Copyright (C) 2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 
+Here is a Discord server for discussions about the language:
+[https://discord.gg/n6Du2Q4QFb](https://discord.gg/n6Du2Q4QFb)
+Welcome!
+
 ## Versions
 + `0.0010` (2020-12-12)
     + Initial version
