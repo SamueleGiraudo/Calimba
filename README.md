@@ -1,13 +1,14 @@
 # Calimba
 A programming language to create music based on the theory of operads and clones.
 
-Copyright (C) 2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
-[https://igm.univ-mlv.fr/~giraudo/]
+Copyright (C) 2020--2021 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/)
+- `samuele.giraudo@u-pem.fr` -
 
 
-Here is a Discord server for discussions about the language:
-[https://discord.gg/n6Du2Q4QFb](https://discord.gg/n6Du2Q4QFb)
-Welcome!
+Here is a [Discord server](https://discord.gg/n6Du2Q4QFb) for discussions about this
+language, including help for installation, bug reports, feature requests, and sharing some
+creations. Welcome!
+
 
 ## Versions
 + `0.0010` (2020-12-12)
@@ -85,20 +86,11 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 ### Functional programming style
 All (when well-formed) is an expression: notes, assemblies of notes, context specifications
 (layouts, time layouts, synthesizers, _etc._). For this reason, it is possible to build
-complex expressions by nesting some smaller ones.
-CONTINUE
-
-### Tree patterns and composition
-The fundamental data structure is the _tree pattern_. A tree pattern is defined to be,
-recursively
-+ an atom;
-+ the concatenation of two tree patterns;
-+ the stacking of two tree patterns;
-+ the modification of a tree pattern.
+complex expressions by nesting some smaller ones, without any particular restriction.
 CONTINUE
 
 
-## Bibliography
+### Bibliography
 
 + About operads:
     + M. Méndez.
@@ -108,5 +100,5 @@ CONTINUE
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
 
-TODO (cite Paul Hudak)
+CONTINUE (cite Paul Hudak)
 

@@ -1,37 +1,38 @@
 # Calimba language
-This page describes all the instructions of the calimba language
+This page describes the way to build programs in the Calimba language.
 
 
 ## General conventions
 Comments are enclosed into symbols `{` and `}`. Nested comments are allowed.
 
-Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and starting
-with an alphabetic symbol or `_`.
+Identifiers are nonempty strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and
+starting with an alphabetic symbol or `_`.
 
 
 ## Elementary notions
 
-### Notes
-Any integer (positive as well as negative) expressed in decimal specifies a note. By
-default, `0` is the note $A$ of frequency $440$ Hz. Each positive integer `d` specifies a
-note located `d` steps above the root `0`. Negative integers specify notes symmetrically.
-Here is a part of this correspondence
+### Notes and shifts
+Any integer (positive as well as negative) expressed in the decimal numeral system specifies
+a note. By default, `0` is the note $A$ of frequency $440$ Hz. Each positive integer `d`
+specifies a note located `d` steps above the origin `0`. Negative integers specify notes
+symmetrically, that is below the origin. Here is a part of this correspondence
 
-| ... |  -7 | ... |  -3 |  -2 |  -1 | **0** |   1 |   2 |   3 | ... |   7 |   8 | ... |
-|-----|-----|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|-----|-----|
-| ... | $A,$| ... | $E$ | $F$ | $G$ |   $A$ | $B$ | $C$ | $D$ | ... | $A'$| $B'$| ... |
+| ... |  -8 |  -7 | ... |  -3 |  -2 |  -1 | **0** |   1 |   2 |   3 | ... |   7 |   8 | ... |
+|-----|-----|-----|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|-----|-----|
+| ... | $G,$| $A,$| ... | $E$ | $F$ | $G$ |   $A$ | $B$ | $C$ | $D$ | ... | $A'$| $B'$| ... |
 
-where $A,$ is the note $A$ one octave below, and $A'$ and $B'$ are the notes $A$ and $B$ one
-octave above.
+where $A,$ and $G,$ are respectively the notes $A$ and $G$ one octave below, and $A'$ and
+$B'$ are respectively the notes $A$ and $B$ one octave above.
 
 Such integers specifying notes are called _shifts_.
 
+In the Calimba language, we prefer to handle shifts instead of notes to keep flexibility.
+Indeed, as we will see in the following, shifts can be interpreted in the context of
+different layouts (also named scales).
+
+
 ### Rests
-A rest is specified by a `.`. It is interpreted as an absence of a sound.
-
-
-### Atoms
-An _atom_ is either a shift of a rest.
+A rest is specified by a `.` (a period). It is interpreted as an absence of a sound.
 
 
 ### Concatenation
@@ -43,7 +44,7 @@ For instance,
 0 * 4 * 0 * 5 * . * 5 * 4
 ```
 is the phrase consisting in the notes $A$, $E$, $A$, and $F$, a rest, and the notes $F$
-and $E$.
+and $E$ played in this order, one after the other.
 
 
 ### Composition
@@ -75,9 +76,10 @@ and the result is obtained by adding the right amount of rests after the shorter
 
 
 ### Durations
-Given an atom `a`, `a<` is the same atom but lasting $2$ units of time instead of $1$.
-Similarly, `a>` is the same atom but lasting $1 / 2$ units of time. These operators
-`<` and `>` can be stacked so that `<` doubles the duration and `>` divides it by half.
+Given a shift or a rest `a`, `a<` is the same shift or rest but lasting $2$ units of time
+instead of $1$. Similarly, `a>` is the same shift or rest but lasting $1 / 2$ units of time.
+These operators `<` and `>` can be stacked so that `<` doubles the duration and `>` divides
+it by half.
 
 | ... | `a>>>` |`a>>` | `a>` | `a` | `a<` | `a<<` | `a<<<` | ... |
 |-----|--------|------|------|-----|------|-------|--------|-----|
@@ -167,8 +169,8 @@ $0$ and then with $C$ as root note one octave above the octave $0$.
 
 ### Time layouts
 A _time layout_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. The operator
-`<` (resp. `>`) multiplies by `m / d` (resp. `d / m`) the duration of each atom on the
-phrase it applies. In the default time layout, the time multiplier is `2` and the time
+`<` (resp. `>`) multiplies by `m / d` (resp. `d / m`) the duration of each shift or rest on
+the phrase it applies. In the default time layout, the time multiplier is `2` and the time
 divider is `1`. It is possible to change the underlying time layout with
 ```
 put time = m d in phr
@@ -179,17 +181,18 @@ put time = 2 1 in 0<< * 0'> * . * 4
 *
 put time = 3 2 in 0<< * 0'> * . * 4
 ```
-plays first a phrase such that the atom $0$ is played on $(2 / 1)^2 = 4$ times, then $0'$ is
-played on $(2 / 1)^{-1} = 1 / 2$ times, then a rest of $(2 / 1)^0 = 1$ time is played, and
-the atom $4$ is played on $(2 / 1)^0 = 1$ time. In the second phrase, the atom $0$ is played
-on $(3 / 2)^2 = 9 / 4$ times, then $0'$ is played on $(3 / 2)^{-1} = 2 / 3$ times, then a
-rest of $(3 / 2)^0 = 1$ times is played, and the atom $4$ is played on $(3 / 2)^0 = 1$
-times.
+plays first a phrase such that the shift $0$ is played on $(2 / 1)^2 = 4$ times, then $0'$
+is played on $(2 / 1)^{-1} = 1 / 2$ times, then a rest of $(2 / 1)^0 = 1$ time is played,
+and the shift $4$ is played on $(2 / 1)^0 = 1$ time. In the second phrase, the shift $0$ is
+played on $(3 / 2)^2 = 9 / 4$ times, then $0'$ is played on $(3 / 2)^{-1} = 2 / 3$ times,
+then a rest of $(3 / 2)^0 = 1$ times is played, and the shift $4$ is played on $(3 / 2)^0 =
+1$ times.
 
 
 ### Transpositions
 To transpose a phrase `phr` of `d` degrees (where `d` can be negative), use the _composition
-operator_ `@@`. In `phr @@ d`, each is atom of `phr` is incremented by `d`. For instance,
+operator_ `@@`. In `phr @@ d`, each is shift and rest of `phr` is incremented by `d`. For
+instance,
 ```
 (0 * 2 * 4 @@ 0)
 *
@@ -299,8 +302,8 @@ totally different sounds. A synthesizer is specified by
 1. the geometric ratio `r` for of the coefficients of the harmonics of the sound, which is a
   floating number strictly between $0$ and $1$.
 
-The first tree components describe the _shape_ of the sound. Given an atom of duration
-`t` ms, the shape modifies the associated sounds as depicted here
+The first tree components describe the _shape_ of the sound. Given a shift of duration `t`
+ms, the shape modifies the associated sounds as depicted here
 ```
 ---___ /         \
       /--___      \
@@ -375,8 +378,8 @@ the $i$-th harmonics of the produced sound. Then, we have $\alpha_{i + 1} = r \a
 $\alpha_1 = p$. Only harmonics having coefficient smaller than or equal as $2^{-16}$ are
 considered.
 
-A sound with an high value for `p` is more powerful but has more chances to saturated (for
-instance when several atoms are stacked). A sound with an high value for `r` has more
+A sound with an high value for `p` is more powerful but has more chances to be saturated
+(for instance when several shifts are stacked). A sound with an high value for `r` has more
 harmonics and seems more aggressive.
 
 Here are some examples of the first harmonics coefficients given some values for `p` and
@@ -387,7 +390,7 @@ Here are some examples of the first harmonics coefficients given some values for
 | $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$                                  |
 | $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$                               |
 | $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$              |
-| $1.0$ | $0.3$ | $1.0$, $0.3$, $0.09$, $0.027$, $0.0081$, $0.0024$, $7.10^{-4}$, $2.10^{-4}$, $10^{-4}$, $\sim 0.0$
+| $0.5$ | $0.2$ | $0.5$, $0.1$, $0.02$, $0.004$, $0.0008$, $0.0002$, $0.00003$              |
 
 ### Effects
 If `phr` is a phrase, the phrase
@@ -442,12 +445,47 @@ put effect = tremolo 125 0.7 in
 ```
 
 
+## Advanced notions
+
+### Tree patterns
+The fundamental data structure is the tree pattern in sense that any phrase (and thus, any
+program) translates into a tree pattern. Formally, a _tree pattern_ is either
+
++ an atom;
++ or the concatenation of two tree patterns;
++ or the stacking of two tree patterns;
++ or the performance of a tree pattern;
++ or the effect of a tree pattern.
+
+An _atom_ is a shift or a rest together with an integer specifying its duration. A
+_performance_ is a map sending each atom to a sound (depending, among others, on the layout,
+the time layout, the synthesizer, _etc._). An _effect_ is a map sending a sound to a sound
+(adding for instance a delay or a tremolo effect).
+
+CONTINUE
+
+### Named shifts and compositions
+It is possible to give a name `u` to a shift `s` in a phrase by writing `s:u`. For instance,
+in
+```
+(0 * 1 * 4:sh1) # 7:sh2<
+```
+the third shift `4` is named as `sh1` and the fourth shift `7` is named as `sh2`. These
+two shifts are _named shifts_.
+
+Given two phrases `phr1` and `phr2`, and a name `u`,
+`phr1 @u phr2` is the phrase obtained by replacing each shift of `phr1` having `u` as name
+by a slightly modified version of `phr2`.
+
+
+
 ### Compositions
+Given a phrase `phr`, the shifts appearing 
+
 TODO
 
 
-### Named atoms and compositions
-TODO
+
 
 
 ### Microtonality
