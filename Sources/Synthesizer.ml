@@ -48,7 +48,7 @@ let scale_timbre v t =
 let timbre_to_string t =
     assert (is_valid_timbre t);
     let str = t |> List.map
-        (fun (i, c) -> Printf.sprintf "%d: %.2f" i c) |> String.concat "; " in
+        (fun (i, c) -> Printf.sprintf "%d: %.4f" i c) |> String.concat "; " in
     "[" ^ str ^ "]"
 
 (* Tests if synth is a synthesizer. *)
@@ -91,26 +91,23 @@ let stacked_harmonics timbre freq duration =
  * close_duration in ms, w.r.t. a sound having duration as duration in ms. *)
 let shape_durations max_duration open_duration close_duration duration =
     assert (duration >= 1);
-    assert (max_duration >= 1);
-    assert (open_duration >= 1);
-    assert (close_duration >= 1);
     let max_proportion = (float_of_int max_duration) /. (float_of_int duration)
     and open_proportion = (float_of_int open_duration) /. (float_of_int duration)
     and close_proportion = (float_of_int close_duration) /. (float_of_int duration) in
     let shape_max t =
-        if 0.0 <= t && t <= max_proportion then
+        if 0.0 <= t && t < max_proportion then
             (max_proportion -. t) /. max_proportion
         else
             0.0
     in
     let shape_open t =
-        if 0.0 <= t && t <= open_proportion then
+        if 0.0 <= t && t < open_proportion then
             t /. open_proportion
         else
             1.0
     in
     let shape_close t =
-        if 1.0 -. close_proportion <= t && t <= 1.0 then
+        if 1.0 -. close_proportion < t && t <= 1.0 then
             (1.0 -. t) /. close_proportion
         else
             1.0

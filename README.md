@@ -79,11 +79,19 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 ## Theoretical aspects
 
 ### Functional programming style
-TODO
-
+All (when well-formed) is an expression: notes, assemblies of notes, context specifications
+(layouts, time layouts, synthesizers, _etc._). For this reason, it is possible to build
+complex expressions by nesting some smaller ones.
+CONTINUE
 
 ### Tree patterns and composition
-TODO
+The fundamental data structure is the _tree pattern_. A tree pattern is defined to be,
+recursively
++ an atom;
++ the concatenation of two tree patterns;
++ the stacking of two tree patterns;
++ the modification of a tree pattern.
+CONTINUE
 
 
 ## Bibliography

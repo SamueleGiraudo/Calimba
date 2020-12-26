@@ -11,6 +11,7 @@
     - Improve comments.
     - Robustness.
     - External documentation.
+    - Rename composition of tree pattern in stacking.
 *)
 
 let name = "Calimba"

@@ -183,14 +183,7 @@ synthesizer_timbre:
 
 synthesizer_shape:
     |max_dur=INTEGER o_dur=INTEGER c_dur=INTEGER
-        {if max_dur < 1 then
-            argument_error "synthesizer" 3 "must be positive"
-        else if o_dur < 1 then
-            argument_error "synthesizer" 4 "must be positive"
-        else if c_dur < 1 then
-            argument_error "synthesizer" 5 "must be positive"
-        else
-            (max_dur, o_dur, c_dur)}
+        {(max_dur, o_dur, c_dur)}
 
 effect:
     |SCALE c=POS_FLOAT

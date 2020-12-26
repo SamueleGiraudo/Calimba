@@ -47,9 +47,8 @@ and $E$.
 
 
 ### Composition
-To play some notes at the same time, separate them with the operator `#` called
-_composition operator_.
-
+To play some notes at the same time, separate them with the operator `#` called _composition
+operator_.
 
 For instance,
 ```
@@ -190,7 +189,7 @@ times.
 
 ### Transpositions
 To transpose a phrase `phr` of `d` degrees (where `d` can be negative), use the _composition
-operator_ `@@`.  In `phr @@ d`, each is atom of `phr` is incremented by `d`. For instance,
+operator_ `@@`. In `phr @@ d`, each is atom of `phr` is incremented by `d`. For instance,
 ```
 (0 * 2 * 4 @@ 0)
 *
@@ -203,19 +202,192 @@ played.
 
 
 ### Let in
-TODO
+Given a phrase, it is possible to give it a name in order to play it when wanted and
+possibly several times by referring to it by its name. One achieves this with
+```
+let name = phr1 in phr2
+```
+where `name` is a name, and `phr1` and `phr2` are two phrases. This plays the phrase `phr2`
+wherein all free occurrences of `name` are replaced by `phr1`.
+For instance,
+```
+let arpeggio = 0 * 2 * 4 in
+arpeggio, * 0'> * arpeggio
+```
+attaches the name `arpeggio` to the phrase `0 * 2 * 4` and plays this phrase one octave
+below, then `0'>`, and finally `arpeggio`. This phrase is equivalent to
+```
+(0 * 2 * 4), * 0'> * (0 * 2 * 4)
+```
 
+It is possible to next these constructions. For instance, the phrase
+```
+let arpeggio1 = 0 * 2 * 4 * 0' in
+let arpeggio2 = arpeggio1 @@ 2 in
+let sequence = arpeggio1> * arpeggio2 * arpeggio1 in
+sequence * (arpeggio1 # arpeggio2)
+```
+is equivalent to the phrase
+```
+(0 * 2 * 4 * 0')> * (2 * 4 * 6 * 2') * (0 * 2 * 4 * 0')
+    * ((0 * 2 * 4 * 0') # (2 * 4 * 6 * 2'))
+```
+
+Let us clarify what is meant by replacing all free occurrences. In the phrase
+```
+let x = 1 * 3 in
+x * (let x = 0 # 2 in x * 0)
+```
+the first occurrence of `x` (first character of the second line) is replaced by `1 * 3`, but
+the second one (fourth character starting from the end of the second line) is not replaced
+by `1 * 3` since this occurrence of `x` in the phrase `let x = 0 # 2 in x * 0` is not free.
+It is indeed captured by the second `let in`. For these reasons, this phrase is equivalent
+to
+```
+(1 * 3) * ((0 # 2) * 0)
+```
 
 ### Built-in structures
-TODO
+There are three other main built-in structures. In what follows, `phr` is any phrase.
 
+
+#### Repeat
+The phrase
+```
+repeat k phr
+```
+where `k` is a positive integer plays `k` times `phr`.
+
+
+#### Reverse
+The phrase
+```
+reverse phr
+```
+plays `phr` from the end to the beginning.
+
+
+#### Complement
+The phrase
+```
+complement phr
+```
+plays `phr` wherein all its shifts are complemented. The _complement_ of a shift `s` is the
+unique shift `sc` such that `s + sc = 0`.
+
+For instance, the phrases
+```
+1 * -1' * 3,
+```
+and
+```
+-1 * 1, * -3'
+```
+are equivalent.
 
 
 ## Intermediate notions
 
 ### Synthesizers
-TODO
+Phrases are played by using synthesizers whose characteristics make it possible to model
+totally different sounds. A synthesizer is specified by
 
+1. the maximal duration `m` of the sound in ms;
+1. the duration `a` of the attack of the sound in ms;
+1. the duration `d` of the decay of the sound in ms;
+1. the power `p` of the sound, which is a floating number between $0$ and $1$;
+1. the geometric ratio `r` for of the coefficients of the harmonics of the sound, which is a
+  floating number strictly between $0$ and $1$.
+
+The first tree components describe the _shape_ of the sound. Given an atom of duration
+`t` ms, the shape modifies the associated sounds as depicted here
+```
+---___ /         \
+      /--___      \
+     /%%%%%%---___ \
+    /%%%%%%%%%%%%%--\___
+   /%%%%%%%%%%%%%%%%%\  ---___
+  /%%%%%%%%%%%%%%%%%%%\       ---___
+ /%%%%%%%%%%%%%%%%%%%%%\            ---___
+/%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
++-------------------m--------------------------+
++---a--+         +--d---+
++-----------t-----------+
+```
+More precisely, this diagram is obtained by drawing the following segments: a first
+connecting $(0, 0)$ and $(a, 1)$, a second connecting $(t - d, 1)$ and $(t, 0)$, and a third
+connecting $(0, 1)$ and $(m, 0)$. The area under these three segments (containing the `%` in
+the picture) is applied to the signal of the sound in order to obtain a signal having
+specified form.
+
+Let us consider some examples:
+
++ If $(m, a, d, t) = (1000, 250, 125, 500)$, we obtain the diagram
+```
+---___    _/       \
+      ---/--___     \
+       _/%%%%%%---___\
+      /%%%%%%%%%%%%%--\___
+    _/%%%%%%%%%%%%%%%%%\  ---___
+   /%%%%%%%%%%%%%%%%%%%%\       ---___
+ _/%%%%%%%%%%%%%%%%%%%%%%\            ---___
+/%%%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
++-------------------1000-------------------------+
++---250----+       +--125-+
++-----------500-----------+
+```
+
++ If $(m, a, d, t) = (1000, 250, 125, 250)$, we obtain the diagram
+```
+---_\     /
+     \---/___
+      \_/    ---___
+      /\           ---___
+    _/%%\                ---___
+   /%%%%%\                     ---___
+ _/%%%%%%%\                          ---___
+/%%%%%%%%%%\                               ---____
++-------------------1000-------------------------+
++---250----+
+    +--125-+
++---250----+
+```
+
++ If $(m, a, d, t) = (1000, 250, 125, 1500)$, we obtain the diagram
+```
+---___    _/                                                      \
+      ---/--___                                                    \
+       _/%%%%%%---___                                               \
+      /%%%%%%%%%%%%%---___                                           \
+    _/%%%%%%%%%%%%%%%%%%%%---___                                      \
+   /%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                                 \
+ _/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                            \
+/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                       \
++-------------------1000-------------------------+                        \
++---250----+                                                       +--125-+
++---------------------------------1500------------------------------------+
+```
+
+
+The fourth and fifth components `p` and `r` describe the coefficients of the harmonics of
+the sounds produced by additive synthesis. Let us denote by $\lambda_i$ the coefficient of
+the $i$-th harmonics of the produced sound. Then, we have $\alpha_{i + 1} = r \alpha_i$ and
+$\alpha_1 = p$. Only harmonics having coefficient smaller than or equal as $2^{-16}$ are
+considered.
+
+A sound with an high value for `p` is more powerful but has more chances to saturated (for
+instance when several atoms are stacked). A sound with an high value for `r` has more
+harmonics and seems more aggressive.
+
+Here are some examples of the first harmonics coefficients given some values for `p` and
+`r`:
+
+|  `p`  |  `r`  | Harmonics coefficients                                                   |
+|-------|-------|--------------------------------------------------------------------------|
+| $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$ |
+| $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$ |
+| $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$ |
+| $1.0$ | $0.3$ | $1.0$, $0.3$, $0.09$, $0.027$, $0.0081$, $0.0024$, $7.10^{-4}$, $2.10^{-4}$, $10^{-4}$, $\sim 0.0$
 
 ### Effects
 TODO
