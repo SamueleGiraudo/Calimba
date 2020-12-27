@@ -31,11 +31,11 @@ manipulation tools. This language does no depend on any heavy external library.
 
 
 ### Complete examples
-1. A simple melody. (TODO)
-1. A harmonic progression. (TODO)
-1. Three patterns in interaction (TODO)
-1. A phasing based music. (TODO)
-1. Microtonal exploration. (TODO)
+1. A [simple melody](Examples/SimpleMelody.cal).
+1. A [harmonic progression](Examples/HarmonicProgression.cal).
+1. Some [patterns in interaction](Examples/PatternsInteraction.cal).
+1. A [phasing based music](Examples/Phasing.cal).
+1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal).
 
 
 ## Building
