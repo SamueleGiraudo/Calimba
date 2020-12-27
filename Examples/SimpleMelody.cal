@@ -18,6 +18,11 @@
 {Plays the same sequence twice faster.}
 * (0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6)>
 
+{Plays the same sequence twice slower.}
+* (0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6)<
 
-
+{Plays some chords associated with the sequence.}
+* (0 # 2 # 4) * (2 # 4 # 6) * (4 # 6 # 8)
+* (1 # 3 # 5) * (3 # 5 # 7) * (5 # 7 # 9)
+* (2 # 4 # 6) * (4 # 6 # 8) * (6 # 8 # 10)
 
