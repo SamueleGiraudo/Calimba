@@ -12,23 +12,41 @@ starting with an alphabetic symbol or `_`.
 ## Elementary notions
 
 ### Notes and shifts
-Any integer (positive as well as negative) expressed in the decimal numeral system specifies
-a note. By default, `0` is the note $A$ of frequency $440$ Hz. Each positive integer `d`
-specifies a note located `d` steps above the origin `0`. Negative integers specify notes
-symmetrically, that is below the origin. Here is a part of this correspondence
+A _shift_ is an integer (positive as well as negative) expressed in the decimal numeral
+system. Each shift specifies a note in the following way. By default (because this behavior
+is configurable), `0` is the note $A$ of frequency $440$ Hz, and each positive (resp.
+negative) shift `d` specifies a note located `d` steps above (resp. below) the origin `0` in
+the diatonic scale. Here is a part of this correspondence
 
-| ... |  -8 |  -7 | ... |  -3 |  -2 |  -1 | **0** |   1 |   2 |   3 | ... |   7 |   8 | ... |
-|-----|-----|-----|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|-----|-----|
-| ... | $G,$| $A,$| ... | $E$ | $F$ | $G$ |   $A$ | $B$ | $C$ | $D$ | ... | $A'$| $B'$| ... |
+| Shift | Note  |
+|-------|-------|
+| ...   | ...   |
+|  -9   | $F,,$ |
+|  -8   | $G,,$ |
+|  -7   | $A,$  |
+|  -6   | $B,$  |
+|  -5   | $C,$  |
+|  -4   | $D,$  |
+|  -3   | $E,$  |
+|  -2   | $F,$  |
+|  -1   | $G,$  |
+| **0** | $A$   |
+|   1   | $B$   |
+|   2   | $C$   |
+|   3   | $D$   |
+|   4   | $E$   |
+|   5   | $F$   |
+|   6   | $G$   |
+|   7   | $A'$  |
+|   8   | $B'$  |
+|   9   | $C'$  |
+| ...   | ...   |
 
-where $A,$ and $G,$ are respectively the notes $A$ and $G$ one octave below, and $A'$ and
-$B'$ are respectively the notes $A$ and $B$ one octave above.
-
-Such integers specifying notes are called _shifts_.
+where for any note $X$, $X'$ (resp. $X,$) is the note $X$ one octave above (resp. below).
 
 In the Calimba language, we handle shifts instead of notes to keep flexibility. Indeed, as
-we will see in the following, shifts can be interpreted in the context of different layouts
-(also named scales) and produce different notes.
+we will see in the following, shifts can be interpreted in the context of different scales
+(called layouts here) to be in correspondence with different notes.
 
 
 ### Rests
@@ -36,32 +54,33 @@ A rest is specified by a `.` (a period). It is interpreted as an absence of a so
 
 
 ### Concatenation
-To play notes and rests one after the other, separate them with the operator `*` called
-_concatenation operator_. Each note and rest lasts by default $500$ ms.
+To play notes and rests one after the other, separate them with the operator `*`, called
+_concatenation operator_. Each note and rest lasts one unit of time, which is worth by
+default $500$ ms.
 
 For instance,
 ```
 0 * 4 * 0 * 5 * . * 5 * 4
 ```
 is the phrase consisting in the notes $A$, $E$, $A$, and $F$, a rest, and the notes $F$
-and $E$ played in this order, one after the other.
+and $E$ played in this order, one after the other. This phrase lasts $3500$ ms.
 
 
-### Composition
-To play some notes at the same time, separate them with the operator `#` called _composition
+### Stacking
+To play some notes at the same time, separate them with the operator `#`, called _stacking
 operator_.
 
 For instance,
 ```
 0 # 2 # 4
 ```
-is the phrase consisting in the notes $A$, $C$, and $E$ played at the same time.
+is the phrase consisting in the notes $A$, $C$, and $E$ played at the same time. This phrase
+lasts $500$ ms.
 
 
-### Mixing concatenation and composition
-The concatenation and composition operators work not only on notes and rests but also on
-phrases. Therefore, it is possible to build more complex phrases, by using brackets if
-needed.
+### Mixing concatenation and stacking
+The concatenation and stacking operators work not only on notes and rests but also on
+phrases. Therefore, it is possible to build complex phrases, by using brackets if needed.
 
 For instance,
 ```
@@ -79,11 +98,19 @@ and the result is obtained by adding the right amount of rests after the shorter
 Given a shift or a rest `a`, `a<` is the same shift or rest but lasting $2$ units of time
 instead of $1$. Similarly, `a>` is the same shift or rest but lasting $1 / 2$ units of time.
 These operators `<` and `>` can be stacked so that `<` doubles the duration and `>` divides
-it by half.
+it by half. Here are some examples
 
-| ... | `a>>>` |`a>>` | `a>` | `a` | `a<` | `a<<` | `a<<<` | ... |
-|-----|--------|------|------|-----|------|-------|--------|-----|
-| ... |  $1/8$ | $1/4$| $1/2$| $1$ |  $2$ |  $4$  |   $8$  | ... |
+| Shift of rest with duration signs | Units of time |
+|-----------------------------------|---------------|
+| ...                               | ...           |
+| `a>>>`                            | $1 / 8$       |
+| `a>>`                             | $1 / 4$       |
+| `a>`                              | $1 / 2$       |
+| `a`                               | $1$           |
+| `a<`                              | $2$           |
+| `a<<`                             | $4$           |
+| `a<<<`                            | $8$           |
+| ...                               | ...           |
 
 These operators can be applied also on phrases to change all their durations. For instance,
 ```
@@ -91,14 +118,14 @@ These operators can be applied also on phrases to change all their durations. Fo
 ```
 is a phrase wherein an $A$ minor chord is played for $1$ unit of time, then a rest of $2$
 units of time, then the same chord is played for $4$ units of time, and finally the sequence
-of notes $B$, $C$ and $D$ is played where the first lasts $1$ unit of time and the second
+of notes $B$, $C$ and $D$ is played where the first lasts $1$ unit of time, and the second
 and third last $1 / 2$ units of time.
 
 
 ### Octaves
-Given a shift `s`, `s'` is the same shift but one octave higher. Similarly, `a,` is the same
-shift but one octave below. These operators `'` and `,` can be stacked to express shifts in
-different octaves.
+Given a shift `s`, `s'` is the same shift but one octave higher. Similarly, `s,` (`s`
+followed by a comma) is the same shift but one octave below. These operators `'` and `,` can
+be stacked to express shifts in different octaves.
 
 These operators can be applied also on phrases to change the octave of their shifts. For
 instance,
@@ -117,8 +144,8 @@ brackets. For this reason, we can use `begin` and `end`, acting respectively as 
 
 
 ### Layouts
-A _layout_ is formed by a sequence of positive integers specifying an interval structure.
-Here are some common layouts in the $12$ tones equal temperament:
+A _layout_ is formed by a sequence of positive integers specifying an interval structure and
+thus a scale. Here are some common layouts in the $12$ tones equal temperament:
 
 | Layout        | Name              | Notes                                               |
 |---------------|-------------------|-----------------------------------------------------|
@@ -126,7 +153,7 @@ Here are some common layouts in the $12$ tones equal temperament:
 | 2 2 1 2 2 2 1 | Natural major     | $A$, $B$, $C\sharp$, $D$, $E$, $F\sharp$, $G\sharp$ |
 | 2 1 2 2 1 3 1 | Harmonic minor    | $A$, $B$, $C$, $D$, $E$, $F$, $G\sharp$             |
 | 1 3 1 2 1 2 2 | Phrygian dominant | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G$        |
-| 1 3 1 2 1 3 1 | Double harmonic minor | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G\sharp$ |
+| 1 3 1 2 1 3 1 | Gypsy major       | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G\sharp$  |
 | 3 2 2 3 2     | Pentatonic minor  | $A$, $C$, $D$, $E$, $G$                             |
 | 2 2 3 2 3     | Pentatonic major  | $A$, $B$, $C\sharp$, $E$, $F\sharp$                 |
 | 2 1 4 1 4     | Hirajoshi         | $A$, $B$, $C$, $E$, $F$                             |
@@ -190,9 +217,9 @@ then a rest of $(3 / 2)^0 = 1$ times is played, and the shift $4$ is played on $
 
 
 ### Transpositions
-To transpose a phrase `phr` of `d` degrees (where `d` can be negative), use the _composition
-operator_ `@@`. In `phr @@ d`, each is shift and rest of `phr` is incremented by `d`. For
-instance,
+To transpose a phrase `phr` by `d` degrees (where `d` can be negative) in the underlying
+layout, use the _composition operator_ `@@`. In `phr @@ d`, each shift and rest of `phr` is
+incremented by `d`. For instance,
 ```
 (0 * 2 * 4 @@ 0)
 *
@@ -205,30 +232,29 @@ played.
 
 
 ### Let in
-Given a phrase, it is possible to give it a name in order to play it when wanted and
+Given a phrase, it is possible to assign it a name in order to play it when wanted and
 possibly several times by referring to it by its name. One achieves this with
 ```
 let name = phr1 in phr2
 ```
 where `name` is a name, and `phr1` and `phr2` are two phrases. This plays the phrase `phr2`
-wherein all free occurrences of `name` are replaced by `phr1`.
-For instance,
+wherein all free occurrences of `name` are replaced by `phr1`. For instance,
 ```
-let arpeggio = 0 * 2 * 4 in
-arpeggio, * 0'> * arpeggio
+let arp = 0 * 2 * 4 in
+arp, * 0'> * arp
 ```
-attaches the name `arpeggio` to the phrase `0 * 2 * 4` and plays this phrase one octave
-below, then `0'>`, and finally `arpeggio`. This phrase is equivalent to
+attaches the name `arp` to the phrase `0 * 2 * 4` and plays this phrase one octave below,
+then `0'>`, and finally `arp`. This phrase is equivalent to
 ```
 (0 * 2 * 4), * 0'> * (0 * 2 * 4)
 ```
 
-It is possible to next these constructions. For instance, the phrase
+It is possible to nest these constructions. For instance, the phrase
 ```
-let arpeggio1 = 0 * 2 * 4 * 0' in
-let arpeggio2 = arpeggio1 @@ 2 in
-let sequence = arpeggio1> * arpeggio2 * arpeggio1 in
-sequence * (arpeggio1 # arpeggio2)
+let arp1 = 0 * 2 * 4 * 0' in
+let arp2 = arp1 @@ 2 in
+let seq = arp1> * arp2 * arp1 in
+seq * (arp1 # arp2)
 ```
 is equivalent to the phrase
 ```
@@ -236,7 +262,7 @@ is equivalent to the phrase
     * ((0 * 2 * 4 * 0') # (2 * 4 * 6 * 2'))
 ```
 
-Let us clarify what is meant by replacing all free occurrences. In the phrase
+Let us clarify what is meant by "replacing all free occurrences". In the phrase
 ```
 let x = 1 * 3 in
 x * (let x = 0 # 2 in x * 0)
@@ -293,16 +319,16 @@ are equivalent.
 
 ### Synthesizers
 Phrases are played by using synthesizers whose characteristics make it possible to model
-totally different sounds. A synthesizer is specified by
+a wide range of totally different sounds. A synthesizer is specified by
 
-1. the maximal duration `m` of the sound in ms;
-1. the duration `a` of the attack of the sound in ms;
-1. the duration `d` of the decay of the sound in ms;
-1. the power `p` of the sound, which is a floating number between $0$ and $1$;
-1. the geometric ratio `r` for of the coefficients of the harmonics of the sound, which is a
-  floating number strictly between $0$ and $1$.
+1. the maximal duration `m` in ms of the produced sounds;
+1. the duration `a` of the attack in ms of the produced sounds;
+1. the duration `d` of the decay in ms of the produced sounds;
+1. the power `p` of the produced sounds, which is a floating number between $0$ and $1$;
+1. the geometric ratio `r` for of the coefficients of the harmonics of the produced sounds,
+  which is a floating number strictly between $0$ and $1$.
 
-The first tree components describe the _shape_ of the sound. Given a shift of duration `t`
+The first three components describe the _shape_ of the sound. Given a shift of duration `t`
 ms, the shape modifies the associated sounds as depicted here
 ```
 ---___ /         \
@@ -378,12 +404,12 @@ Let us consider some examples:
 
 The fourth and fifth components `p` and `r` describe the coefficients of the harmonics of
 the sounds produced by additive synthesis. Let us denote by $\lambda_i$ the coefficient of
-the $i$-th harmonics of the produced sound. Then, we have $\alpha_{i + 1} = r \alpha_i$ and
-$\alpha_1 = p$. Only harmonics having coefficient smaller than or equal as $2^{-16}$ are
-considered.
+the $i$-th harmonics of the produced sound. Then, we have $\lambda_{i + 1} = r \lambda_i$
+and $\lambda_1 = p$. Only the harmonics having coefficients smaller than or equal as
+$2^{-16}$ are considered (the coefficients smaller than this value are set to $0$).
 
 A sound with an high value for `p` is more powerful but has more chances to be saturated
-(for instance when several shifts are stacked). A sound with an high value for `r` has more
+(for instance when several phrases are stacked). A sound with an high value for `r` has more
 harmonics and seems more aggressive.
 
 Here are some examples of the first harmonics coefficients given some values for `p` and
@@ -395,6 +421,14 @@ Here are some examples of the first harmonics coefficients given some values for
 | $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$                               |
 | $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$              |
 | $0.5$ | $0.2$ | $0.5$, $0.1$, $0.02$, $0.004$, $0.0008$, $0.0002$, $0.00003$             |
+
+The default synthesizer has the following parameters:
+
++ `m = 4000`;
++ `a = 40`;
++ `d = 20`;
++ `p = 0.28`;
++ `r = 0.29`.
 
 
 ### Effects
@@ -469,6 +503,7 @@ the time layout, the synthesizer, _etc._). An _effect_ is a map sending a sound 
 
 CONTINUE
 
+
 ### Named shifts and compositions
 It is possible to give a name `u` to a shift `s` in a phrase by writing `s:u`. For instance,
 in
@@ -483,14 +518,11 @@ Given two phrases `phr1` and `phr2`, and a name `u`,
 by a slightly modified version of `phr2`.
 
 
+CONTINUE
+
 
 ### Compositions
-Given a phrase `phr`, the shifts appearing 
-
 TODO
-
-
-
 
 
 ### Microtonality
