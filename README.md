@@ -106,6 +106,7 @@ order to build a bigger tree pattern. This operation is fundamental in the Calim
     + S. Giraudo.
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
++ About representation of music:
     + P. Hudak,
       An Algebraic Theory of Polymorphic Temporal Media
       Practical Aspects of Declarative Languages.
