@@ -4,3 +4,20 @@
     Modifications: dec. 2020
 }
 
+{This is a comment. {Nested comments are allowed.}}
+
+{Plays the notes A, C, E, B, D, F, C, E, and G.}
+0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6
+
+{Plays the same sequence one octave below.}
+* (0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6),
+
+{Plays the same sequence one octave above.}
+* (0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6)'
+
+{Plays the same sequence twice faster.}
+* (0 * 2 * 4 * 1 * 3 * 5 * 2 * 4 * 6)>
+
+
+
+
