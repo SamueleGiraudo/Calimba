@@ -26,9 +26,9 @@ $B'$ are respectively the notes $A$ and $B$ one octave above.
 
 Such integers specifying notes are called _shifts_.
 
-In the Calimba language, we prefer to handle shifts instead of notes to keep flexibility.
-Indeed, as we will see in the following, shifts can be interpreted in the context of
-different layouts (also named scales).
+In the Calimba language, we handle shifts instead of notes to keep flexibility. Indeed, as
+we will see in the following, shifts can be interpreted in the context of different layouts
+(also named scales) and produce different notes.
 
 
 ### Rests
@@ -313,6 +313,7 @@ ms, the shape modifies the associated sounds as depicted here
   /%%%%%%%%%%%%%%%%%%%\       ---___
  /%%%%%%%%%%%%%%%%%%%%%\            ---___
 /%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
+
 +-------------------m--------------------------+
 +---a--+         +--d---+
 +-----------t-----------+
@@ -335,6 +336,7 @@ Let us consider some examples:
    /%%%%%%%%%%%%%%%%%%%%\       ---___
  _/%%%%%%%%%%%%%%%%%%%%%%\            ---___
 /%%%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
+
 +-------------------1000-------------------------+
 +---250----+       +--125-+
 +-----------500-----------+
@@ -350,6 +352,7 @@ Let us consider some examples:
    /%%%%%\                     ---___
  _/%%%%%%%\                          ---___
 /%%%%%%%%%%\                               ---____
+
 +-------------------1000-------------------------+
 +---250----+
     +--125-+
@@ -366,9 +369,10 @@ Let us consider some examples:
    /%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                                 \
  _/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                            \
 /%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                       \
-+-------------------1000-------------------------+                        \
-+---250----+                                                       +--125-+
-+---------------------------------1500------------------------------------+
+
++-------------------1000-------------------------+
++---250----+                                                      +--125-+
++---------------------------------1500-----------------------------------+
 ```
 
 
@@ -390,7 +394,8 @@ Here are some examples of the first harmonics coefficients given some values for
 | $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$                                  |
 | $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$                               |
 | $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$              |
-| $0.5$ | $0.2$ | $0.5$, $0.1$, $0.02$, $0.004$, $0.0008$, $0.0002$, $0.00003$              |
+| $0.5$ | $0.2$ | $0.5$, $0.1$, $0.02$, $0.004$, $0.0008$, $0.0002$, $0.00003$             |
+
 
 ### Effects
 If `phr` is a phrase, the phrase

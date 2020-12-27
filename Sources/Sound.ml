@@ -281,7 +281,7 @@ let write_buffer s =
     close_out buffer
 
 (* Returns the command to play a sound calling aplay with the good parameters. The last
- * parameter (path to the RAW file) is not included by the command in order to be able to
+ * parameter (path to the PCM file) is not included by the command in order to be able to
  * pipe it from a file. *)
 let command_play =
     let format_string =

@@ -1,8 +1,8 @@
 # Calimba
 A programming language to create music based on the theory of operads and clones.
 
-Copyright (C) 2020--2021 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/)
-- `samuele.giraudo@u-pem.fr` -
+Copyright (C) 2020--2021 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/) -
+`samuele.giraudo@u-pem.fr` -
 
 
 Here is a [Discord server](https://discord.gg/n6Du2Q4QFb) for discussions about this
@@ -18,7 +18,7 @@ creations. Welcome!
 ## Quick overview and examples
 This program offers a complete language allowing to create music in a functional programming
 style. Musical phrases can be composed (or inserted one into another) by using operators
-coming from operad and clone theory. The program generates and plays pcm files, so that it
+coming from operad and clone theory. The program generates and plays PCM files, so that it
 does not need any specific sound server It comes with its own synthesizer and its own sound
 manipulation tools. This language does no depend on any heavy external library.
 
@@ -70,7 +70,8 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 
 + `./calimba -f Program.cal -p` plays the music specified by the program;
 + `./calimba -f Program.cal -w` creates the PCM file `Program.pcm` containing the music
-  specified by the program;
+  specified by the program. The default sampling rate is $480000$ Hz and the depth is $32$
+  bits.
 + `./calimba -f Program.cal -l` launches a live loop on the program file. This is an
   infinite loop wherein as soon as `Program.cal` is modified, the music specified by the
   program is played from its beginning.
@@ -84,10 +85,16 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 ## Theoretical aspects
 
 ### Functional programming style
-All (when well-formed) is an expression: notes, assemblies of notes, context specifications
+All (when well-formed) are expressions: notes, assemblies of notes, context specifications
 (layouts, time layouts, synthesizers, _etc._). For this reason, it is possible to build
 complex expressions by nesting some smaller ones, without any particular restriction.
-CONTINUE
+"Let" expressions can be used to write concise code, where names have restricted scopes.
+
+
+### Tree patterns and composition
+Any expression reduces to a [tree pattern](Help.md#tree-patterns), the fundamental data
+structure of Calimba programs. Given two tree patterns, it is possible to compose these in
+order to build a bigger tree pattern. This operation is fundamental in the Calimba language.
 
 
 ### Bibliography
@@ -99,6 +106,8 @@ CONTINUE
     + S. Giraudo.
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
-
-CONTINUE (cite Paul Hudak)
+    + P. Hudak,
+      An Algebraic Theory of Polymorphic Temporal Media
+      Practical Aspects of Declarative Languages.
+      Lecture Notes in Computer Science, vol 3057, 2004.
 
