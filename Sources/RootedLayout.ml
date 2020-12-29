@@ -62,16 +62,16 @@ let transpose rl delta =
     let l = Layout.rotate rl.layout delta in
     {layout = l; root = nt}
 
-(* Returns the note specified by the layout shift ls in the rooted layout rl. *)
-let layout_shift_to_note rl ls =
+(* Returns the note specified by the degree d in the rooted layout rl. *)
+let degree_to_note rl d =
     assert (is_valid rl);
-    root (transpose rl (Degree.to_int ls))
+    root (transpose rl (Degree.to_int d))
 
 (* Returns the list of the notes corresponding to all the degrees of the rooted layout
- * rs. *)
+ * rl. *)
 let first_notes rl =
     assert (is_valid rl);
-    List.init (nb_minimal_degrees rl) Degree.construct |> List.map (layout_shift_to_note rl)
+    List.init (nb_minimal_degrees rl) Degree.construct |> List.map (degree_to_note rl)
 
 (* Tests if the note n belongs to the notes denoted by the rooted layout rl. *)
 let is_note rl n =

@@ -33,6 +33,11 @@ let nb_steps_by_octave l =
     assert (is_valid l);
     l |> List.fold_left (+) 0
 
+(* Returns the list of all minimal degrees of the layout l. *)
+let minimal_degrees l =
+    assert (is_valid l);
+    List.init (nb_minimal_degrees l) Degree.construct
+
 (* Returns the layout obtained by rotating for one step to the left the layout l. This is
  * the layout such that the new degree 0 is the former degree following the degree 0. *)
 let rotate_left l =
@@ -62,24 +67,24 @@ let distance_next l d =
     assert (is_valid l);
     List.nth l (Tools.remainder (Degree.to_int d) (nb_minimal_degrees l))
 
-(* Returns the distance in steps from the degree ed to the previous one in the layout l. The
+(* Returns the distance in steps from the degree d to the previous one in the layout l. The
  * returned value is negative. *)
 let distance_previous l d =
     assert (is_valid l);
     - (distance_next l (Degree.previous d))
 
-(* Returns the distance in steps from the origin to the degree d in the layout
- * l. This value is negative iff d is negative. *)
-let rec distance_from_origin l ed =
+(* Returns the distance in steps from the origin to the degree d in the layout l. This value
+ * is negative iff d is negative. *)
+let rec distance_from_origin l d =
     assert (is_valid l);
-    if Degree.is_zero ed then
+    if Degree.is_zero d then
         0
-    else if Degree.is_nonnegative ed then
-        (distance_next l Degree.zero)
-            + (distance_from_origin (rotate_left l) (Degree.previous ed))
+    else if Degree.is_nonnegative d then
+        distance_next l Degree.zero
+            + distance_from_origin (rotate_left l) (Degree.previous d)
     else
-        (distance_previous l Degree.zero)
-            + (distance_from_origin (rotate_right l) (Degree.next ed))
+        distance_previous l Degree.zero
+            + distance_from_origin (rotate_right l) (Degree.next d)
 
 (* Returns the distance between the two degrees d1 and d2 of the layout l. The first one
  * must be not greater than the second one. *)
@@ -92,7 +97,7 @@ let distance_between l d1 d2 =
  * the i-th value is the distance from the origin of the i-th degree of l. *)
 let distance_vector l =
     assert (is_valid l);
-    List.init (nb_minimal_degrees l) (fun i -> distance_from_origin l (Degree.construct i))
+    minimal_degrees l |> List.map (distance_from_origin l)
 
 (* Returns the mirror of the layout l. *)
 let mirror l =
@@ -102,7 +107,7 @@ let mirror l =
 (* Returns the list of all rotations of the layout l. *)
 let rotation_class l =
     assert (is_valid l);
-    List.init (nb_minimal_degrees l) Fun.id |> List.fold_left
+    minimal_degrees l |> List.fold_left
         (fun res _ -> (rotate_left (List.hd res)) :: res) [l]
         |> List.sort_uniq compare
 
@@ -176,10 +181,10 @@ let circular_sub_layouts l =
     assert (is_valid l);
     rotation_class l |> List.map sub_layouts |> List.flatten |> List.sort_uniq compare
 
-(* Returns the list of the lists of layout shifts such that the layout l1 is a circular
- * sub-layout of the layout l2. Each list of layout shifts specifies a choice of degrees of
- * l2 in order to obtain l1. *)
-let layout_shifts_for_circular_inclusion l1 l2 =
+(* Returns the list of the lists of degrees such that the layout l1 is a circular sub-layout
+ * of the layout l2. Each list of degrees specifies a choice of degrees of l2 in order to
+ * obtain l1. *)
+let degrees_for_circular_inclusion l1 l2 =
     assert (is_valid l1);
     assert (is_valid l2);
     List.init (List.length l2) Fun.id |> List.map
@@ -189,28 +194,28 @@ let layout_shifts_for_circular_inclusion l1 l2 =
             Tools.transform_option_default
                 (fun x ->
                     let res = x |> List.map List.length |> List.fold_left
-                        (fun res v -> (v + (List.hd res)) :: res)
-                        [0]
+                        (fun res v -> (Degree.shift (List.hd res) v) :: res)
+                        [Degree.construct delta]
                         |> List.tl
-                        |> List.rev
-                        |> List.map (fun v -> v + delta) in
+                        |> List.rev in
                     Some res)
                 g
                 None)
         |> List.filter Option.is_some
         |> List.map Option.get
 
-(* Returns the list of pairs of layout shifts forming intervals in the layout l. The octaves
- * of these layout shifts are 0 or 1. *)
-let layout_shifts_for_intervals l =
+(* Returns the list of pairs of degrees forming intervals in the layout l. Given such a
+ * pair, the two degrees belong to the octave 0 or the first belongs to the octave 0 and the
+ * second one to the octave 1. *)
+let degrees_for_intervals l =
     assert (is_valid l);
     let nbd = nb_minimal_degrees l in
-    let shifts_1 = List.init nbd Degree.construct in
-    let shifts_2 = shifts_1 |> List.map (fun d -> Degree.shift d nbd) in
+    let deg_1 = minimal_degrees l in
+    let deg_2 = deg_1 |> List.map (fun d -> Degree.shift d nbd) in
     let tmp =
         List.append
-            (Tools.cartesian_product shifts_1 shifts_1)
-            (Tools.cartesian_product shifts_1 shifts_2) in
+            (Tools.cartesian_product deg_1 deg_1)
+            (Tools.cartesian_product deg_1 deg_2) in
     tmp |> List.filter (fun (d1, d2) -> Degree.is_leq d1 d2)
 
 (* Returns the interval vector of the layout l. This is the list of length the number of
@@ -218,9 +223,9 @@ let layout_shifts_for_intervals l =
  * i + 1 steps in l. *)
 let interval_vector l =
     assert (is_valid l);
-    let intervals = layout_shifts_for_intervals l in
+    let intervals = degrees_for_intervals l in
     let interval_values = intervals |> List.map
-        (fun (ed1, ed2) -> distance_between l ed1 ed2) in
+        (fun (d1, d2) -> distance_between l d1 d2) in
     Tools.occurrence_vector interval_values 1 (nb_steps_by_octave l - 1)
 
 (* Returns the internal interval vector of the layout l. This follows the same idea as the
@@ -228,37 +233,37 @@ let interval_vector l =
 let internal_interval_vector l =
     assert (is_valid l);
     let d_max = Degree.construct ((nb_minimal_degrees l) - 1) in
-    let intervals = layout_shifts_for_intervals l |> List.filter
+    let intervals = degrees_for_intervals l |> List.filter
         (fun (d1, d2) -> Degree.is_leq d1 d_max && Degree.is_leq d2 d_max) in
     let interval_values = intervals |> List.map
         (fun (d1, d2) -> distance_between l d1 d2) in
     Tools.occurrence_vector interval_values 1 (nb_steps_by_octave l - 1)
 
-(* Returns the ratio between the frequency of the notes specified by the layout shifts ls1
- * and ls2 in the layout l. *)
-let frequency_ratio l ls1 ls2 =
+(* Returns the ratio between the frequency of the notes specified by the degrees d1 and d2
+ * in the layout l. *)
+let frequency_ratio l d1 d2 =
     assert (is_valid l);
     let nbs = nb_steps_by_octave l in
-    let freq ls =
-        (*let deg = LayoutShift.distance_from_root nbd ls in
-        let dist = distance_from_origin l deg in*)
-        let dist = distance_from_origin l ls in
+    let freq d =
+        let dist = distance_from_origin l d in
         let nt = Note.shift (Note.construct 0 nbs 0) dist in
         Note.frequency nt
     in
-    (freq ls2) /. (freq ls1)
+    freq d2 /. freq d1
 
-(* Returns the pair of layout shifts such that the frequency ratio of the interval of the
- * layout l they specify approximates in the best way the ratio ratio.*)
+(* Returns the pair of degrees such that the frequency ratio of the interval of the layout l
+ * they specify approximates in the best way the ratio ratio. Given such a pair, the two
+ * degrees belong to the octave 0 or the first belongs to the octave 0 and the second one
+ * to the octave 1. *)
 let best_interval_for_ratio l ratio =
     assert (is_valid l);
     assert (ratio >= 1.0);
     let oc = int_of_float (Tools.log2 ratio) in
     let nbd = nb_minimal_degrees l in
-    let shifts_1 = List.init nbd Degree.construct in
-    let shifts_2 = shifts_1 |> List.map (fun d -> Degree.shift d (oc * nbd)) in
-    let shifts_3 = shifts_2 |> List.map (fun d -> Degree.shift d nbd) in
-    let intervals = Tools.cartesian_product shifts_1 (List.append shifts_2 shifts_3) in
+    let deg_1 = minimal_degrees l in
+    let deg_2 = deg_1 |> List.map (fun d -> Degree.shift d (oc * nbd)) in
+    let deg_3 = deg_2 |> List.map (fun d -> Degree.shift d nbd) in
+    let intervals = Tools.cartesian_product deg_1 (List.append deg_2 deg_3) in
     List.tl intervals |> List.fold_left
         (fun res candidate ->
             let r = frequency_ratio l (fst candidate) (snd candidate)

@@ -48,12 +48,12 @@ let is_leq d1 d2 =
 let shift d delta =
     Degree (delta + to_int d)
 
-(* Returns the degree obtained by adding the extended degrees ed1 and ed2. *)
+(* Returns the degree obtained by adding the degrees d1 and d2. *)
 let add d1 d2 =
     Degree (to_int d1 + to_int d2)
 
-(* Returns the complement degree of the extended degree ed. This is the inverse of
- * ls w.r.t. degree addition. *)
+(* Returns the complement degree of the degree d. This is the inverse of d w.r.t. degree
+ * addition. *)
 let complement d =
     Degree (-(to_int d))
 

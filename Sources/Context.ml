@@ -18,7 +18,7 @@ type context = {
     unit_duration : int;
 
     (* The synthesizer, specifying the timbre of the sound. *)
-    synthesizer : Synthesizer.synthesizer;
+    synthesizer : Synthesizer.synthesizer
 }
 
 (* Returns a string representation of the context ct. *)
@@ -110,14 +110,14 @@ let to_performance ct =
     assert (is_valid ct);
     fun a ->
         match a with
-            |TreePattern.Silence tss ->
+            |TreePattern.Silence td ->
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
-                let dur = ConcreteTimeShape.time_shift_to_duration cts tss in
+                let dur = ConcreteTimeShape.time_degree_to_duration cts td in
                 Sound.silence dur
-            |TreePattern.Beat (d, tss, _) ->
+            |TreePattern.Beat (d, td, _) ->
                 let rl = RootedLayout.construct ct.layout ct.root in
-                let note = RootedLayout.layout_shift_to_note rl d in
+                let note = RootedLayout.degree_to_note rl d in
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
-                let dur = ConcreteTimeShape.time_shift_to_duration cts tss in
+                let dur = ConcreteTimeShape.time_degree_to_duration cts td in
                 Synthesizer.generate_sound_note ct.synthesizer note dur
 

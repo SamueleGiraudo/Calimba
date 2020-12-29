@@ -9,8 +9,8 @@ type label = string
 (* An atom encodes an atomic unit of music. It can be either a silence or a beat. A beat can
  * have a label. *)
 type atom =
-    |Silence of TimeShapeShift.time_shape_shift
-    |Beat of Degree.degree * TimeShapeShift.time_shape_shift * (label option)
+    |Silence of TimeDegree.time_degree
+    |Beat of Degree.degree * TimeDegree.time_degree * (label option)
 
 (* A performance is a map saying how to associate with any atom a sound. *)
 type performance = atom -> Sound.sound
@@ -37,24 +37,24 @@ exception ValueError
 
 (* Returns an atom which is a silence lasting one unit of time. *)
 let silence =
-    Silence 0
+    Silence TimeDegree.zero
 
 (* Returns an atom which is a beat lasting one unit of time and of degree d. *)
 let beat d =
-    Beat (Degree.Degree d, 0, None)
+    Beat (Degree.Degree d, TimeDegree.zero, None)
 
 (* Returns an atom which is a labeled beat lasting one unit of time, of degree d, and of
  * label lbl. *)
 let labeled_beat d lbl =
-    Beat (Degree.Degree d, 0, Some lbl)
+    Beat (Degree.Degree d, TimeDegree.zero, Some lbl)
 
 (* Returns a string representation of the atom a. *)
 let atom_to_string a =
     match a with
-        |Silence tss -> TimeShapeShift.to_string tss
-        |Beat (ed, tss, lbl) ->
+        |Silence td -> TimeDegree.to_string td
+        |Beat (ed, td, lbl) ->
             let str = Printf.sprintf "%s%s"
-                (Degree.to_string ed) (TimeShapeShift.to_string tss) in
+                (Degree.to_string ed) (TimeDegree.to_string td) in
             if Option.is_some lbl then
                 Printf.sprintf "%s:%s" str (Option.get lbl)
             else
@@ -104,18 +104,18 @@ let rec arity t =
         |Concatenation (t1, t2) | Composition (t1, t2) -> arity t1 + arity t2
         |Performance (_, t') |Effect (_, t') -> arity t'
 
-(* Returns the tree pattern obtained by applying the layout shift ls and the time shift ts
- * on the tree pattern ts. *)
-let rec beat_action ls ts t =
+(* Returns the tree pattern obtained by applying the degree d and the time degree td on the
+ * tree pattern ts. *)
+let rec beat_action d td t =
     match t with
-        |Atom (Silence ts') -> Atom (Silence (ts + ts'))
-        |Atom (Beat (ls', ts', lbl)) ->
-            Atom (Beat (Degree.add ls ls', ts + ts', lbl))
+        |Atom (Silence td') -> Atom (Silence (TimeDegree.add td td'))
+        |Atom (Beat (d', td', lbl)) ->
+            Atom (Beat (Degree.add d d', TimeDegree.add td td', lbl))
         |Concatenation (t1, t2) ->
-            Concatenation (beat_action ls ts t1, beat_action ls ts t2)
-        |Composition (t1, t2) -> Composition (beat_action ls ts t1, beat_action ls ts t2)
-        |Performance (p, t') -> Performance (p, beat_action ls ts t')
-        |Effect (e, t') -> Effect (e, beat_action ls ts t')
+            Concatenation (beat_action d td t1, beat_action d td t2)
+        |Composition (t1, t2) -> Composition (beat_action d td t1, beat_action d td t2)
+        |Performance (p, t') -> Performance (p, beat_action d td t')
+        |Effect (e, t') -> Effect (e, beat_action d td t')
 
 (* Returns the operadic partial composition of the tree pattern t2 at i-th position into the
  * tree pattern t1. Beats are indexed from the left to the right. *)
@@ -201,11 +201,11 @@ let rec reverse t =
         |Effect (e, t') -> Effect (e, reverse t')
 
 (* Returns a tree pattern specifying the complementation of the tree pattern t. This
- * replaces each shift of each beat by its complement. *)
+ * replaces each degree of each beat by its complement. *)
 let rec complement t =
     match t with
         |Atom (Silence _) -> t
-        |Atom (Beat (ls, ts, lbl)) -> Atom (Beat (Degree.complement ls, ts, lbl))
+        |Atom (Beat (d, td, lbl)) -> Atom (Beat (Degree.complement d, td, lbl))
         |Concatenation (t1, t2) -> Concatenation (complement t1, complement t2)
         |Composition (t1, t2) -> Composition (complement t1, complement t2)
         |Performance (p, t') -> Performance (p, complement t')

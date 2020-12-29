@@ -28,12 +28,12 @@ let to_string cts =
     Tools.csprintf Tools.Blue
         (Printf.sprintf "%d ms - %s" cts.unit_duration (TimeShape.to_string cts.time_shape))
 
-(* Returns the duration in ms specified by the time shape shift tss for the concrete time
- * shape cts. *)
-let time_shift_to_duration cts tss =
+(* Returns the duration in ms specified by the time degree td for the concrete time shape
+ * cts. *)
+let time_degree_to_duration cts td =
     assert (is_valid cts);
     let coeff = (float_of_int (TimeShape.multiplier cts.time_shape))
         /. (float_of_int (TimeShape.divider cts.time_shape)) in
-    let len = coeff ** (float_of_int tss) in
+    let len = coeff ** (float_of_int (TimeDegree.to_int td)) in
     int_of_float (len *. (float_of_int cts.unit_duration))
 
