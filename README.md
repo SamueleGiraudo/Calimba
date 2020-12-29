@@ -38,22 +38,12 @@ manipulation tools. This language does no depend on any heavy external library.
 1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal).
 
 
-## Building
+## Installation
+
 The following instructions hold for Linux systems like Debian or Archlinux, after 2020.
 
-1. Clone the repository somewhere by running
-   `git clone https://github.com/SamueleGiraudo/Calimba.git`.
-
-2. Install all dependencies (see the section below).
-
-3. Build the project by running `chmod +x Compil` and then `./Compil`.
-
-This creates an executable `calimba`.
-
-
-## Dependencies
-The following programs are needed and they are available for most of the Linux systems like
-Debian or Archlinux, after 2020.
+### Dependencies
+The following programs are needed:
 
 + `ocaml` (Version `>= 4.11.1`. Inferior versions may be suitable.)
 + `ocaml-findlib`
@@ -63,10 +53,21 @@ Debian or Archlinux, after 2020.
 + `graphics` (Available by `opam install graphics`.)
 
 
+### Building
+Here are the required steps to build the interpreter `calimba`:
+
+1. Clone the repository somewhere by running
+   `git clone https://github.com/SamueleGiraudo/Calimba.git`.
+2. Install all dependencies (see the section below).
+3. Build the executable by running `chmod +x Compil` and then `./Compil`.
+
+This creates an executable `calimba`. The following sections explain how to use it.
+
+
 ## User guide
 This [page](Help.md) contains the description of the Calimba language.
 
-Calimba file have `cal` as extension. Given such a file `Program.cal`, the command
+Calimba files have `cal` as extension. Given such a file `Program.cal`, the command
 
 + `./calimba -f Program.cal -p` plays the music specified by the program;
 + `./calimba -f Program.cal -w` creates the PCM file `Program.pcm` containing the music
@@ -88,7 +89,8 @@ Calimba file have `cal` as extension. Given such a file `Program.cal`, the comma
 All (when well-formed) are expressions: notes, assemblies of notes, context specifications
 (layouts, time layouts, synthesizers, _etc._). For this reason, it is possible to build
 complex expressions by nesting some smaller ones, without any particular restriction.
-"Let" expressions can be used to write concise code, where names have restricted scopes.
+Besides, "Let in" expressions can be used to write concise code, where names have restricted
+scopes.
 
 
 ### Tree patterns and composition

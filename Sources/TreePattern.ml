@@ -117,7 +117,7 @@ let rec beat_action ls ts t =
         |Effect (e, t') -> Effect (e, beat_action ls ts t')
 
 (* Returns the operadic partial composition of the tree pattern t2 at i-th position into the
- * the tree pattern t1. Beats are indexed from the left to the right. *)
+ * tree pattern t1. Beats are indexed from the left to the right. *)
 let rec partial_composition t1 i t2 =
     match t1 with
         |Atom (Silence _) -> raise ValueError

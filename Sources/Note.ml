@@ -100,6 +100,16 @@ let rec shift n offset =
     else
         shift (previous n) (offset + 1)
 
+(* Returns the note obtained by increasing the octave of the note n. *)
+let increase_octave n =
+    assert (is_valid n);
+    {n with octave = n.octave + 1}
+
+(* Returns the note obtained by decreasing the octave of the note n. *)
+let decrease_octave n =
+    assert (is_valid n);
+    {n with octave = n.octave - 1}
+
 (* Tests is the note n1 is lower than the note n2. These two notes must have the same
  * numbers of steps by octave. *)
 let is_lower n1 n2 =

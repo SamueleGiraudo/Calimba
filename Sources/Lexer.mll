@@ -80,6 +80,10 @@ rule read = parse
         {Parser.POINT}
     |':'
         {Parser.COLON}
+    |'+'
+        {Parser.PLUS}
+    |'-'
+        {Parser.MINUS}
     |'<'
         {Parser.LT}
     |'>'

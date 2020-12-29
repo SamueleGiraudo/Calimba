@@ -18,6 +18,8 @@ let argument_error name index_arg msg =
 
 %token POINT
 %token COLON
+%token PLUS
+%token MINUS
 %token LT
 %token GT
 %token STAR
@@ -67,6 +69,8 @@ let argument_error name index_arg msg =
 
 %nonassoc PRIME
 %nonassoc COMMA
+%nonassoc PLUS
+%nonassoc MINUS
 %nonassoc LT
 %nonassoc GT
 
@@ -95,6 +99,10 @@ expression:
         {Expression.IncreaseOctave exp}
     |exp=expression COMMA
         {Expression.DecreaseOctave exp}
+    |exp= expression PLUS
+        {Expression.IncreaseDegrees exp}
+    |exp= expression MINUS
+        {Expression.DecreaseDegrees exp}
     |exp=expression LT
         {Expression.IncreaseTime exp}
     |exp=expression GT

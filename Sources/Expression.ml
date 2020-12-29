@@ -23,6 +23,8 @@ type expression =
     |Composition of expression * expression
     |IncreaseOctave of expression
     |DecreaseOctave of expression
+    |IncreaseDegrees of expression
+    |DecreaseDegrees of expression
     |IncreaseTime of expression
     |DecreaseTime of expression
     |Insertion of expression * int * expression
@@ -52,6 +54,7 @@ let error_to_string err =
 
 (* Returns the context specified by the list lst of modifications. The modifications come
  * from the newest to the oldest one. *)
+(*
 let modification_list_to_context lst =
     lst |> List.rev |> List.fold_left
         (fun ct m ->
@@ -63,6 +66,15 @@ let modification_list_to_context lst =
                 |Synthesizer s -> Context.update_synthesizer ct s
                 |Effect _ -> ct)
         Context.default
+*)
+let update_context ct m =
+    match m with
+        |Layout l -> Context.update_layout ct l
+        |Root r -> Context.update_root ct r
+        |TimeShape ts -> Context.update_time_shape ct ts
+        |UnitDuration d -> Context.update_unit_duration ct d
+        |Synthesizer s -> Context.update_synthesizer ct s
+        |Effect _ -> ct
 
 (* Returns the list of all layouts used in the expression e. *)
 let rec layouts e =
@@ -73,6 +85,8 @@ let rec layouts e =
         |Composition (e1, e2) -> List.append (layouts e1) (layouts e2)
         |IncreaseOctave e' -> layouts e'
         |DecreaseOctave e' -> layouts e'
+        |IncreaseDegrees e' -> layouts e'
+        |DecreaseDegrees e' -> layouts e'
         |IncreaseTime e' -> layouts e'
         |DecreaseTime e' -> layouts e'
         |Insertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
@@ -93,7 +107,8 @@ let rec free_names e =
         |Concatenation (t1, t2) |Composition (t1, t2) |Insertion (t1, _, t2)
                 |LabelInsertion (t1, _, t2) |BinaryInsertion (t1, t2) ->
             List.append (free_names t1) (free_names t2)
-        |IncreaseOctave e' |DecreaseOctave e' |IncreaseTime e' |DecreaseTime e'
+        |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
+                |IncreaseTime e' |DecreaseTime e'
                 |Repeat (_, e') |Reverse e' |Complement e' ->
             free_names e'
         |Let (name, e1, e2) ->
@@ -122,6 +137,12 @@ let rec substitute_free_names e1 name e2 =
         |DecreaseOctave e' ->
             let e'' = substitute_free_names e' name e2 in
             DecreaseOctave e''
+        |IncreaseDegrees e' ->
+            let e'' = substitute_free_names e' name e2 in
+            IncreaseDegrees e''
+        |DecreaseDegrees e' ->
+            let e'' = substitute_free_names e' name e2 in
+            DecreaseDegrees e''
         |IncreaseTime e' ->
             let e'' = substitute_free_names e' name e2 in
             IncreaseTime e''
@@ -156,7 +177,7 @@ let rec substitute_free_names e1 name e2 =
         |Put (ct, e') ->
             let e'' = substitute_free_names e' name e2 in
             Put (ct, e'')
-
+(*
 (* Returns the tree pattern encoded by the expression e. Raises ValueError if there are
  * unbounded names in e. *)
 let to_tree_pattern e =
@@ -172,12 +193,31 @@ let to_tree_pattern e =
             |Composition (e1, e2) ->
                 let tp1 = aux m_lst e1 and tp2 = aux m_lst e2 in
                 TreePattern.Composition (tp1, tp2)
+            (*
             |IncreaseOctave e' ->
                 let tp = aux m_lst e' in
                 TreePattern.beat_action (LayoutShift.construct 0 1) 0 tp
+            *)
+            |IncreaseOctave e' ->
+                let ct = modification_list_to_context m_lst in
+                let r = Note.shift_octave (Context.root ct) 1 in
+                let ct' = Context.update_root ct r in
+                let p = Context.to_performance ct' in
+                let tp = aux ((Root r) :: m_lst) e' in
+                TreePattern.Performance (p, tp)
+            (*
             |DecreaseOctave e' ->
                 let tp = aux m_lst e' in
                 TreePattern.beat_action (LayoutShift.construct 0 (-1)) 0 tp
+            *)
+            |DecreaseOctave e' ->
+                let ct = modification_list_to_context m_lst in
+                let r = Note.shift_octave (Context.root ct) (-1) in
+                let ct' = Context.update_root ct r in
+                let p = Context.to_performance ct' in
+                let tp = aux ((Root r) :: m_lst) e' in
+                TreePattern.Performance (p, tp)
+
             |IncreaseTime e' ->
                 let tp = aux m_lst e' in
                 TreePattern.beat_action (LayoutShift.construct 0 0) 1 tp
@@ -218,6 +258,76 @@ let to_tree_pattern e =
     let tp = aux [] e in
     let p = Context.to_performance Context.default in
     TreePattern.Performance (p, tp)
+*)
+
+(* Returns the tree pattern encoded by the expression e. Raises ValueError if there are
+ * unbounded names in e. *)
+let to_tree_pattern e =
+    let rec aux ct e =
+        match e with
+            |Name _ -> raise ValueError
+            |Atom (TreePattern.Silence ts) -> TreePattern.Atom (TreePattern.Silence ts)
+            |Atom (TreePattern.Beat (s, ts, lbl)) ->
+                TreePattern.Atom (TreePattern.Beat (s, ts, lbl))
+            |Concatenation (e1, e2) ->
+                let tp1 = aux ct e1 and tp2 = aux ct e2 in
+                TreePattern.Concatenation (tp1, tp2)
+            |Composition (e1, e2) ->
+                let tp1 = aux ct e1 and tp2 = aux ct e2 in
+                TreePattern.Composition (tp1, tp2)
+            |IncreaseOctave e' ->
+                let ct' = Context.update_root ct (Note.increase_octave (Context.root ct)) in
+                let tp = aux ct' e' in
+                let p = Context.to_performance ct' in
+                TreePattern.Performance (p, tp)
+            |DecreaseOctave e' ->
+                let ct' = Context.update_root ct (Note.decrease_octave (Context.root ct)) in
+                let tp = aux ct' e' in
+                let p = Context.to_performance ct' in
+                TreePattern.Performance (p, tp)
+            |IncreaseDegrees e' ->
+                let tp = aux ct e' in
+                TreePattern.beat_action (LayoutShift.construct 1 0) 0 tp
+            |DecreaseDegrees e' ->
+                let tp = aux ct e' in
+                TreePattern.beat_action (LayoutShift.construct (-1) 0) 0 tp
+            |IncreaseTime e' ->
+                let tp = aux ct e' in
+                TreePattern.beat_action (LayoutShift.construct 0 0) 1 tp
+            |DecreaseTime e' ->
+                let tp = aux ct e' in
+                TreePattern.beat_action (LayoutShift.construct 0 0) (-1) tp
+            |Insertion (e1, i, e2) ->
+                let tp1 = aux ct e1 and tp2 = aux ct e2 in
+                TreePattern.extended_partial_composition tp1 i tp2
+            |LabelInsertion (e1, lbl, e2) ->
+                let tp1 = aux ct e1 and tp2 = aux ct e2 in
+                TreePattern.label_composition tp1 lbl tp2
+            |BinaryInsertion (e1, e2) ->
+                let tp1 = aux ct e1 and tp2 = aux ct e2 in
+                TreePattern.binary_composition tp1 tp2 
+            |Repeat (k, e') ->
+                let tp = aux ct e' in
+                TreePattern.repeat k tp
+            |Reverse e' ->
+                let tp = aux ct e' in
+                TreePattern.reverse tp
+            |Complement e' ->
+                let tp = aux ct e' in
+                TreePattern.complement tp
+            |Let (name, e1', e2') ->
+                let e' = substitute_free_names e2' name e1' in
+                aux ct e'
+            |Put (m, e') ->
+                let ct' = update_context ct m in
+                let tp = aux ct' e' in
+                match m with
+                    |Effect e -> TreePattern.Effect (e, tp)
+                    |_ -> TreePattern.Performance (Context.to_performance ct', tp)
+    in
+    let tp = aux Context.default e in
+    let p = Context.to_performance Context.default in
+    TreePattern.Performance (p, tp)
 
 (* Returns the sound represented by the expression t. This computation works only if e has
  * no errors. *)
@@ -228,6 +338,7 @@ let sound e =
 (* Returns the list of the invalid contexts associated with each atom  appearing in the
  * expression e. For instance, this happens if a root note has not the required number of
  * steps by octave as required by the layout. *)
+(*
 let invalid_contexts e =
     let rec aux m_lst e =
         match e with
@@ -247,6 +358,29 @@ let invalid_contexts e =
             |Put (m, e') -> aux (m :: m_lst) e'
     in
     aux [] e
+*)
+
+(* Returns the list of the invalid contexts associated with each atom  appearing in the
+ * expression e. For instance, this happens if a root note has not the required number of
+ * steps by octave as required by the layout. *)
+let invalid_contexts e =
+    let rec aux ct e =
+        match e with
+            |Name _ -> []
+            |Atom _ -> if Context.is_valid ct then [] else [ct]
+            |Concatenation (e1, e2) |Composition (e1, e2) |Insertion (e1, _, e2)
+                    |LabelInsertion (e1, _, e2) |BinaryInsertion (e1, e2) ->
+                List.append (aux ct e1) (aux ct e2)
+            |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
+                    |IncreaseTime e' |DecreaseTime e'
+                    |Repeat (_, e') |Reverse e' |Complement e' ->
+                aux ct e'
+            |Let (name, e1', e2') ->
+                let e' = substitute_free_names e2' name e1' in
+                aux ct e'
+            |Put (m, e') -> aux (update_context ct m) e'
+    in
+    aux Context.default e
 
 (* Returns the list of the errors in the expression e. *)
 let errors e =
