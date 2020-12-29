@@ -5,7 +5,7 @@ This page describes the way to build programs in the Calimba language.
 ## General conventions
 Comments are enclosed into symbols `{` and `}`. Nested comments are allowed.
 
-Identifiers are nonempty strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and
+_Names_ are nonempty strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and
 starting with an alphabetic symbol or `_`.
 
 
@@ -352,7 +352,6 @@ ms, the shape modifies the associated sounds as depicted here
   /XXXXXXXXXXXXXXXXXXX\       ---___
  /XXXXXXXXXXXXXXXXXXXXX\            ---___
 /XXXXXXXXXXXXXXXXXXXXXXX\                 ---___
-
 +--------------------m-------------------------+
 +---a--+         +--d---+
 +-----------t-----------+

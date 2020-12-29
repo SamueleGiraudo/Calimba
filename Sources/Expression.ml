@@ -15,7 +15,7 @@ type modification =
 (* Names in expressions. *)
 type name = string
 
-(* Abstract syntax trees for expressions in the calimba language. *)
+(* Abstract syntax trees for expressions in the Calimba language. *)
 type expression =
     |Name of name
     |Atom of TreePattern.atom
@@ -246,7 +246,7 @@ let invalid_contexts e =
     let rec aux ct e =
         match e with
             |Name _ -> []
-            |Atom _ -> if Context.is_valid ct then [] else [ct]
+            |Atom _ -> if Context.is_inconsistent ct then [ct] else []
             |Concatenation (e1, e2) |Composition (e1, e2) |Insertion (e1, _, e2)
                     |LabelInsertion (e1, _, e2) |BinaryInsertion (e1, e2) ->
                 List.append (aux ct e1) (aux ct e2)

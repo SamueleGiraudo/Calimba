@@ -138,7 +138,7 @@ expression:
 
 put:
     |LAYOUT EQUALS lay=layout
-        {Expression.Layout (Layout.construct lay)}
+        {Expression.Layout lay}
     |ROOT EQUALS root=note
         {Expression.Root root}
     |TIME EQUALS m=INTEGER d=INTEGER
@@ -160,7 +160,7 @@ put:
 
 layout:
     |lst=nonempty_list(INTEGER)
-        {if not (Layout.is_valid lst) then
+        {if not (Layout.is_valid_list lst) then
             argument_error "layout" 1 "is not a valid layout"
         else
             Layout.construct lst}

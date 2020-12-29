@@ -6,55 +6,58 @@
 (* A layout is an integer composition. It encodes a sequence of distances in an octave. Each
  * integer specifies the distance between two consecutive minimal degrees. A layout can be
  * used to specify a scale or an arpeggio. *)
-type layout = int list
+type layout = Layout of int list
 
-(* Tests if the integer list l is a layout. *)
-let is_valid l =
-    l <> [] && l |> List.for_all (fun a -> 1 <= a)
+(* Tests if the integer list lst is a valid list for a layout. *)
+let is_valid_list lst =
+    lst <> [] && lst |> List.for_all (fun a -> 1 <= a)
 
-(* Returns the layout having l as underlying list of integers. *)
-let construct l =
-    assert (is_valid l);
-    l
+(* Returns the layout having lst as underlying list of integers. *)
+let construct lst =
+    assert (is_valid_list lst);
+    Layout lst
+
+(* The natural minor layout. *)
+let natural_minor = construct [2; 1; 2; 2; 1; 2; 2]
+
+(* Returns the list associated with the layout l. *)
+let to_list l =
+    let Layout lst = l in
+    lst
 
 (* Returns a string representation of the layout l. For instance, "3 2 2 3 2" is the string
  * representation of the minor pentatonic layout. *)
 let to_string l =
-    Tools.csprintf Tools.Yellow (l |> List.map string_of_int |> String.concat " ")
+    Tools.csprintf Tools.Yellow (to_list l |> List.map string_of_int |> String.concat " ")
 
 (* Returns the number of minimal degrees in the layout l. A degree is minimal if its refers
  * to a note in the octave 0 specified by the layout. *)
 let nb_minimal_degrees l =
-    assert (is_valid l);
-    List.length l
+    List.length (to_list l)
 
 (* Returns the number of steps by octave in the layout l. *)
 let nb_steps_by_octave l =
-    assert (is_valid l);
-    l |> List.fold_left (+) 0
+    to_list l |> List.fold_left (+) 0
 
 (* Returns the list of all minimal degrees of the layout l. *)
 let minimal_degrees l =
-    assert (is_valid l);
     List.init (nb_minimal_degrees l) Degree.construct
 
 (* Returns the layout obtained by rotating for one step to the left the layout l. This is
  * the layout such that the new degree 0 is the former degree following the degree 0. *)
 let rotate_left l =
-    assert (is_valid l);
-    List.append (List.tl l) [List.hd l]
+    let lst = to_list l in
+    construct (List.append (List.tl lst) [List.hd lst])
 
 (* Returns the layout obtained by rotating for one step to the right the layout l. This is
  * the layout such that the new degree 0 is the former last degree. *)
 let rotate_right l =
-    assert (is_valid l);
-    let tmp = List.rev l in
-    (List.hd tmp) :: (List.rev (List.tl tmp))
+    let tmp = List.rev (to_list l) in
+    construct ((List.hd tmp) :: (List.rev (List.tl tmp)))
 
 (* Returns the layout obtained by rotating from delta step to the left the layout l if
  * delta is positive and to the right otherwise. *)
 let rec rotate l delta =
-    assert (is_valid l);
     if delta = 0 then
         l
     else if delta >= 1 then
@@ -64,19 +67,16 @@ let rec rotate l delta =
 
 (* Returns the distance in steps from the degree d to the next one in the layout l. *)
 let distance_next l d =
-    assert (is_valid l);
-    List.nth l (Tools.remainder (Degree.to_int d) (nb_minimal_degrees l))
+    List.nth (to_list l) (Tools.remainder (Degree.to_int d) (nb_minimal_degrees l))
 
 (* Returns the distance in steps from the degree d to the previous one in the layout l. The
  * returned value is negative. *)
 let distance_previous l d =
-    assert (is_valid l);
     - (distance_next l (Degree.previous d))
 
 (* Returns the distance in steps from the origin to the degree d in the layout l. This value
  * is negative iff d is negative. *)
 let rec distance_from_origin l d =
-    assert (is_valid l);
     if Degree.is_zero d then
         0
     else if Degree.is_nonnegative d then
@@ -89,105 +89,96 @@ let rec distance_from_origin l d =
 (* Returns the distance between the two degrees d1 and d2 of the layout l. The first one
  * must be not greater than the second one. *)
 let distance_between l d1 d2 =
-    assert (is_valid l);
     assert (Degree.is_leq d1 d2);
     distance_from_origin l d2 - distance_from_origin l d1
 
 (* Returns the list of integers of length the number of degrees in the layout l such that
  * the i-th value is the distance from the origin of the i-th degree of l. *)
 let distance_vector l =
-    assert (is_valid l);
     minimal_degrees l |> List.map (distance_from_origin l)
 
 (* Returns the mirror of the layout l. *)
 let mirror l =
-    assert (is_valid l);
-    List.rev l
+    construct (List.rev (to_list l))
 
 (* Returns the list of all rotations of the layout l. *)
 let rotation_class l =
-    assert (is_valid l);
     minimal_degrees l |> List.fold_left
         (fun res _ -> (rotate_left (List.hd res)) :: res) [l]
         |> List.sort_uniq compare
 
 (* Tests if the layouts l1 and l2 are in the same rotation class. *)
 let are_rotation_equivalent l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
     List.mem l1 (rotation_class l2)
 
 (* Returns the minimal element of the rotation class of the layout l w.r.t. the
  * lexicographic order. *)
 let minimal_of_rotation_class l =
-    assert (is_valid l);
     rotation_class l |> List.fold_left min l
 
 (* Tests if the layout l is the minimal layout of its rotation class. *)
 let is_minimal_in_rotation_class l =
-    assert (is_valid l);
     l = minimal_of_rotation_class l
 
 (* Returns the dual of the layout l. This is the layout having the transpose of l as
  * integer composition. *)
-let rec dual l =
-    assert (is_valid l);
-    match l with
-        |[] | [1] -> l
-        |1 :: l' ->
-            let tmp = dual l' in
-            ((List.hd tmp) + 1) :: (List.tl tmp)
-        |a :: l' -> 1 :: (dual ((a - 1) :: l'))
+let dual l =
+    let rec aux lst =
+        match lst with
+            |[] | [1] -> lst
+            |1 :: lst' ->
+                let tmp = aux lst' in
+                ((List.hd tmp) + 1) :: (List.tl tmp)
+            |a :: lst' -> 1 :: (aux ((a - 1) :: lst'))
+    in
+    construct (aux (to_list l))
 
 (* Returns an option on a list of lists of integers obtained graphically by inserting
  * brackets into the list of integers l2 such that, by taking the sums of the values of the
  * lists, one obtain the list of integers l2. None is returned is this is not possible. *)
-let rec gather_as_sub_layout l1 l2 =
-    match l1, l2 with
-        |[], [] -> Some []
-        |a1 :: l1', a2 :: l2' when a1 = a2 ->
-            let tmp = gather_as_sub_layout l1' l2' in
-            Tools.transform_option_default (fun x -> Some ([a2] :: x)) tmp None
-        |a1 :: l1', a2 :: l2' when a1 > a2 ->
-            let tmp = gather_as_sub_layout ((a1 - a2) :: l1') l2' in
-            Tools.transform_option_default
-                (fun x ->  Some ((a2 :: (List.hd x)) :: (List.tl x)))
-                tmp
-                None
-        |_ -> None
+let gather_as_sub_layout l1 l2 =
+    let rec aux lst1 lst2 =
+        match lst1, lst2 with
+            |[], [] -> Some []
+            |a1 :: lst1', a2 :: lst2' when a1 = a2 ->
+                let tmp = aux lst1' lst2' in
+                Tools.transform_option_default (fun x -> Some ([a2] :: x)) tmp None
+            |a1 :: lst1', a2 :: lst2' when a1 > a2 ->
+                let tmp = aux ((a1 - a2) :: lst1') lst2' in
+                Tools.transform_option_default
+                    (fun x ->  Some ((a2 :: (List.hd x)) :: (List.tl x)))
+                    tmp
+                    None
+            |_ -> None
+    in
+    aux (to_list l1) (to_list l2)
 
 (* Tests if the set of the distances from the origin of the layout l1 is included into the
  * set of distances from the origin of the layout l2. *)
 let is_sub_layout l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
     assert (nb_steps_by_octave l1 = nb_steps_by_octave l2);
     Option.is_some (gather_as_sub_layout l1 l2)
 
 (* Returns the list of the sub_layouts of the layout l. *)
 let sub_layouts l =
-    assert (is_valid l);
-    List.tl l |> List.fold_left
+    to_list l |> List.tl |> List.fold_left
         (fun res v ->
             List.append
                 (res |> List.map (fun l' -> v :: l'))
                 (res |> List.map (fun l' -> (v + List.hd l') :: List.tl l')))
-        [[List.hd l]]
-    |> List.map List.rev |> List.sort compare
+        [[List.hd (to_list l)]]
+    |> List.map List.rev |> List.sort compare |> List.map construct
 
 (* Returns the list of all the layouts circularly included into the layout l. *)
 let circular_sub_layouts l =
-    assert (is_valid l);
     rotation_class l |> List.map sub_layouts |> List.flatten |> List.sort_uniq compare
 
 (* Returns the list of the lists of degrees such that the layout l1 is a circular sub-layout
  * of the layout l2. Each list of degrees specifies a choice of degrees of l2 in order to
  * obtain l1. *)
 let degrees_for_circular_inclusion l1 l2 =
-    assert (is_valid l1);
-    assert (is_valid l2);
-    List.init (List.length l2) Fun.id |> List.map
+    List.init (nb_minimal_degrees l2) Fun.id |> List.map
         (fun delta ->
             let l2' = rotate l2 delta in
             let g = gather_as_sub_layout l1 l2' in
@@ -208,7 +199,6 @@ let degrees_for_circular_inclusion l1 l2 =
  * pair, the two degrees belong to the octave 0 or the first belongs to the octave 0 and the
  * second one to the octave 1. *)
 let degrees_for_intervals l =
-    assert (is_valid l);
     let nbd = nb_minimal_degrees l in
     let deg_1 = minimal_degrees l in
     let deg_2 = deg_1 |> List.map (fun d -> Degree.shift d nbd) in
@@ -222,7 +212,6 @@ let degrees_for_intervals l =
  * steps by octave minus 1 such that each value at position i is the number of intervals of
  * i + 1 steps in l. *)
 let interval_vector l =
-    assert (is_valid l);
     let intervals = degrees_for_intervals l in
     let interval_values = intervals |> List.map
         (fun (d1, d2) -> distance_between l d1 d2) in
@@ -231,7 +220,6 @@ let interval_vector l =
 (* Returns the internal interval vector of the layout l. This follows the same idea as the
  * interval vector of l but it takes into account only the intervals in a same octave. *)
 let internal_interval_vector l =
-    assert (is_valid l);
     let d_max = Degree.construct ((nb_minimal_degrees l) - 1) in
     let intervals = degrees_for_intervals l |> List.filter
         (fun (d1, d2) -> Degree.is_leq d1 d_max && Degree.is_leq d2 d_max) in
@@ -242,7 +230,6 @@ let internal_interval_vector l =
 (* Returns the ratio between the frequency of the notes specified by the degrees d1 and d2
  * in the layout l. *)
 let frequency_ratio l d1 d2 =
-    assert (is_valid l);
     let nbs = nb_steps_by_octave l in
     let freq d =
         let dist = distance_from_origin l d in
@@ -256,7 +243,6 @@ let frequency_ratio l d1 d2 =
  * degrees belong to the octave 0 or the first belongs to the octave 0 and the second one
  * to the octave 1. *)
 let best_interval_for_ratio l ratio =
-    assert (is_valid l);
     assert (ratio >= 1.0);
     let oc = int_of_float (Tools.log2 ratio) in
     let nbd = nb_minimal_degrees l in
@@ -275,57 +261,20 @@ let best_interval_for_ratio l ratio =
 
 (* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
  * and on nb_minimal_degrees degrees. *)
-let rec generate nb_steps_by_octave nb_minimal_degrees =
+let generate nb_steps_by_octave nb_minimal_degrees =
     assert (nb_steps_by_octave >= 0);
     assert (nb_minimal_degrees >= 1);
-    if nb_minimal_degrees > nb_steps_by_octave then
-        []
-    else if nb_minimal_degrees = 1 then
-        [[nb_steps_by_octave]]
-    else
-        List.init nb_steps_by_octave
-            (fun x ->
-                generate (nb_steps_by_octave - x - 1) (nb_minimal_degrees - 1) |> List.map
-                    (fun l -> (x + 1) :: l))
-            |> List.flatten
-
-(* Some layouts. *)
-
-let chromatic nb_steps_by_octave =
-    assert (1 <= nb_steps_by_octave);
-    List.init nb_steps_by_octave (fun _ -> 1)
-
-let diminished = [2; 1; 2; 1; 2; 1; 2; 1]
-
-let natural_major = [2; 2; 1; 2; 2; 2; 1]
-
-let natural_minor = [2; 1; 2; 2; 1; 2; 2]
-
-let harmonic_minor = [2; 1; 2; 2; 1; 3; 1]
-
-let phrygian_dominant = [1; 3; 1; 2; 1; 2; 2]
-
-let hungarian_minor = [2; 1; 3; 1; 1; 3; 1]
-
-let double_harmonic_minor = [1; 3; 1; 2; 1; 3; 1]
-
-let blues = [3; 2; 1; 1; 3; 2]
-
-let whole_tone = [2; 2; 2; 2; 2; 2]
-
-let pentatonic_minor = [3; 2; 2; 3; 2]
-
-let pentatonic_major = [2; 2; 3; 2; 3]
-
-let hirajoshi = [2; 1; 4; 1; 4]
-
-let ryukyu = [4; 1; 2; 4; 1]
-
-let major = [4; 3; 5]
-
-let minor = [3; 4; 5]
-
-let major_7 = [4; 3; 4; 1]
-
-let minor_7 = [3; 4; 3; 2]
+    let rec aux nb_steps_by_octave nb_minimal_degrees =
+        if nb_minimal_degrees > nb_steps_by_octave then
+            []
+        else if nb_minimal_degrees = 1 then
+            [[nb_steps_by_octave]]
+        else
+            List.init nb_steps_by_octave
+                (fun x ->
+                    aux (nb_steps_by_octave - x - 1) (nb_minimal_degrees - 1) |> List.map
+                        (fun l -> (x + 1) :: l))
+                |> List.flatten
+    in
+    aux nb_steps_by_octave nb_minimal_degrees |> List.map construct
 

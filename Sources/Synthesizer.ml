@@ -129,7 +129,6 @@ let generate_sound synth freq duration =
  * having duration as duration in ms. *)
 let generate_sound_note synth note duration =
     assert (is_valid synth);
-    assert (Note.is_valid note);
     assert (0 <= duration);
     generate_sound synth (Note.frequency note) duration
 
