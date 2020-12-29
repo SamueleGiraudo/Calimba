@@ -11,41 +11,41 @@ starting with an alphabetic symbol or `_`.
 
 ## Elementary notions
 
-### Notes and shifts
-A _shift_ is an integer (positive as well as negative) expressed in the decimal numeral
-system. Each shift specifies a note in the following way. By default (because this behavior
+### Notes and degrees
+A _degree_ is an integer (positive as well as negative) expressed in the decimal numeral
+system. Each degree specifies a note in the following way. By default (because this behavior
 is configurable), `0` is the note $A$ of frequency $440$ Hz, and each positive (resp.
-negative) shift `d` specifies a note located `d` steps above (resp. below) the origin `0` in
-the diatonic scale. Here is a part of this correspondence
+negative) degree `d` specifies a note located `d` steps above (resp. below) the origin `0`
+in the diatonic scale. Here is a part of this correspondence
 
-| Shift | Note  |
-|-------|-------|
-| ...   | ...   |
-|  -9   | $F,,$ |
-|  -8   | $G,,$ |
-|  -7   | $A,$  |
-|  -6   | $B,$  |
-|  -5   | $C,$  |
-|  -4   | $D,$  |
-|  -3   | $E,$  |
-|  -2   | $F,$  |
-|  -1   | $G,$  |
-| **0** | $A$   |
-|   1   | $B$   |
-|   2   | $C$   |
-|   3   | $D$   |
-|   4   | $E$   |
-|   5   | $F$   |
-|   6   | $G$   |
-|   7   | $A'$  |
-|   8   | $B'$  |
-|   9   | $C'$  |
-| ...   | ...   |
+| Degree | Note  |
+|--------|-------|
+| ...    | ...   |
+|  -9    | $F,,$ |
+|  -8    | $G,,$ |
+|  -7    | $A,$  |
+|  -6    | $B,$  |
+|  -5    | $C,$  |
+|  -4    | $D,$  |
+|  -3    | $E,$  |
+|  -2    | $F,$  |
+|  -1    | $G,$  |
+| **0**  | $A$   |
+|   1    | $B$   |
+|   2    | $C$   |
+|   3    | $D$   |
+|   4    | $E$   |
+|   5    | $F$   |
+|   6    | $G$   |
+|   7    | $A'$  |
+|   8    | $B'$  |
+|   9    | $C'$  |
+| ...    | ...   |
 
 where for any note $X$, $X'$ (resp. $X,$) is the note $X$ one octave above (resp. below).
 
-In the Calimba language, we handle shifts instead of notes to keep flexibility. Indeed, as
-we will see in the following, shifts can be interpreted in the context of different scales
+In the Calimba language, we handle degrees instead of notes to keep flexibility. Indeed, as
+we will see in the following, degrees can be interpreted in the context of different scales
 (called layouts here) to be in correspondence with different notes.
 
 
@@ -95,22 +95,22 @@ and the result is obtained by adding the right amount of rests after the shorter
 
 
 ### Durations
-Given a shift or a rest `a`, `a<` is the same shift or rest but lasting $2$ units of time
-instead of $1$. Similarly, `a>` is the same shift or rest but lasting $1 / 2$ units of time.
-These operators `<` and `>` can be stacked so that `<` doubles the duration and `>` divides
-it by half. Here are some examples
+Given a degree or a rest `a`, `a<` refers to the same degree or rest but lasts $2$ units of
+time instead of $1$. Similarly, `a>` refers to the same degree or rest but lasts $1 / 2$
+units of time. These operators `<` and `>` can be stacked so that `<` doubles the duration
+and `>` divides it by half. Here are some examples
 
-| Shift of rest with duration signs | Units of time |
-|-----------------------------------|---------------|
-| ...                               | ...           |
-| `a>>>`                            | $1 / 8$       |
-| `a>>`                             | $1 / 4$       |
-| `a>`                              | $1 / 2$       |
-| `a`                               | $1$           |
-| `a<`                              | $2$           |
-| `a<<`                             | $4$           |
-| `a<<<`                            | $8$           |
-| ...                               | ...           |
+| Degrees of rests with duration signs | Units of time |
+|--------------------------------------|---------------|
+| ...                                  | ...           |
+| `a>>>`                               | $1 / 8$       |
+| `a>>`                                | $1 / 4$       |
+| `a>`                                 | $1 / 2$       |
+| `a`                                  | $1$           |
+| `a<`                                 | $2$           |
+| `a<<`                                | $4$           |
+| `a<<<`                               | $8$           |
+| ...                                  | ...           |
 
 These operators can be applied also on phrases to change all their durations. For instance,
 ```
@@ -123,12 +123,15 @@ and third last $1 / 2$ units of time.
 
 
 ### Octaves
-Given a shift `s`, `s'` is the same shift but one octave higher. Similarly, `s,` (`s`
-followed by a comma) is the same shift but one octave below. These operators `'` and `,` can
-be stacked to express shifts in different octaves.
+Given a degree `d`, `d'` is the degree specifying the same note as the one specified by `d`
+but one octave higher. Similarly, `d,` (`d` followed by a comma) specifies the same note as
+the one specified by `d` but one octave below. Therefore, since the default layout has $7$
+degrees by octave, for any degree `d`, `d'` refers to the degree `d + 7`, and `d,` refers to
+the degree `d - 7`. These operators `'` and `,` can be stacked in order to express degrees
+in different octaves.
 
-These operators can be applied also on phrases to change the octave of their shifts. For
-instance,
+These operators can be applied also on phrases to change the octave of the notes they
+specify. For instance,
 ```
 (0 * 2 * 4 * (0' # 4')) * (0 * 2 * 4 * (0' # 4')),,
 ```
@@ -176,8 +179,8 @@ harmonic minor layout.
 
 
 ### Root notes
-By default, the note specified by the shift `0` is the note $A$ of frequency $440$ Hz. It is
-possible to change it with
+By default, the note specified by the degree `0` is the note $A$ of frequency $440$ Hz. It
+is possible to change it with
 ```
 put root = st nst oct in phr
 ```
@@ -194,38 +197,48 @@ plays a phrase in the minor layout first with $B$ as root note two octaves below
 $0$ and then with $C$ as root note one octave above the octave $0$.
 
 
-### Time layouts
-A _time layout_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. The operator
-`<` (resp. `>`) multiplies by `m / d` (resp. `d / m`) the duration of each shift or rest on
-the phrase it applies. In the default time layout, the time multiplier is `2` and the time
-divider is `1`. It is possible to change the underlying time layout with
+### Atoms
+An _atom_ is a degree or a rest together with an integer specifying its duration. This
+integer is a _time degree_. Its default value is `0` and its role will be explained in the
+next section.
+
+
+### Time shapes
+A _time shape_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. An atom having
+`t` as time degree lasts $(m / d)^t$ units of time.
+
+The operator `<` (resp. `>`) increases (resp. decreases) the time degrees of all the atoms
+of the phrase it applies. Therefore, since the time multiplier of the default time shape is
+`2` and the time divider is `1`, `<` (resp. `>`) doubles the durations (resp. divides by
+half) of the atoms.
+
+It is possible to change the underlying time shape with
 ```
 put time = m d in phr
 ```
-where `m` and `d` specify the time layout and `phr` is a phrase. For instance,
+where `m` and `d` specify the time shape and `phr` is a phrase. For instance,
 ```
 put time = 2 1 in 0<< * 0'> * . * 4
 *
 put time = 3 2 in 0<< * 0'> * . * 4
 ```
-plays first a phrase such that the shift $0$ is played on $(2 / 1)^2 = 4$ times, then $0'$
+plays first a phrase such that the degree `0` is played on $(2 / 1)^2 = 4$ times, then `0'`
 is played on $(2 / 1)^{-1} = 1 / 2$ times, then a rest of $(2 / 1)^0 = 1$ time is played,
-and the shift $4$ is played on $(2 / 1)^0 = 1$ time. In the second phrase, the shift $0$ is
-played on $(3 / 2)^2 = 9 / 4$ times, then $0'$ is played on $(3 / 2)^{-1} = 2 / 3$ times,
-then a rest of $(3 / 2)^0 = 1$ times is played, and the shift $4$ is played on $(3 / 2)^0 =
+and the degree `4` is played on $(2 / 1)^0 = 1$ time. In the second phrase, the degree `0`
+is played on $(3 / 2)^2 = 9 / 4$ times, then `0'` is played on $(3 / 2)^{-1} = 2 / 3$ times,
+then a rest of $(3 / 2)^0 = 1$ times is played, and the degree `4` is played on $(3 / 2)^0 =
 1$ times.
 
 
 ### Transpositions
-To transpose a phrase `phr` by `d` degrees (where `d` can be negative) in the underlying
-layout, use the _composition operator_ `@@`. In `phr @@ d`, each shift and rest of `phr` is
-incremented by `d`. For instance,
+If `phr` is a phrase, then `phr+` is the phrase obtained from `phr` by incrementing all its
+degrees. Similarly, `phr-` is the phrase obtained from `phr` by decrementing all its
+degrees.
+These operators `+` and `-` can be stacked in order to transpose phrases.
+
+ For instance,
 ```
-(0 * 2 * 4 @@ 0)
-*
-(0 * 2 * 4 @@ 3)
-*
-(0 * 2 * 4 @@ -2)
+0 * 2 * 4 * (0 * 2 * 4)+++ * (0 * 2 * 4)--
 ```
 is a phrase wherein `0 * 2 * 4` is played, then `3 * 5 * 7`, and then `-2 * 0 * 2` are
 played.
@@ -252,7 +265,7 @@ then `0'>`, and finally `arp`. This phrase is equivalent to
 It is possible to nest these constructions. For instance, the phrase
 ```
 let arp1 = 0 * 2 * 4 * 0' in
-let arp2 = arp1 @@ 2 in
+let arp2 = arp1++ in
 let seq = arp1> * arp2 * arp1 in
 seq * (arp1 # arp2)
 ```
@@ -301,8 +314,8 @@ The phrase
 ```
 complement phr
 ```
-plays `phr` wherein all its shifts are complemented. The _complement_ of a shift `s` is the
-unique shift `sc` such that `s + sc = 0`.
+plays `phr` wherein all its degrees are complemented. The _complement_ of a degree `d` is
+the degree `-d`.
 
 For instance, the phrases
 ```
@@ -328,19 +341,19 @@ a wide range of totally different sounds. A synthesizer is specified by
 1. the geometric ratio `r` for of the coefficients of the harmonics of the produced sounds,
   which is a floating number strictly between $0$ and $1$.
 
-The first three components describe the _shape_ of the sound. Given a shift of duration `t`
+The first three components describe the _shape_ of the sound. Given a degree of duration `t`
 ms, the shape modifies the associated sounds as depicted here
 ```
 ---___ /         \
       /--___      \
-     /%%%%%%---___ \
-    /%%%%%%%%%%%%%--\___
-   /%%%%%%%%%%%%%%%%%\  ---___
-  /%%%%%%%%%%%%%%%%%%%\       ---___
- /%%%%%%%%%%%%%%%%%%%%%\            ---___
-/%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
+     /XXXXXX---___ \
+    /XXXXXXXXXXXXX--\___
+   /XXXXXXXXXXXXXXXXX\  ---___
+  /XXXXXXXXXXXXXXXXXXX\       ---___
+ /XXXXXXXXXXXXXXXXXXXXX\            ---___
+/XXXXXXXXXXXXXXXXXXXXXXX\                 ---___
 
-+-------------------m--------------------------+
++--------------------m-------------------------+
 +---a--+         +--d---+
 +-----------t-----------+
 ```
@@ -354,51 +367,51 @@ Let us consider some examples:
 
 + If $(m, a, d, t) = (1000, 250, 125, 500)$, we obtain the diagram
 ```
----___    _/       \
-      ---/--___     \
-       _/%%%%%%---___\
-      /%%%%%%%%%%%%%--\___
-    _/%%%%%%%%%%%%%%%%%\  ---___
-   /%%%%%%%%%%%%%%%%%%%%\       ---___
- _/%%%%%%%%%%%%%%%%%%%%%%\            ---___
-/%%%%%%%%%%%%%%%%%%%%%%%%%\                 ---___
+---___    _/    \
+      ---/__     \
+       _/XXX---___\
+      /XXXXXXXXXXX-\-___
+    _/XXXXXXXXXXXXXX\   ---___
+   /XXXXXXXXXXXXXXXXX\        ---___
+ _/XXXXXXXXXXXXXXXXXXX\             ---___
+/XXXXXXXXXXXXXXXXXXXXXX\                  ---___
 
-+-------------------1000-------------------------+
-+---250----+       +--125-+
-+-----------500-----------+
++--------------------1000----------------------+
++----250---+    +--125-+
++----------500---------+
 ```
 
 + If $(m, a, d, t) = (1000, 250, 125, 250)$, we obtain the diagram
 ```
----_\     /
-     \---/___
-      \_/    ---___
-      /\           ---___
-    _/%%\                ---___
-   /%%%%%\                     ---___
- _/%%%%%%%\                          ---___
-/%%%%%%%%%%\                               ---____
+---_\_    _/
+     \---/__
+      \_/   ---___
+      /\          ---___
+    _/XX\               ---___
+   /XXXXX\                    ---___
+ _/XXXXXXX\                         ---___
+/XXXXXXXXXX\                              ---___
 
-+-------------------1000-------------------------+
-+---250----+
++--------------------1000----------------------+
++----250---+
     +--125-+
 +---250----+
 ```
 
 + If $(m, a, d, t) = (1000, 250, 125, 1500)$, we obtain the diagram
 ```
----___    _/                                                      \
-      ---/--___                                                    \
-       _/%%%%%%---___                                               \
-      /%%%%%%%%%%%%%---___                                           \
-    _/%%%%%%%%%%%%%%%%%%%%---___                                      \
-   /%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                                 \
- _/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                            \
-/%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%---___                       \
+---___    _/                                                    \
+      ---/--___                                                  \
+       _/XXXXXX---___                                             \
+      /XXXXXXXXXXXXX---___                                         \
+    _/XXXXXXXXXXXXXXXXXXXX---___                                    \
+   /XXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                               \
+ _/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                          \
+/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                     \
 
-+-------------------1000-------------------------+
-+---250----+                                                      +--125-+
-+---------------------------------1500-----------------------------------+
++--------------------1000------------------------+
++----250---+                                                    +--125-+
++---------------------------------1500---------------------------------+
 ```
 
 
@@ -496,25 +509,24 @@ program) translates into a tree pattern. Formally, a _tree pattern_ is either
 + or the performance of a tree pattern;
 + or the effect of a tree pattern.
 
-An _atom_ is a shift or a rest together with an integer specifying its duration. A
-_performance_ is a map sending each atom to a sound (depending, among others, on the layout,
-the time layout, the synthesizer, _etc._). An _effect_ is a map sending a sound to a sound
-(adding for instance a delay or a tremolo effect).
+A _performance_ is a map sending each atom to a sound (depending, among others, on the
+layout, the time shape, the synthesizer, _etc._). An _effect_ is a map sending a sound to a
+sound (adding for instance a delay or a tremolo effect).
 
 CONTINUE
 
 
-### Named shifts and compositions
-It is possible to give a name `u` to a shift `s` in a phrase by writing `s:u`. For instance,
-in
+### Named degrees and compositions
+It is possible to give a name `u` to a degree `d` in a phrase by writing `s:u`. For
+instance, in
 ```
 (0 * 1 * 4:sh1) # 7:sh2<
 ```
-the third shift `4` is named as `sh1` and the fourth shift `7` is named as `sh2`. These
-two shifts are _named shifts_.
+the third degree `4` is named as `sh1` and the fourth degree `7` is named as `sh2`. These
+two degrees are _named degrees_.
 
 Given two phrases `phr1` and `phr2`, and a name `u`,
-`phr1 @u phr2` is the phrase obtained by replacing each shift of `phr1` having `u` as name
+`phr1 @u phr2` is the phrase obtained by replacing each degree of `phr1` having `u` as name
 by a slightly modified version of `phr2`.
 
 
