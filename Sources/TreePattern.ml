@@ -10,7 +10,7 @@ type label = string
  * have a label. *)
 type atom =
     |Silence of TimeShapeShift.time_shape_shift
-    |Beat of LayoutShift.layout_shift * TimeShapeShift.time_shape_shift * (label option)
+    |Beat of Degree.degree * TimeShapeShift.time_shape_shift * (label option)
 
 (* A performance is a map saying how to associate with any atom a sound. *)
 type performance = atom -> Sound.sound
@@ -39,22 +39,22 @@ exception ValueError
 let silence =
     Silence 0
 
-(* Returns an atom which is a beat lasting one unit of time and of extended degree d. *)
+(* Returns an atom which is a beat lasting one unit of time and of degree d. *)
 let beat d =
-    Beat ((LayoutShift.construct d 0), 0, None)
+    Beat (Degree.Degree d, 0, None)
 
-(* Returns an atom which is a labeled beat lasting one unit of time, of extended degree d,
- * and of label lbl. *)
+(* Returns an atom which is a labeled beat lasting one unit of time, of degree d, and of
+ * label lbl. *)
 let labeled_beat d lbl =
-    Beat ((LayoutShift.construct d 0), 0, Some lbl)
+    Beat (Degree.Degree d, 0, Some lbl)
 
 (* Returns a string representation of the atom a. *)
 let atom_to_string a =
     match a with
         |Silence tss -> TimeShapeShift.to_string tss
-        |Beat (ls, tss, lbl) ->
+        |Beat (ed, tss, lbl) ->
             let str = Printf.sprintf "%s%s"
-                (LayoutShift.to_string ls) (TimeShapeShift.to_string tss) in
+                (Degree.to_string ed) (TimeShapeShift.to_string tss) in
             if Option.is_some lbl then
                 Printf.sprintf "%s:%s" str (Option.get lbl)
             else
@@ -109,7 +109,8 @@ let rec arity t =
 let rec beat_action ls ts t =
     match t with
         |Atom (Silence ts') -> Atom (Silence (ts + ts'))
-        |Atom (Beat (ls', ts', lbl)) -> Atom (Beat (LayoutShift.add ls ls', ts + ts', lbl))
+        |Atom (Beat (ls', ts', lbl)) ->
+            Atom (Beat (Degree.add ls ls', ts + ts', lbl))
         |Concatenation (t1, t2) ->
             Concatenation (beat_action ls ts t1, beat_action ls ts t2)
         |Composition (t1, t2) -> Composition (beat_action ls ts t1, beat_action ls ts t2)
@@ -204,7 +205,7 @@ let rec reverse t =
 let rec complement t =
     match t with
         |Atom (Silence _) -> t
-        |Atom (Beat (ls, ts, lbl)) -> Atom (Beat (LayoutShift.complement ls, ts, lbl))
+        |Atom (Beat (ls, ts, lbl)) -> Atom (Beat (Degree.complement ls, ts, lbl))
         |Concatenation (t1, t2) -> Concatenation (complement t1, complement t2)
         |Composition (t1, t2) -> Composition (complement t1, complement t2)
         |Performance (p, t') -> Performance (p, complement t')

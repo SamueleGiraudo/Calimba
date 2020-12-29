@@ -69,10 +69,10 @@ let synthesizer ct =
     assert (is_valid ct);
     ct.synthesizer
 
-(* Returns the number of degrees in the layout of the context ct. *)
-let nb_degrees ct =
+(* Returns the number of minimal degrees in the layout of the context ct. *)
+let nb_minimal_degrees ct =
     assert (is_valid ct);
-    Layout.nb_degrees ct.layout
+    Layout.nb_minimal_degrees ct.layout
 
 (* Returns the context obtained by changing the layout of the context ct by l. *)
 let update_layout ct l =
@@ -114,9 +114,9 @@ let to_performance ct =
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
                 let dur = ConcreteTimeShape.time_shift_to_duration cts tss in
                 Sound.silence dur
-            |TreePattern.Beat (ls, tss, _) ->
+            |TreePattern.Beat (d, tss, _) ->
                 let rl = RootedLayout.construct ct.layout ct.root in
-                let note = RootedLayout.layout_shift_to_note rl ls in
+                let note = RootedLayout.layout_shift_to_note rl d in
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
                 let dur = ConcreteTimeShape.time_shift_to_duration cts tss in
                 Synthesizer.generate_sound_note ct.synthesizer note dur

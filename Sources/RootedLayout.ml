@@ -4,14 +4,13 @@
  *)
 
 (* A rooted layout is a layout together with a root note. This root is put in correspondence
- * with the note of extended degree 0. In this way, a rooted layout specifies an infinite 
- * set of notes, each indexed by its extended degree. *)
+ * with the note of degree 0. In this way, a rooted layout specifies an infinite  set of
+ * notes, each indexed by its degree. *)
 type rooted_layout = {
     (* The layout. *)
     layout : Layout.layout;
 
-    (* The root note. This note is put in correspondence with the note of extended degree
-     * 0. *)
+    (* The root note. This note is put in correspondence with the note of degree zero. *)
     root : Note.note
 }
 
@@ -42,10 +41,10 @@ let root rl =
     assert (is_valid rl);
     rl.root
 
-(* Returns the number of degrees in the rooted layout rl. *)
-let nb_degrees rl =
+(* Returns the number of minimal degrees in the rooted layout rl. *)
+let nb_minimal_degrees rl =
     assert (is_valid rl);
-    Layout.nb_degrees rl.layout
+    Layout.nb_minimal_degrees rl.layout
 
 (* Returns the number of steps by octave in the layout l. *)
 let nb_steps_by_octave rl =
@@ -53,27 +52,26 @@ let nb_steps_by_octave rl =
     Layout.nb_steps_by_octave rl.layout
 
 (* Returns the rooted layout obtained by setting as new root note the note at the position
- * delta, expressed as an extended degree from the current root. This value delta can be
+ * delta, expressed as a degree from the current root. This value delta can be
  * negative. For instance, if rl is the rooted layout 9/11:0 - 2 1 2 2 1 2 2 and delta is 2,
   * the returned rooted layout is 0/11:1 - 2 2 1 2 2 2 1. *)
 let transpose rl delta =
     assert (is_valid rl);
-    let nt = Note.shift rl.root (Layout.distance_from_origin rl.layout delta) in
+    let nt = Note.shift rl.root
+        (Layout.distance_from_origin rl.layout (Degree.construct delta)) in
     let l = Layout.rotate rl.layout delta in
     {layout = l; root = nt}
 
 (* Returns the note specified by the layout shift ls in the rooted layout rl. *)
 let layout_shift_to_note rl ls =
     assert (is_valid rl);
-    let dist = LayoutShift.distance_from_root (nb_degrees rl) ls in
-    root (transpose rl dist)
+    root (transpose rl (Degree.to_int ls))
 
 (* Returns the list of the notes corresponding to all the degrees of the rooted layout
  * rs. *)
 let first_notes rl =
     assert (is_valid rl);
-    List.init (nb_degrees rl)
-        (fun i -> layout_shift_to_note rl (LayoutShift.construct i 0))
+    List.init (nb_minimal_degrees rl) Degree.construct |> List.map (layout_shift_to_note rl)
 
 (* Tests if the note n belongs to the notes denoted by the rooted layout rl. *)
 let is_note rl n =

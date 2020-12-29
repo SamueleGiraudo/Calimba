@@ -287,16 +287,16 @@ let to_tree_pattern e =
                 TreePattern.Performance (p, tp)
             |IncreaseDegrees e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (LayoutShift.construct 1 0) 0 tp
+                TreePattern.beat_action (Degree.construct 1) 0 tp
             |DecreaseDegrees e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (LayoutShift.construct (-1) 0) 0 tp
+                TreePattern.beat_action (Degree.construct (-1)) 0 tp
             |IncreaseTime e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (LayoutShift.construct 0 0) 1 tp
+                TreePattern.beat_action Degree.zero 1 tp
             |DecreaseTime e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (LayoutShift.construct 0 0) (-1) tp
+                TreePattern.beat_action Degree.zero (-1) tp
             |Insertion (e1, i, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
                 TreePattern.extended_partial_composition tp1 i tp2
@@ -471,7 +471,7 @@ let interpret_and_analyse e verbose =
             Printf.printf "    Nb steps by octave: %d\n" (Layout.nb_steps_by_octave l);
 
             (* Prints the number of degrees. *)
-            Printf.printf "    Nb degrees: %d\n" (Layout.nb_degrees l);
+            Printf.printf "    Nb degrees: %d\n" (Layout.nb_minimal_degrees l);
 
             (* Prints the distance vector. *)
             Printf.printf "    Distance vector: %s\n"
@@ -509,8 +509,8 @@ let interpret_and_analyse e verbose =
                     let acc = Tools.accuracy ratio (Layout.frequency_ratio l ls1 ls2) in
                     Printf.printf "        For %.2f %-11s: %s - %s with error of %+.2f%%\n"
                         ratio name
-                        (LayoutShift.to_string ls1)
-                        (LayoutShift.to_string ls2)
+                        (Degree.to_string ls1)
+                        (Degree.to_string ls2)
                         (100.0 *. acc));
 
             (* Prints all the nonequivalent induced rooted layouts. *)
@@ -528,9 +528,11 @@ let interpret_and_analyse e verbose =
             (* Prints all the circular sub-layouts and all the shifts to obtain these. *)
             Printf.printf "    Circular sub-layouts:\n";
             let csl = Layout.circular_sub_layouts l in
-            List.init (Layout.nb_degrees l) (fun n -> n + 1) |> List.rev |> List.iter
+            List.init (Layout.nb_minimal_degrees l) (fun n -> n + 1) |> List.rev
+                |> List.iter
                 (fun n ->
-                    let csl' = csl |> List.filter (fun l' -> Layout.nb_degrees l' = n) in
+                    let csl' = csl |> List.filter
+                        (fun l' -> Layout.nb_minimal_degrees l' = n) in
                     Printf.printf "        With %d degrees:\n" n;
                     Printf.printf "            Cardinal: %d\n" (List.length csl');
                     csl' |> List.iter
@@ -541,7 +543,7 @@ let interpret_and_analyse e verbose =
                             Printf.printf "%d occ." (List.length shifts);
                             let str_shifts = shifts |> List.map
                                 (fun lst ->
-                                    let str = lst |> List.map LayoutShift.to_string
+                                    let str = lst |> List.map string_of_int
                                         |> String.concat " " in
                                     "[" ^ str ^ "]")
                                 |> String.concat " "
