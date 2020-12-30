@@ -8,7 +8,10 @@
  * increased (resp. decreased), its new duration is computed by multiplying (resp. dividing)
  * it by m/d. *)
 type time_shape = {
+    (* The multiplier of the time shape. *)
     multiplier : int;
+
+    (* The divider of the time shape. *)
     divider : int
 }
 

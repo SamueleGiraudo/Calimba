@@ -86,11 +86,11 @@ expression:
     |name=NAME
         {Expression.Name name}
     |POINT
-        {Expression.Atom (TreePattern.silence)}
+        {Expression.Atom Atom.silence}
     |d=INTEGER
-        {Expression.Atom (TreePattern.beat d)}
+        {Expression.Atom (Atom.beat d)}
     |d=INTEGER COLON lbl=NAME
-        {Expression.Atom (TreePattern.labeled_beat d lbl)}
+        {Expression.Atom (Atom.labeled_beat d lbl)}
     |exp1=expression STAR exp2=expression
         {Expression.Concatenation (exp1, exp2)}
     |exp1=expression SHARP exp2=expression

@@ -3,18 +3,6 @@
  * Modifications: jul. 2020, aug. 2020, dec. 2020
  *)
 
-(* A label is a name that a beat can optionally hold. *)
-type label = string
-
-(* An atom encodes an atomic unit of music. It can be either a silence or a beat. A beat can
- * have a label. *)
-type atom =
-    |Silence of TimeDegree.time_degree
-    |Beat of Degree.degree * TimeDegree.time_degree * (label option)
-
-(* A performance is a map saying how to associate with any atom a sound. *)
-type performance = atom -> Sound.sound
-
 (* An effect is a map transforming an input sound into an output one. It is important to
  * have a separate way to encode effects because one cannot put this information into a
  * performance. Indeed, a performance encodes how to send a single atom onto a sound while
@@ -26,44 +14,19 @@ type effect = Sound.sound -> Sound.sound
  * or the composition of two trees, or the modification of a tree. We see a tree pattern
  * as an element of a clone. Each beat is a valid sector for the substitution. *)
 type tree =
-    |Atom of atom
+    |Atom of Atom.atom
     |Concatenation of tree * tree
     |Composition of tree * tree
-    |Performance of performance * tree
+    |Performance of Atom.performance * tree
     |Effect of effect * tree
 
 (* An exception to handle wrong partial compositions. *)
 exception ValueError
 
-(* Returns an atom which is a silence lasting one unit of time. *)
-let silence =
-    Silence TimeDegree.zero
-
-(* Returns an atom which is a beat lasting one unit of time and of degree d. *)
-let beat d =
-    Beat (Degree.Degree d, TimeDegree.zero, None)
-
-(* Returns an atom which is a labeled beat lasting one unit of time, of degree d, and of
- * label lbl. *)
-let labeled_beat d lbl =
-    Beat (Degree.Degree d, TimeDegree.zero, Some lbl)
-
-(* Returns a string representation of the atom a. *)
-let atom_to_string a =
-    match a with
-        |Silence td -> TimeDegree.to_string td
-        |Beat (ed, td, lbl) ->
-            let str = Printf.sprintf "%s%s"
-                (Degree.to_string ed) (TimeDegree.to_string td) in
-            if Option.is_some lbl then
-                Printf.sprintf "%s:%s" str (Option.get lbl)
-            else
-                str
-
 (* Returns a string representation of the tree pattern t. *)
 let rec to_string t =
     match t with
-        |Atom a -> atom_to_string a
+        |Atom a -> Atom.to_string a
         |Concatenation (t1, t2) ->
             Printf.sprintf "*(%s, %s)" (to_string t1) (to_string t2)
         |Composition (t1, t2) ->
@@ -200,8 +163,8 @@ let rec reverse t =
         |Performance (p, t') -> Performance (p, reverse t')
         |Effect (e, t') -> Effect (e, reverse t')
 
-(* Returns a tree pattern specifying the complementation of the tree pattern t. This
- * replaces each degree of each beat by its complement. *)
+(* Returns a tree pattern specifying the complement of the tree pattern t. This replaces
+ * each degree of each beat by its complement. *)
 let rec complement t =
     match t with
         |Atom (Silence _) -> t

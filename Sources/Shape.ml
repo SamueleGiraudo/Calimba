@@ -28,25 +28,31 @@ let trapezoid max_duration open_duration close_duration duration =
     let max_proportion = (float_of_int max_duration) /. (float_of_int duration)
     and open_proportion = (float_of_int open_duration) /. (float_of_int duration)
     and close_proportion = (float_of_int close_duration) /. (float_of_int duration) in
-    let shape_max t =
-        if 0.0 <= t && t < max_proportion then
-            (max_proportion -. t) /. max_proportion
-        else
-            0.0
+    let shape_max =
+        construct
+            (fun x ->
+                if 0.0 <= x && x < max_proportion then
+                    (max_proportion -. x) /. max_proportion
+                else
+                    0.0)
     in
-    let shape_open t =
-        if 0.0 <= t && t < open_proportion then
-            t /. open_proportion
-        else
-            1.0
+    let shape_open =
+        construct
+            (fun x ->
+                if 0.0 <= x && x < open_proportion then
+                    x /. open_proportion
+                else
+                    1.0)
     in
-    let shape_close t =
-        if 1.0 -. close_proportion < t && t <= 1.0 then
-            (1.0 -. t) /. close_proportion
-        else
-            1.0
+    let shape_close =
+        construct
+            (fun x ->
+                if 1.0 -. close_proportion < x && x <= 1.0 then
+                    (1.0 -. x) /. close_proportion
+                else
+                    1.0)
     in
-    compose (construct shape_max) (compose (construct shape_open) (construct shape_close))
+    compose shape_max (compose shape_open shape_close)
 
 (* Returns the shape intended to create a tremolo, where the period of the variations is
  * time ms, the amplitude never goes below the coefficient c, w.r.t. a sound having duration
@@ -55,8 +61,8 @@ let tremolo time c duration =
     assert (0 <= time);
     assert (0.0 <= c && c <= 1.0);
     let freq = (float_of_int duration) /. (float_of_int time) in
-    let map i =
-        let v = cos (2.0 *. Float.pi *. freq *. i) in
+    let map x =
+        let v = cos (2.0 *. Float.pi *. freq *. x) in
         ((c -. 1.0) *. v +. c +. 1.0) /. 2.0
     in
     construct map

@@ -18,7 +18,7 @@ type name = string
 (* Abstract syntax trees for expressions in the Calimba language. *)
 type expression =
     |Name of name
-    |Atom of TreePattern.atom
+    |Atom of Atom.atom
     |Concatenation of expression * expression
     |Composition of expression * expression
     |IncreaseOctave of expression
@@ -28,7 +28,7 @@ type expression =
     |IncreaseTime of expression
     |DecreaseTime of expression
     |Insertion of expression * int * expression
-    |LabelInsertion of expression * TreePattern.label * expression
+    |LabelInsertion of expression * Atom.label * expression
     |BinaryInsertion of expression * expression
     |Repeat of int * expression
     |Reverse of expression
@@ -170,9 +170,8 @@ let to_tree_pattern e =
     let rec aux ct e =
         match e with
             |Name _ -> raise ValueError
-            |Atom (TreePattern.Silence ts) -> TreePattern.Atom (TreePattern.Silence ts)
-            |Atom (TreePattern.Beat (s, ts, lbl)) ->
-                TreePattern.Atom (TreePattern.Beat (s, ts, lbl))
+            |Atom ((Atom.Silence _) as s) -> TreePattern.Atom s
+            |Atom ((Atom.Beat _ as b)) -> TreePattern.Atom b
             |Concatenation (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
                 TreePattern.Concatenation (tp1, tp2)

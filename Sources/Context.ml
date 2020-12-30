@@ -94,11 +94,11 @@ let update_synthesizer ct s =
 let to_performance ct =
     fun a ->
         match a with
-            |TreePattern.Silence td ->
+            |Atom.Silence td ->
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
                 let dur = ConcreteTimeShape.time_degree_to_duration cts td in
                 Sound.silence dur
-            |TreePattern.Beat (d, td, _) ->
+            |Atom.Beat (d, td, _) ->
                 let rl = RootedLayout.construct ct.layout ct.root in
                 let note = RootedLayout.degree_to_note rl d in
                 let cts = ConcreteTimeShape.construct ct.time_shape ct.unit_duration in
