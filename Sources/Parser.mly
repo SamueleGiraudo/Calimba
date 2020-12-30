@@ -195,22 +195,22 @@ synthesizer_shape:
 
 effect:
     |SCALE c=POS_FLOAT
-        {Sound.scale c}
-    |DELAY t=INTEGER c=POS_FLOAT
-        {if t < 0 then
-            argument_error "delay" 1 "must be nonnegative"
-        else
-            Sound.delay t c}
+        {Effect.scale c}
     |CLIP c=POS_FLOAT
         {if c < 0.0 || c > 1.0 then
             argument_error "clip" 1 "must be between 0.0 and 1.0"
         else
-            fun s -> Sound.clip s c}
+            Effect.clip c}
+    |DELAY t=INTEGER c=POS_FLOAT
+        {if t < 0 then
+            argument_error "delay" 1 "must be nonnegative"
+        else
+            Effect.delay t c}
     |TREMOLO t=INTEGER c=POS_FLOAT
         {if t < 0 then
             argument_error "tremolo" 1 "must be nonnegative"
         else if c < 0.0 || c > 1.0 then
             argument_error "tremolo" 2 "must be between 0.0 and 1.0"
         else
-            Sound.tremolo t c}
+            Effect.tremolo t c}
 

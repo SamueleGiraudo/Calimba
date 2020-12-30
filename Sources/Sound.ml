@@ -125,7 +125,7 @@ let magnitude s =
 
 (* Returns the clipped version of the sound s with a threshold of c. This replaces each
  * point having absolute value greater than c into c, with the same sign. *)
-let clip s c =
+let clip c s =
     assert (0.0 <= c && c <= 1.0);
     let map i =
         let y = s.map i in
@@ -136,7 +136,7 @@ let clip s c =
 (* Returns the sound obtained from the sound s by sending to 1.0 (resp. -1.0) each point
  * greater than 1.0 (resp. smaller than -1.0). *)
 let cut s =
-    clip s 1.0
+    clip 1.0 s
 
 (* Returns the sound obtained by multiplying each point of the sound s by the value v. The
  * result is cut. *)
@@ -187,22 +187,6 @@ let repeat s k =
         s.map (i mod s.size)
     in
     {map = map; size = k * s.size}
-
-(* Returns the sound obtained by adding to the sound s a time shifted version of s by
- * time ms. The delayed sound is scaled with c as coefficient. *)
-let delay time c s =
-    assert (0 <= time);
-    assert (0.0 <= c);
-    let s' = concatenate (silence time) s in
-    prefix (add s (scale c s')) s.size
-
-(* Returns the sound obtained by applying a tremolo (periodic variation of the volume) on
- * the sound s. The periodic variation of the tremolo is of time ms, and the amplitude never
- * goes below the coefficient c. *)
-let tremolo time c s =
-    assert (0 <= time);
-    assert (0.0 <= c && c <= 1.0);
-    apply_shape s (Shape.tremolo time c (duration s))
 
 (* Returns the list of size size of integers, each between 0 and 255, encoding the integer
  * value v. The representation is in little-endian and encodes negative value by two

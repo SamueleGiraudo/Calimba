@@ -10,7 +10,7 @@ type modification =
     |TimeShape of TimeShape.time_shape
     |UnitDuration of int
     |Synthesizer of Synthesizer.synthesizer
-    |Effect of TreePattern.effect
+    |Effect of Effect.effect
 
 (* Names in expressions. *)
 type name = string

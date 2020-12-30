@@ -3,13 +3,6 @@
  * Modifications: jul. 2020, aug. 2020, dec. 2020
  *)
 
-(* An effect is a map transforming an input sound into an output one. It is important to
- * have a separate way to encode effects because one cannot put this information into a
- * performance. Indeed, a performance encodes how to send a single atom onto a sound while
- * in an effect, the whole sound resulting in the performance of several atoms may be
- * processed (for instance for delays). *)
-type effect = Sound.sound -> Sound.sound
-
 (* A tree pattern is either a leaf (a silence or a beat) or the concatenation of two trees,
  * or the composition of two trees, or the modification of a tree. We see a tree pattern
  * as an element of a clone. Each beat is a valid sector for the substitution. *)
@@ -18,7 +11,7 @@ type tree =
     |Concatenation of tree * tree
     |Composition of tree * tree
     |Performance of Performance.performance * tree
-    |Effect of effect * tree
+    |Effect of Effect.effect * tree
 
 (* An exception to handle wrong partial compositions. *)
 exception ValueError
@@ -171,7 +164,7 @@ let sound t =
             |Concatenation (t1, t2) -> Sound.concatenate (aux p t1) (aux p t2)
             |Composition (t1, t2) -> Sound.add (aux p t1) (aux p t2)
             |Performance (p', t') -> aux p' t'
-            |Effect (e', t') -> e' (aux p t')
+            |Effect (e', t') -> Effect.apply e' (aux p t')
     in
     aux Performance.empty t
 
