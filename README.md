@@ -45,12 +45,14 @@ The following instructions hold for Linux systems like Debian or Archlinux, afte
 ### Dependencies
 The following programs are needed:
 
-+ `ocaml` (Version `>= 4.11.1`. Inferior versions may be suitable.)
-+ `ocaml-findlib`
++ `pkg-config`
++ `ocaml` (Version `>= 4.11.1`. An inferior but not too old version may be suitable.)
 + `opam`
 + `ocamlbuild` (Available by `opam install ocamlbuild`.)
-+ `extlib` (Available by `opam install extlib`.)
++ `ocamlfind` (Available by `opam install ocamlfind`.)
 + `graphics` (Available by `opam install graphics`.)
++ `extlib` (Available by `opam install extlib`.)
++ `menhir` (Available by `opam install graphics`.)
 
 
 ### Building

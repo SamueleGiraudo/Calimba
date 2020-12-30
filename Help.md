@@ -14,9 +14,9 @@ starting with an alphabetic symbol or `_`.
 ### Notes and degrees
 A _degree_ is an integer (positive as well as negative) expressed in the decimal numeral
 system. Each degree specifies a note in the following way. By default (because this behavior
-is configurable), `0` is the note $A$ of frequency $440$ Hz, and each positive (resp.
-negative) degree `d` specifies a note located `d` steps above (resp. below) the origin `0`
-in the diatonic scale. Here is a part of this correspondence
+is configurable, this will be exposed later), `0` is the note $A$ of frequency $440$ Hz, and
+each positive (resp. negative) degree `d` specifies a note located `d` steps above (resp.
+below) the origin `0` in the diatonic scale. Here is a part of this correspondence
 
 | Degree | Note  |
 |--------|-------|
@@ -54,7 +54,7 @@ A rest is specified by a `.` (a period). It is interpreted as an absence of a so
 
 
 ### Concatenation
-To play notes and rests one after the other, separate them with the operator `*`, called
+To play notes and rests one after the other, we separate these with the operator `*`, called
 _concatenation operator_. Each note and rest lasts one unit of time, which is worth by
 default $500$ ms.
 
@@ -67,8 +67,8 @@ and $E$ played in this order, one after the other. This phrase lasts $3500$ ms.
 
 
 ### Stacking
-To play some notes at the same time, separate them with the operator `#`, called _stacking
-operator_.
+To play some notes at the same time, we separate these with the operator `#`, called
+_stacking operator_.
 
 For instance,
 ```
@@ -90,8 +90,9 @@ is a correct phrase.
 
 Without brackets, `*` has an higher priority than `#`.
 
-If `p1` and `p2` are two phrases having different durations, `p1 # p2` is also well-defined
-and the result is obtained by adding the right amount of rests after the shorter phrase.
+If `phr1` and `phr2` are two phrases having different durations, `phr1 # phr2` is also
+well-defined and the result is obtained by extending the shortest phrase by a silence
+lasting the right amount of time.
 
 
 ### Durations
@@ -112,7 +113,8 @@ and `>` divides it by half. Here are some examples
 | `a<<<`                               | $8$           |
 | ...                                  | ...           |
 
-These operators can be applied also on phrases to change all their durations. For instance,
+These operators can be applied also on phrases to change the durations of all their degrees
+and rests. For instance,
 ```
 (0 # 2 # 4) * .< * (0 # 2 # 4)<< * (1< * 2 * 3)>
 ```
@@ -193,11 +195,11 @@ put root = 2 12 -2 in 0 * 1 * 2
 *
 put root = 3 12 1 in 0 * 1 * 2
 ```
-plays a phrase in the minor layout first with $B$ as root note two octaves below the octave
-$0$ and then with $C$ as root note one octave above the octave $0$.
+plays a phrase in the natural minor layout first with $B$ as root note two octaves below the
+octave $0$ and then with $C$ as root note one octave above the octave $0$.
 
 
-### Atoms
+### Atoms and time degrees
 An _atom_ is a degree or a rest together with an integer specifying its duration. This
 integer is a _time degree_. Its default value is `0` and its role will be explained in the
 next section.
@@ -208,9 +210,9 @@ A _time shape_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. An
 `t` as time degree lasts $(m / d)^t$ units of time.
 
 The operator `<` (resp. `>`) increases (resp. decreases) the time degrees of all the atoms
-of the phrase it applies. Therefore, since the time multiplier of the default time shape is
-`2` and the time divider is `1`, `<` (resp. `>`) doubles the durations (resp. divides by
-half) of the atoms.
+of the phrase on which it applies. Therefore, since the time multiplier of the default time
+shape is `2` and the time divider is `1`, `<` (resp. `>`) doubles the durations (resp.
+divides by half) of all the atoms of the phrase on which it applies.
 
 It is possible to change the underlying time shape with
 ```
@@ -230,13 +232,31 @@ then a rest of $(3 / 2)^0 = 1$ times is played, and the degree `4` is played on 
 1$ times.
 
 
+### Unit duration
+The _unit duration_ is the duration in ms of the unit of time. It is possible to change the
+unit duration with
+```
+put duration = t in phr
+```
+where `t` is is a duration in ms and `phr` is a phrase. This sets to `t` the unit duration
+for the phrase `phr`. For instance,
+```
+put duration = 250 in 0 * 4> * 2> * 6
+*
+put duration = 125 in 0 * 4> * 2> * 6
+```
+plays twice the phrase `0 * 4> * 2> * 6`, one time with `250` ms for the unit duration and a
+second time with `125` ms as unit duration.
+
+
 ### Transpositions
 If `phr` is a phrase, then `phr+` is the phrase obtained from `phr` by incrementing all its
 degrees. Similarly, `phr-` is the phrase obtained from `phr` by decrementing all its
 degrees.
-These operators `+` and `-` can be stacked in order to transpose phrases.
+These operators `+` and `-`, called _transposition operators_ can be stacked in order to
+transpose phrases.
 
- For instance,
+For instance,
 ```
 0 * 2 * 4 * (0 * 2 * 4)+++ * (0 * 2 * 4)--
 ```
@@ -246,7 +266,7 @@ played.
 
 ### Let in
 Given a phrase, it is possible to assign it a name in order to play it when wanted and
-possibly several times by referring to it by its name. One achieves this with
+possibly several times by referring to it by its name. We achieve this with
 ```
 let name = phr1 in phr2
 ```
@@ -288,6 +308,7 @@ to
 ```
 (1 * 3) * ((0 # 2) * 0)
 ```
+
 
 ### Built-in structures
 There are three other main built-in structures. In what follows, `phr` is any phrase.
@@ -331,15 +352,15 @@ are equivalent.
 ## Intermediate notions
 
 ### Synthesizers
-Phrases are played by using synthesizers whose characteristics make it possible to model
-a wide range of totally different sounds. A synthesizer is specified by
+Phrases are played by using synthesizers whose characteristics make it possible to model a
+wide range of totally different sounds. A synthesizer is specified by
 
 1. the maximal duration `m` in ms of the produced sounds;
 1. the duration `a` of the attack in ms of the produced sounds;
 1. the duration `d` of the decay in ms of the produced sounds;
 1. the power `p` of the produced sounds, which is a floating number between $0$ and $1$;
 1. the geometric ratio `r` for of the coefficients of the harmonics of the produced sounds,
-  which is a floating number strictly between $0$ and $1$.
+   which is a floating number strictly between $0$ and $1$.
 
 The first three components describe the _shape_ of the sound. Given a degree of duration `t`
 ms, the shape modifies the associated sounds as depicted here
@@ -453,8 +474,8 @@ effects.
 
 
 #### Scale
-The _scale effect_ `scale` admits one argument `s` which is a nonnegative floating number.
-This multiplies by `s` the signal of the sound specified by `phr`. If the amplitude of the
+The _scale effect_ `scale` admits one argument `c` which is a nonnegative floating number.
+This multiplies by `c` the signal of the sound specified by `phr`. If the amplitude of the
 signal is too high at some parts, this amplitude is reduced to a maximal threshold. For this
 reason, a scaling can produce some interesting clipping effects. Here is an example:
 ```
@@ -462,20 +483,10 @@ put effect = scale 1.5 in 1 * 1 * (0 # 4)
 ```
 
 
-#### Delay
-The _delay effect_ `delay` admits two arguments: a first `d` which is a nonnegative integer
-and a second `s` which a nonnegative floating number. This stacks to the sound specified by
-`phr` the same sound delayed by `d` ms and scaled by `s`. Here is an example:
-```
-put effect = delay 100 0.75 in
-0 * (0 # 4) * 1 * 2
-```
-
-
 #### Clip
-The _clip effect_ `clip` admits one argument `s` which is a floating number strictly between
-$0$ and $1$. This reduce to `s` the amplitude of the signal of the sound specified by `phr`.
-Depending of the original sound of `phr`, an adequate value for `s` can produce some
+The _clip effect_ `clip` admits one argument `c` which is a floating number strictly between
+$0$ and $1$. This reduce to `c` the amplitude of the signal of the sound specified by `phr`.
+Depending of the original sound of `phr`, an adequate value for `c` can produce some
 distortion effects. Here is an example:
 ```
 put effect = clip 0.7 in
@@ -483,13 +494,23 @@ put effect = clip 0.7 in
 ```
 
 
+#### Delay
+The _delay effect_ `delay` admits two arguments: a first `t` which is a nonnegative integer
+and a second `c` which a nonnegative floating number. This stacks to the sound specified by
+`phr` the same sound delayed by `t` ms and scaled by `c`. Here is an example:
+```
+put effect = delay 100 0.75 in
+0 * (0 # 4) * 1 * 2
+```
+
+
 #### Tremolo
 The _tremolo effect_ `tremolo` admits two arguments: a first `t` which is a positive integer
-and a second `v` which is a floating number between $0$ and $1$. This changes the sound
+and a second `c` which is a floating number between $0$ and $1$. This changes the sound
 specified by `phr` in order to introduce a tremolo effect so that, periodically each `t` ms,
 the volume of the sound decreases and increases to its original value. The sound decreases
-to the value specified by `v`: if `v` is close to `1.0`, the tremolo effect is slight, and
-if `v` is close to `0.0`, the tremolo effect becomes more pronounced. Here is an example:
+to the value specified by `c`: if `c` is close to `1.0`, the tremolo effect is slight, and
+if `c` is close to `0.0`, the tremolo effect becomes more pronounced. Here is an example:
 ```
 put effect = tremolo 125 0.7 in
 0 * 2 * 4 * (0 # 2 # 4)< * (-1 # 1 # 3)<
@@ -499,41 +520,93 @@ put effect = tremolo 125 0.7 in
 ## Advanced notions
 
 ### Tree patterns
-The fundamental data structure is the tree pattern in sense that any phrase (and thus, any
-program) translates into a tree pattern. Formally, a _tree pattern_ is either
+The fundamental data structure under the hood of the Calimba language is the tree pattern.
+Formally, a _tree pattern_ is either
 
-+ an atom;
-+ or the concatenation of two tree patterns;
-+ or the stacking of two tree patterns;
-+ or the performance of a tree pattern;
-+ or the effect of a tree pattern.
+1. a leaf containing an atom;
+1. or a binary node containing the concatenation symbol and having two tree patterns as
+   children;
+1. or a binary node containing the stacking symbol and having two tree patterns as children;
+1. or a unary node containing a performance and having a tree pattern as child;
+1. or a unary node containing an effect and having a tree pattern as child.
 
-A _performance_ is a map sending each atom to a sound (depending, among others, on the
-layout, the time shape, the synthesizer, _etc._). An _effect_ is a map sending a sound to a
-sound (adding for instance a delay or a tremolo effect).
+A _performance_ is a map sending each atom to a sound (depending on the layout, the root
+note, the time shape, the unit duration, and the synthesizer). An _effect_ is a map sending
+a sound to a sound (adding for instance a delay or a tremolo effect).
 
-CONTINUE
+Each phrase translates into a tree pattern before to be converted into a sound.
 
 
-### Named degrees and compositions
+### Named degrees
 It is possible to give a name `u` to a degree `d` in a phrase by writing `s:u`. For
 instance, in
 ```
-(0 * 1 * 4:sh1) # 7:sh2<
+(0 * 1 * 4:d1) # 7:d2<
 ```
-the third degree `4` is named as `sh1` and the fourth degree `7` is named as `sh2`. These
-two degrees are _named degrees_.
-
-Given two phrases `phr1` and `phr2`, and a name `u`,
-`phr1 @u phr2` is the phrase obtained by replacing each degree of `phr1` having `u` as name
-by a slightly modified version of `phr2`.
-
-
-CONTINUE
+the third degree `4` is named as `d1` and the fourth degree `7` is named as `d2`. These two
+degrees are _named degrees_.
 
 
 ### Compositions
-TODO
+
+#### Named compositions
+Given two phrases `phr1` and `phr2`, and a name `u`,
+```
+phr1 @u phr2
+```
+is the phrase obtained by replacing each degree of `phr1` having `u` as name by a slightly
+modified version of `phr2`. More precisely, if `d` is a named degree of `phr1` with name
+`u`, this degree is replaced by the phrase `phr2` wherein each degree is incremented by `d`
+and each atom has its time degree incremented by the time degree of the atom of `d`.
+
+For instance, the phrase
+```
+(1:d1 * 0:d2 * 2:d1 * 2:d1<) @d1 (1 # 3)
+```
+is equivalent to the phrase
+```
+(2 # 4) * 0:d2 * (3 # 5) * (3< # 5<)
+```
+
+
+#### Compositions
+Given two phrases `phr1` and `phr2`, and an integer `i`,
+```
+phr1 @i phr2
+```
+is the phrase obtained by replacing the `i`-th degree of the tree pattern specified by
+`phr1` by `phr2` (subjected to the same modifications as for the case of named
+compositions). If there is no `i`-th degree in `phr1`, this gives `phr1`.
+
+For instance, the phrase
+```
+(repeat 2 (1 * 2<)) @3 (2< * .)
+```
+is equivalent to the phrase
+```
+1 * 2< * (3< * .) * 2<
+```
+
+#### Binary compositions
+Given two phrases `phr1` and `phr2`,
+```
+phr1 @@ phr2
+```
+is the phrase obtained by replacing each degree of `phr1` by `phr2` (subjected to the same
+modifications as for the case of named compositions and compositions).
+
+For instance, the phrase
+```
+(2< * 3 * . * 0) @@ ((0 # 4) * 1)
+```
+is equivalent to the phrase
+```
+((2< # 6<) * 3<) * ((3 # 7) * 4) * . * ((0 # 4) * 1)
+```
+
+The effects of the transposition operators `+` and `-` can be emulated with suitable binary
+compositions. Indeed, for any phrase `phr`, the phrase `phr+` (resp. `phr-`) is equivalent
+to the phrase `phr @@ 1` (resp. `phr @@ -1`).
 
 
 ### Microtonality
