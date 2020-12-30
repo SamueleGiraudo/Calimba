@@ -346,11 +346,25 @@ let interpret_and_analyse e verbose =
         (fun l ->
             Printf.printf "Layout: %s\n" (Layout.to_string l);
 
-            (* Prints the number of steps by octave. *)
-            Printf.printf "    Nb steps by octave: %d\n" (Layout.nb_steps_by_octave l);
+            (* Computation of some data. *)
+            let nbs = Layout.nb_steps_by_octave l in
+            let nbmd = Layout.nb_minimal_degrees l in
 
-            (* Prints the number of degrees. *)
-            Printf.printf "    Nb degrees: %d\n" (Layout.nb_minimal_degrees l);
+            (* Prints the number of steps by octave. *)
+            Printf.printf "    Nb steps by octave: %d\n" nbs;
+
+
+            (* Prints the number of minimal degrees. *)
+            Printf.printf "    Nb of minimal degrees: %d\n" nbmd;
+
+            (* Prints the position of the layout in the list of all layouts having the same
+             * umber of steps by octave and the same number of minimal degrees, sorted
+             * lexicographically. *)
+            let all_layouts = Layout.generate nbs nbmd in
+            let pos = Tools.occurrences all_layouts l in
+            Printf.printf "    Index: %d over a total of %d layouts having %d steps by \
+                octave and %d minimal degrees.\n"
+                (List.hd pos) (List.length all_layouts) nbs nbmd;
 
             (* Prints the distance vector. *)
             Printf.printf "    Distance vector: %s\n"
@@ -375,6 +389,11 @@ let interpret_and_analyse e verbose =
                     |> String.concat ", ");
             Printf.printf "    Minimal in rotation class: %s\n"
                 (if Layout.is_minimal_in_rotation_class l then "yes" else "no");
+
+            (* Prints the complement rotation class. *)
+            Printf.printf "    Complement rotation class: %s\n"
+                (Layout.complement_rotation_class l |> List.map Layout.to_string
+                    |> String.concat ", ");
 
             (* Prints the best approximations of just intonation intervals. *)
             Printf.printf "    Approximations of just intonation intervals:\n";
@@ -407,7 +426,7 @@ let interpret_and_analyse e verbose =
             (* Prints all the circular sub-layouts and all the degrees to obtain these. *)
             Printf.printf "    Circular sub-layouts:\n";
             let csl = Layout.circular_sub_layouts l in
-            List.init (Layout.nb_minimal_degrees l) (fun n -> n + 1) |> List.rev
+            List.init nbmd (fun n -> n + 1) |> List.rev
                 |> List.iter
                 (fun n ->
                     let csl' = csl |> List.filter

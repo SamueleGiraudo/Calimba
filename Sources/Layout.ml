@@ -25,6 +25,19 @@ let to_list l =
     let Layout lst = l in
     lst
 
+(* Returns the layout having nb_steps_by_octave steps by octave having the list dist of
+ * distances from the origin. *)
+let from_distances nb_steps_by_octave dist =
+    assert (nb_steps_by_octave >= 1);
+    assert (List.hd dist = 0);
+    assert (dist |> List.for_all (fun i -> i < nb_steps_by_octave));
+    assert (dist |> List.sort_uniq compare = dist);
+    dist |> List.rev |> List.fold_left
+        (fun (res, prev) i -> (prev - i :: res, i))
+        ([], nb_steps_by_octave)
+        |> fst
+        |> construct
+
 (* Returns a string representation of the layout l. For instance, "3 2 2 3 2" is the string
  * representation of the minor pentatonic layout. *)
 let to_string l =
@@ -120,6 +133,15 @@ let minimal_of_rotation_class l =
 (* Tests if the layout l is the minimal layout of its rotation class. *)
 let is_minimal_in_rotation_class l =
     l = minimal_of_rotation_class l
+
+(* Returns the complement rotation class of the layout l. This class is formed by the
+ * layouts obtained by keeping only the degrees that are not in l. *)
+let complement_rotation_class l =
+    let nbs = nb_steps_by_octave l in
+    let dist = distance_vector l in
+    let tmp = List.init nbs Fun.id |> List.filter (fun i -> not (List.mem i dist)) in
+    let dist' = tmp |> List.map (fun i -> i - List.hd tmp) in
+    rotation_class (from_distances nbs dist')
 
 (* Returns the dual of the layout l. This is the layout having the transpose of l as
  * integer composition. *)
@@ -240,8 +262,8 @@ let frequency_ratio l d1 d2 =
 
 (* Returns the pair of degrees such that the frequency ratio of the interval of the layout l
  * they specify approximates in the best way the ratio ratio. Given such a pair, the two
- * degrees belong to the octave 0 or the first belongs to the octave 0 and the second one
- * to the octave 1. *)
+ * degrees belong to the octave 0 or the first belongs to the octave 0 and the second one to
+ * the octave 1. *)
 let best_interval_for_ratio l ratio =
     assert (ratio >= 1.0);
     let oc = int_of_float (Tools.log2 ratio) in
@@ -259,8 +281,8 @@ let best_interval_for_ratio l ratio =
                 |_ -> res)
         (List.hd intervals)
 
-(* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave
- * and on nb_minimal_degrees degrees. *)
+(* Returns the list of all the layouts defined on nb_steps_by_octave nb steps by octave and
+ * on nb_minimal_degrees degrees. *)
 let generate nb_steps_by_octave nb_minimal_degrees =
     assert (nb_steps_by_octave >= 0);
     assert (nb_minimal_degrees >= 1);

@@ -35,10 +35,7 @@ let transform_option_default tr x def =
  * positive. *)
 let remainder a b =
     let res = a mod b in
-    if res >= 0 then
-        res
-    else
-        res + b
+    if res >= 0 then res else res + b
 
 (* Returns the prefix of length n of the list lst. *)
 let rec prefix_list lst n =
@@ -50,6 +47,13 @@ let rec prefix_list lst n =
 (* Returns the Cartesian product of the two lists lst1 and lst2. *)
 let cartesian_product lst1 lst2 =
     lst1 |> List.map (fun a -> lst2 |> List.map (fun b -> (a, b))) |> List.flatten
+
+(* Returns the list of all occurrences (positions) of x in the list lst. *)
+let occurrences lst x =
+    lst |> List.fold_left
+        (fun (res, i)  a -> if a  = x then (i :: res, i + 1) else (res, i + 1))
+        ([], 0)
+        |> fst |> List.rev
 
 (* Returns the list of integers such that the i-th value is the number of occurrences of
  * the element first + i in the list of integers lst. The returned list has length

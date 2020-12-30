@@ -19,11 +19,6 @@ type note = {
  * by octave. *)
 let origin_frequency = 440.0
 
-(* Tests if n is a note. *)
-(*let is_valid n =
-    n.nb_steps_by_octave >= 1 && 0 <= n.step && n.step < n.nb_steps_by_octave
-*)
-
 (* Returns the note with the specified attributes. *)
 let construct step nb_steps_by_octave octave =
     assert (nb_steps_by_octave >= 1);
@@ -42,7 +37,7 @@ let nb_steps_by_octave n =
 let octave n =
     n.octave
 
-(* Returns the string representation of the note n. For instance, 3/12:4 is the note having
+(* Returns the string representation of the note n. For instance, 3/11:4 is the note having
  * 3 as step, 4 as octave, and having 12 steps by octave. *)
 let to_string n =
     Tools.csprintf Tools.Cyan
