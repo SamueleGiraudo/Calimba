@@ -11,7 +11,9 @@
     - Improve comments.
     - Robustness.
     - External documentation.
-    - Rename composition of tree pattern in stacking.
+    - Rename "composition" of tree pattern in "stacking".
+    - Check that the operations on phrases commute with operations on tree patterns (before
+      evaluation or after).
 *)
 
 let name = "Calimba"
