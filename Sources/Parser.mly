@@ -177,17 +177,17 @@ note:
             Note.construct step nb oct}
 
 synthesizer:
-    |t=synthesizer_timbre sh=synthesizer_shape
+    |t=timbre sh=synthesizer_shape
         {let (max_dur, o_dur, c_dur) = sh in Synthesizer.construct t max_dur o_dur c_dur}
 
-synthesizer_timbre:
+timbre:
     |scale=POS_FLOAT coeff=POS_FLOAT
         {if scale > 1.0 then
             argument_error "synthesizer" 1 "must be not greater than 1.0"
         else if coeff >= 1.0 then
             argument_error "synthesizer" 2 "must be smaller than 1.0"
         else
-            Synthesizer.scale_timbre scale (Synthesizer.geometric_timbre coeff)}
+            Timbre.scale scale (Timbre.geometric coeff)}
 
 synthesizer_shape:
     |max_dur=INTEGER o_dur=INTEGER c_dur=INTEGER

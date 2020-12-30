@@ -13,10 +13,6 @@ type sound = {
     size : int
 }
 
-(* A shape is a map from [0.0, 1.0] to [0.0, 1.0] sending each time value, normalized in the
- * interval [0.0, 1.0], to a coefficient between 0.0 and 1.0 representing its loudness. *)
-type shape = float -> float
-
 (* Returns the default sampling rate (the number of points by second). *)
 let sampling_rate =
     48000
@@ -35,10 +31,6 @@ let buffer_path_directory =
 let buffer_path_file =
     buffer_path_directory ^ "Buffer.pcm"
 
-(* Tests if s is a sound. *)
-let is_valid s =
-    s.size >= 0
-
 (* Returns the sound with the specified attributes. *)
 let construct map size =
     assert (size >= 0);
@@ -46,18 +38,15 @@ let construct map size =
 
 (* Returns the map of the sound s. *)
 let map s =
-    assert (is_valid s);
     s.map
 
 (* Returns the size of the sound s. *)
 let size s =
-    assert (is_valid s);
     s.size
 
 (* Returns the value of the point i of the sound s. If i is not a point of s, 0.0 is
  * returned.*)
 let value s i =
-    assert (is_valid s);
     if 0 <= i && i < s.size then
         s.map i
     else
@@ -76,25 +65,21 @@ let size_to_duration size =
 
 (* Returns the duration of the sound s in ms. *)
 let duration s =
-    assert (is_valid s);
     size_to_duration s.size
 
 (* Returns the sound of size size obtained from the sound s by starting at index j. *)
 let factor s j size =
-    assert (is_valid s);
     assert (0 <= j && j < s.size);
     assert (0 <= size && j + size - 1 < s.size);
     {map = (fun i -> s.map (j + i)); size = size}
 
 (* Returns the sounds obtained by keeping the first size points of the sound s. *)
 let prefix s size =
-    assert (is_valid s);
     assert (0 <= size && size <= s.size);
     factor s 0 size
 
 (* Returns the sounds obtained by keeping the last size points of the sound s. *)
 let suffix s size =
-    assert (is_valid s);
     assert (0 <= size && size <= s.size);
     factor s (s.size - size + 1) size
 
@@ -116,21 +101,15 @@ let sinusoidal freq duration =
 
 (* Returns the sound obtained by applying the shape sh to the sound s. *)
 let apply_shape s sh =
-    assert (is_valid s);
     let size = float_of_int s.size in
     let map i =
         let i' = (float_of_int i) /. size in
-        (s.map i) *. (sh i')
+        (s.map i) *. (Shape.to_map sh i')
     in
     {s with map = map}
 
-(* Returns the composition of the two shapes sh1 and sh2. *)
-let compose_shapes sh1 sh2 =
-    fun i -> (sh1 i) *. (sh2 i)
-
 (* Returns the maximal absolute value among the values of the points of the sound s. *)
 let magnitude s =
-    assert (is_valid s);
     let rec aux i m =
         if i = s.size then
             m
@@ -143,7 +122,6 @@ let magnitude s =
 (* Returns the clipped version of the sound s with a threshold of c. This replaces each
  * point having absolute value greater than c into c, with the same sign. *)
 let clip s c =
-    assert (is_valid s);
     assert (0.0 <= c && c <= 1.0);
     let map i =
         let y = s.map i in
@@ -154,13 +132,11 @@ let clip s c =
 (* Returns the sound obtained from the sound s by sending to 1.0 (resp. -1.0) each point
  * greater than 1.0 (resp. smaller than -1.0). *)
 let cut s =
-    assert (is_valid s);
     clip s 1.0
 
 (* Returns the sound obtained by multiplying each point of the sound s by the value v. The
  * result is cut. *)
 let scale v s =
-    assert (is_valid s);
     assert (0.0 <= v);
     let s' = {s with map = (fun i -> (s.map i) *. v)} in
     cut s'
@@ -168,13 +144,11 @@ let scale v s =
 (* Returns the normalized sound of the sound s. The points of the sound are put
  * proportionally between -1.0 and 1.0. *)
 let normalize s =
-    assert (is_valid s);
     scale (1. /. (magnitude s)) s
 
 (* Returns the sound obtained by adding the sounds of the list of sounds lst. They can have
  * different sizes. *)
 let add_list lst =
-    assert (lst |> List.for_all is_valid);
     let map i =
         lst |> List.fold_left (fun res s -> res +. (value s i)) 0.0
     in
@@ -185,14 +159,10 @@ let add_list lst =
 (* Returns the sound obtained by adding the sounds s1 and s2. They can have different
  * sizes. *)
 let add s1 s2 =
-    assert (is_valid s1);
-    assert (is_valid s2);
     add_list [s1; s2]
 
 (* Returns the sound obtained by concatenating the sounds s1 and s2. *)
 let concatenate s1 s2 =
-    assert (is_valid s1);
-    assert (is_valid s2);
     let map i =
         if i < s1.size then
             s1.map i
@@ -203,12 +173,10 @@ let concatenate s1 s2 =
 
 (* Returns the sound obtained by concatenating the sounds of the list of sounds lst. *)
 let concatenate_list lst =
-    assert (lst |> List.for_all is_valid);
     lst |> List.fold_left concatenate (silence 0)
 
 (* Returns the sound obtained by repeating k times the sound s. *)
 let repeat s k =
-    assert (is_valid s);
     assert (1 <= s.size);
     assert (k >= 0);
     let map i =
@@ -219,7 +187,6 @@ let repeat s k =
 (* Returns the sound obtained by adding to the sound s a time shifted version of s by
  * time ms. The delayed sound is scaled with c as coefficient. *)
 let delay time c s =
-    assert (is_valid s);
     assert (0 <= time);
     assert (0.0 <= c);
     let s' = concatenate (silence time) s in
@@ -229,15 +196,9 @@ let delay time c s =
  * the sound s. The periodic variation of the tremolo is of time ms, and the amplitude never
  * goes below the coefficient c. *)
 let tremolo time c s =
-    assert (is_valid s);
     assert (0 <= time);
     assert (0.0 <= c && c <= 1.0);
-    let freq = (float_of_int (duration s)) /. (float_of_int time) in
-    let sh i =
-        let v = cos (2.0 *. Float.pi *. freq *. i) in
-        ((c -. 1.0) *. v +. c +. 1.0) /. 2.0
-    in
-    apply_shape s sh
+    apply_shape s (Shape.tremolo time c (duration s))
 
 (* Returns the list of size size of integers, each between 0 and 255, encoding the integer
  * value v. The representation is in little-endian and encodes negative value by two
@@ -259,7 +220,6 @@ let value_to_bytes v size =
 
 (* Writes in the channel channel open in binary and out mode the sound s. *)
 let print_raw s channel =
-    assert (is_valid s);
     let mult = (1 lsl ((8 * byte_depth) - 1)) - 1 in
     let mult' = float_of_int mult in
     let rec write_bytes i =
@@ -275,7 +235,6 @@ let print_raw s channel =
 
 (* Writes the sound s in the buffer file. *)
 let write_buffer s =
-    assert (is_valid s);
     let buffer = open_out buffer_path_file in
     print_raw s buffer;
     close_out buffer
@@ -308,7 +267,6 @@ let delete_buffer () =
 
 (* Plays the sound s. *)
 let play s =
-    assert (is_valid s);
     let thread_writer = Thread.create (fun _ -> write_buffer s) () in
     let thread_reader = Thread.create
         (fun _ ->

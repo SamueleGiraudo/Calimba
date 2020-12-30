@@ -31,7 +31,7 @@ let to_string ct =
 
 (* Returns the default context. *)
 let default =
-    let t = Synthesizer.scale_timbre 0.28 (Synthesizer.geometric_timbre 0.29) in
+    let t = Timbre.scale 0.28 (Timbre.geometric 0.29) in
     let synth = Synthesizer.construct t 4000 40 20 in
     {layout = Layout.natural_minor;
     root = Note.construct 0 12 0;
