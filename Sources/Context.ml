@@ -14,7 +14,7 @@ type context = {
     (* The time layout. *)
     time_shape : TimeShape.time_shape;
 
-    (* The unit duration in ms. *)
+    (* The duration of one unit of time in ms. *)
     unit_duration : int;
 
     (* The synthesizer, specifying the timbre of the sound. *)

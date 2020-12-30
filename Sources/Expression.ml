@@ -181,25 +181,29 @@ let to_tree_pattern e =
             |IncreaseOctave e' ->
                 let ct' = Context.update_root ct (Note.increase_octave (Context.root ct)) in
                 let tp = aux ct' e' in
-                let p = Context.to_performance ct' in
+                let p = Performance.from_context ct' in
                 TreePattern.Performance (p, tp)
             |DecreaseOctave e' ->
                 let ct' = Context.update_root ct (Note.decrease_octave (Context.root ct)) in
                 let tp = aux ct' e' in
-                let p = Context.to_performance ct' in
+                let p = Performance.from_context ct' in
                 TreePattern.Performance (p, tp)
             |IncreaseDegrees e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (Degree.construct 1) TimeDegree.zero tp
+                let b = Atom.construct_beat (Degree.construct 1) TimeDegree.zero in
+                TreePattern.beat_action b tp
             |DecreaseDegrees e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action (Degree.construct (-1)) TimeDegree.zero tp
+                let b = Atom.construct_beat (Degree.construct (-1)) TimeDegree.zero in
+                TreePattern.beat_action b tp
             |IncreaseTime e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action Degree.zero (TimeDegree.construct 1) tp
+                let b = Atom.construct_beat Degree.zero (TimeDegree.construct 1) in
+                TreePattern.beat_action b tp
             |DecreaseTime e' ->
                 let tp = aux ct e' in
-                TreePattern.beat_action Degree.zero (TimeDegree.construct (-1)) tp
+                let b = Atom.construct_beat Degree.zero (TimeDegree.construct (-1)) in
+                TreePattern.beat_action b tp
             |Insertion (e1, i, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
                 TreePattern.extended_partial_composition tp1 i tp2
@@ -226,10 +230,12 @@ let to_tree_pattern e =
                 let tp = aux ct' e' in
                 match m with
                     |Effect e -> TreePattern.Effect (e, tp)
-                    |_ -> TreePattern.Performance (Context.to_performance ct', tp)
+                    |_ ->
+                        let p = Performance.from_context ct' in
+                        TreePattern.Performance (p, tp)
     in
     let tp = aux Context.default e in
-    let p = Context.to_performance Context.default in
+    let p = Performance.from_context Context.default in
     TreePattern.Performance (p, tp)
 
 (* Returns the sound represented by the expression t. This computation works only if e has

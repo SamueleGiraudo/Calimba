@@ -86,9 +86,9 @@ expression:
     |name=NAME
         {Expression.Name name}
     |POINT
-        {Expression.Atom Atom.silence}
+        {Expression.Atom (Atom.construct_silence (TimeDegree.construct 0))}
     |d=INTEGER
-        {Expression.Atom (Atom.beat d)}
+        {Expression.Atom (Atom.construct_beat (Degree.construct d) TimeDegree.zero)}
     |d=INTEGER COLON lbl=NAME
         {Expression.Atom (Atom.labeled_beat d lbl)}
     |exp1=expression STAR exp2=expression

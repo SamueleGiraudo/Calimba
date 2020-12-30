@@ -88,6 +88,10 @@ let silence duration =
     assert (0 <= duration);
     {map = (fun _ -> 0.0); size = duration_to_size duration}
 
+(* Returns the empty sound. *)
+let empty =
+    silence 0
+
 (* Returns a sinusoidal sound with a duration of duration ms. *)
 let sinusoidal freq duration =
     assert (1 <= duration);
@@ -173,7 +177,7 @@ let concatenate s1 s2 =
 
 (* Returns the sound obtained by concatenating the sounds of the list of sounds lst. *)
 let concatenate_list lst =
-    lst |> List.fold_left concatenate (silence 0)
+    lst |> List.fold_left concatenate empty
 
 (* Returns the sound obtained by repeating k times the sound s. *)
 let repeat s k =

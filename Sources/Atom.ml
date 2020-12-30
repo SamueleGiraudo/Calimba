@@ -12,16 +12,17 @@ type atom =
     |Silence of TimeDegree.time_degree
     |Beat of Degree.degree * TimeDegree.time_degree * (label option)
 
-(* A performance is a map saying how to associate with any atom a sound. *)
-type performance = atom -> Sound.sound
+(* Returns an atom which is a silence with the time degree td. *)
+let construct_silence td =
+    Silence td
 
-(* Returns an atom which is a silence lasting one unit of time. *)
-let silence =
-    Silence TimeDegree.zero
+(* Returns an atom which is an unlabeled beat atom with the specified attributes. *)
+let construct_beat d td =
+    Beat (d, td, None)
 
-(* Returns an atom which is a beat lasting one unit of time and of degree d. *)
-let beat d =
-    Beat (Degree.Degree d, TimeDegree.zero, None)
+(* Returns an atom which is a labeled beat atom with the specified attributes. *)
+let construct_labeled_beat d td lbl =
+    Beat (d, td, Some lbl)
 
 (* Returns an atom which is a labeled beat lasting one unit of time, of degree d, and of
  * label lbl. *)
@@ -39,6 +40,25 @@ let to_string a =
                 Printf.sprintf "%s:%s" str (Option.get lbl)
             else
                 str
+
+(* Tests if the atom a is a beat. *)
+let is_beat a =
+    match a with
+        |Silence _ -> false
+        |Beat _ -> true
+
+(* Returns an option on the label on the atom a. Returns None if a is a silence or if a is a
+ * beat without label. *)
+let label a =
+    match a with
+        |Beat (_, _, Some lbl) -> Some lbl
+        |_ -> None
+
+(* Returns the complement of the atom a. *)
+let complement a =
+    match a with
+        |Silence _ -> a
+        |Beat (d, td, lbl) -> Beat (Degree.complement d, td, lbl)
 
 (* Returns the atom resulting as the product of the atom a1 and a2. This is the product used
  * for the composition of tree patterns. *)

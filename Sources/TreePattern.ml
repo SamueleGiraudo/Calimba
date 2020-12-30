@@ -17,7 +17,7 @@ type tree =
     |Atom of Atom.atom
     |Concatenation of tree * tree
     |Composition of tree * tree
-    |Performance of Atom.performance * tree
+    |Performance of Performance.performance * tree
     |Effect of effect * tree
 
 (* An exception to handle wrong partial compositions. *)
@@ -62,34 +62,25 @@ let rec height t =
 (* Returns the arity, that is the number of beats, of the tree pattern t. *)
 let rec arity t =
     match t with
-        |Atom (Silence _) -> 0
-        |Atom (Beat _) -> 1
+        |Atom a -> if Atom.is_beat a then 1 else 0
         |Concatenation (t1, t2) | Composition (t1, t2) -> arity t1 + arity t2
         |Performance (_, t') |Effect (_, t') -> arity t'
 
 (* Returns the tree pattern obtained by applying the degree d and the time degree td on the
  * tree pattern ts. *)
-let rec beat_action d td t =
+let rec beat_action b t =
     match t with
-        |Atom (Silence td') -> Atom (Silence (TimeDegree.add td td'))
-        |Atom (Beat (d', td', lbl)) ->
-            Atom (Beat (Degree.add d d', TimeDegree.add td td', lbl))
-        |Concatenation (t1, t2) ->
-            Concatenation (beat_action d td t1, beat_action d td t2)
-        |Composition (t1, t2) -> Composition (beat_action d td t1, beat_action d td t2)
-        |Performance (p, t') -> Performance (p, beat_action d td t')
-        |Effect (e, t') -> Effect (e, beat_action d td t')
+        |Atom a -> Atom (Atom.product b a)
+        |Concatenation (t1, t2) -> Concatenation (beat_action b t1, beat_action b t2)
+        |Composition (t1, t2) -> Composition (beat_action b t1, beat_action b t2)
+        |Performance (p, t') -> Performance (p, beat_action b t')
+        |Effect (e, t') -> Effect (e, beat_action b t')
 
 (* Returns the operadic partial composition of the tree pattern t2 at i-th position into the
  * tree pattern t1. Beats are indexed from the left to the right. *)
 let rec partial_composition t1 i t2 =
     match t1 with
-        |Atom (Silence _) -> raise ValueError
-        |Atom (Beat (s, ts, _)) ->
-            if i = 1 then
-                beat_action s ts t2
-            else
-                raise ValueError
+        |Atom a -> if i = 1 && Atom.is_beat a then beat_action a t2 else raise ValueError
         |Concatenation (t11, t12) ->
             let ar = arity t11 in
             if i <= ar then
@@ -118,12 +109,11 @@ let extended_partial_composition t1 i t2 =
  * of the replaced beat. *)
 let rec label_composition t1 lbl t2 =
     match t1 with
-        |Atom (Silence _) |Atom (Beat (_, _, None)) -> t1
-        |Atom (Beat (s, ts, Some lbl')) ->
-            if lbl' = lbl then
-                beat_action s ts t2
-            else
-                t1
+        |Atom a -> begin
+            match Atom.label a with
+                |None -> t1
+                |Some lbl' -> if lbl' = lbl then beat_action a t2 else t1
+        end
         |Concatenation (t11, t12) ->
             let t11' = label_composition t11 lbl t2
             and t12' = label_composition t12 lbl t2 in
@@ -167,8 +157,7 @@ let rec reverse t =
  * each degree of each beat by its complement. *)
 let rec complement t =
     match t with
-        |Atom (Silence _) -> t
-        |Atom (Beat (d, td, lbl)) -> Atom (Beat (Degree.complement d, td, lbl))
+        |Atom a -> Atom (Atom.complement a)
         |Concatenation (t1, t2) -> Concatenation (complement t1, complement t2)
         |Composition (t1, t2) -> Composition (complement t1, complement t2)
         |Performance (p, t') -> Performance (p, complement t')
@@ -178,11 +167,11 @@ let rec complement t =
 let sound t =
     let rec aux p t =
         match t with
-            |Atom a -> p a
+            |Atom a -> Performance.atom_to_sound p a
             |Concatenation (t1, t2) -> Sound.concatenate (aux p t1) (aux p t2)
             |Composition (t1, t2) -> Sound.add (aux p t1) (aux p t2)
             |Performance (p', t') -> aux p' t'
             |Effect (e', t') -> e' (aux p t')
     in
-    aux (fun _ -> Sound.silence 0) t
+    aux Performance.empty t
 
