@@ -547,9 +547,9 @@ the third degree `4` is named as `d1` and the fourth degree `7` is named as `d2`
 degrees are _named degrees_.
 
 
-### Compositions
+### Insertions
 
-#### Named compositions
+#### Named insertion
 Given two phrases `phr1` and `phr2`, and a name `u`,
 ```
 phr1 @u phr2
@@ -569,31 +569,13 @@ is equivalent to the phrase
 ```
 
 
-#### Compositions
-Given two phrases `phr1` and `phr2`, and an integer `i`,
-```
-phr1 @i phr2
-```
-is the phrase obtained by replacing the `i`-th degree of the tree pattern specified by
-`phr1` by `phr2` (subjected to the same modifications as for the case of named
-compositions). If there is no `i`-th degree in `phr1`, this gives `phr1`.
-
-For instance, the phrase
-```
-(repeat 2 (1 * 2<)) @3 (2< * .)
-```
-is equivalent to the phrase
-```
-1 * 2< * (3< * .) * 2<
-```
-
-#### Binary compositions
+#### Saturated insertion
 Given two phrases `phr1` and `phr2`,
 ```
 phr1 @@ phr2
 ```
 is the phrase obtained by replacing each degree of `phr1` by `phr2` (subjected to the same
-modifications as for the case of named compositions and compositions).
+modifications as for the case of named insertions).
 
 For instance, the phrase
 ```
@@ -604,9 +586,9 @@ is equivalent to the phrase
 ((2< # 6<) * 3<) * ((3 # 7) * 4) * . * ((0 # 4) * 1)
 ```
 
-The effects of the transposition operators `+` and `-` can be emulated with suitable binary
-compositions. Indeed, for any phrase `phr`, the phrase `phr+` (resp. `phr-`) is equivalent
-to the phrase `phr @@ 1` (resp. `phr @@ -1`).
+The effects of the transposition operators `+` and `-` can be emulated with suitable
+saturated insertions. Indeed, for any phrase `phr`, the phrase `phr+` (resp. `phr-`) is
+equivalent to the phrase `phr @@ 1` (resp. `phr @@ -1`).
 
 
 ### Microtonality

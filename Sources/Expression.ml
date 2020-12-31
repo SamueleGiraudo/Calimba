@@ -27,8 +27,8 @@ type expression =
     |DecreaseDegrees of expression
     |IncreaseTime of expression
     |DecreaseTime of expression
-    |LabelInsertion of expression * Atom.label * expression
-    |BinaryInsertion of expression * expression
+    |LabeledInsertion of expression * Atom.label * expression
+    |SaturatedInsertion of expression * expression
     |Repeat of int * expression
     |Reverse of expression
     |Complement of expression
@@ -74,8 +74,8 @@ let rec layouts e =
         |DecreaseDegrees e' -> layouts e'
         |IncreaseTime e' -> layouts e'
         |DecreaseTime e' -> layouts e'
-        |LabelInsertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
-        |BinaryInsertion (e1, e2) -> List.append (layouts e1) (layouts e2)
+        |LabeledInsertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
+        |SaturatedInsertion (e1, e2) -> List.append (layouts e1) (layouts e2)
         |Repeat (_, e') -> layouts e'
         |Reverse e' -> layouts e'
         |Complement e' -> layouts e'
@@ -89,7 +89,7 @@ let rec free_names e =
         |Name name -> [name]
         |Atom _ -> []
         |Concatenation (t1, t2) |Composition (t1, t2)
-                |LabelInsertion (t1, _, t2) |BinaryInsertion (t1, t2) ->
+                |LabeledInsertion (t1, _, t2) |SaturatedInsertion (t1, t2) ->
             List.append (free_names t1) (free_names t2)
         |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
                 |IncreaseTime e' |DecreaseTime e'
@@ -133,14 +133,14 @@ let rec substitute_free_names e1 name e2 =
         |DecreaseTime e' ->
             let e'' = substitute_free_names e' name e2 in
             DecreaseTime e''
-        |LabelInsertion (e1', lbl, e2') ->
+        |LabeledInsertion (e1', lbl, e2') ->
             let e1'' = substitute_free_names e1' name e2
             and e2'' = substitute_free_names e2' name e2 in
-            LabelInsertion (e1'', lbl, e2'')
-        |BinaryInsertion (e1', e2') ->
+            LabeledInsertion (e1'', lbl, e2'')
+        |SaturatedInsertion (e1', e2') ->
             let e1'' = substitute_free_names e1' name e2
             and e2'' = substitute_free_names e2' name e2 in
-            BinaryInsertion (e1'', e2'')
+            SaturatedInsertion (e1'', e2'')
         |Repeat (k, e') ->
             let e'' = substitute_free_names e' name e2 in
             Repeat (k, e'')
@@ -198,12 +198,12 @@ let to_tree_pattern e =
                 let tp = aux ct e' in
                 let b = Atom.construct_beat Degree.zero (TimeDegree.construct (-1)) in
                 TreePattern.beat_action b tp
-            |LabelInsertion (e1, lbl, e2) ->
+            |LabeledInsertion (e1, lbl, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
-                TreePattern.label_composition tp1 lbl tp2
-            |BinaryInsertion (e1, e2) ->
+                TreePattern.labeled_insertion tp1 lbl tp2
+            |SaturatedInsertion (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
-                TreePattern.binary_composition tp1 tp2 
+                TreePattern.saturated_insertion tp1 tp2 
             |Repeat (k, e') ->
                 let tp = aux ct e' in
                 TreePattern.repeat k tp
@@ -244,7 +244,7 @@ let invalid_contexts e =
             |Name _ -> []
             |Atom _ -> if Context.is_inconsistent ct then [ct] else []
             |Concatenation (e1, e2) |Composition (e1, e2)
-                    |LabelInsertion (e1, _, e2) |BinaryInsertion (e1, e2) ->
+                    |LabeledInsertion (e1, _, e2) |SaturatedInsertion (e1, e2) ->
                 List.append (aux ct e1) (aux ct e2)
             |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
                     |IncreaseTime e' |DecreaseTime e'

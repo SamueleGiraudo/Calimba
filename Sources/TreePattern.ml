@@ -68,7 +68,7 @@ let rec beat_action b t =
 (* Returns the tree pattern obtained by replacing each beat having lbl as label of the tree
  * pattern t1 by the tree pattern t2. Each grafted version of t2 is modified by the action
  * of the replaced beat. *)
-let rec label_composition t1 lbl t2 =
+let rec labeled_insertion t1 lbl t2 =
     match t1 with
         |Atom a -> begin
             match Atom.label a with
@@ -76,15 +76,15 @@ let rec label_composition t1 lbl t2 =
                 |Some lbl' -> if lbl' = lbl then beat_action a t2 else t1
         end
         |Concatenation (t11, t12) ->
-            let t11' = label_composition t11 lbl t2
-            and t12' = label_composition t12 lbl t2 in
+            let t11' = labeled_insertion t11 lbl t2
+            and t12' = labeled_insertion t12 lbl t2 in
             Concatenation (t11', t12')
         |Composition (t11, t12) ->
-            let t11' = label_composition t11 lbl t2
-            and t12' = label_composition t12 lbl t2 in
+            let t11' = labeled_insertion t11 lbl t2
+            and t12' = labeled_insertion t12 lbl t2 in
             Composition (t11', t12')
-        |Performance (p, t') -> Performance (p, label_composition t' lbl t2)
-        |Effect (e, t') -> Effect (e, label_composition t' lbl t2)
+        |Performance (p, t') -> Performance (p, labeled_insertion t' lbl t2)
+        |Effect (e, t') -> Effect (e, labeled_insertion t' lbl t2)
 
 (* Returns the tree pattern obtained by assigning the label lbl to each beat of the tree
  * pattern t. *)
@@ -102,8 +102,8 @@ let rec assign_label t lbl =
 
 (* Returns the tree pattern obtained by the binary composition of the tree patterns t1 and
  * t2. This performs a partial composition of t2 on each beat of t1. *)
-let binary_composition t1 t2 =
-    label_composition (assign_label t1 "") "" t2
+let saturated_insertion t1 t2 =
+    labeled_insertion (assign_label t1 "") "" t2
 
 (* Returns a tree pattern specifying the repetition of k times of the tree pattern t. *)
 let repeat k t =

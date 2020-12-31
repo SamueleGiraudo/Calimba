@@ -107,9 +107,9 @@ expression:
     |exp=expression GT
         {Expression.DecreaseTime exp}
     |exp1=expression lbl=AT_LABEL exp2=expression
-        {Expression.LabelInsertion (exp1, lbl, exp2)}
+        {Expression.LabeledInsertion (exp1, lbl, exp2)}
     |exp1=expression AT_AT exp2=expression
-        {Expression.BinaryInsertion (exp1, exp2)}
+        {Expression.SaturatedInsertion (exp1, exp2)}
     |REPEAT k=INTEGER exp=expression
         %prec PREC_REPEAT
         {if k <= 0 then
