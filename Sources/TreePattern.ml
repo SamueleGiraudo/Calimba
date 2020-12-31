@@ -65,34 +65,6 @@ let rec beat_action b t =
         |Performance (p, t') -> Performance (p, beat_action b t')
         |Effect (e, t') -> Effect (e, beat_action b t')
 
-(* Returns the operadic partial composition of the tree pattern t2 at i-th position into the
- * tree pattern t1. Beats are indexed from the left to the right. *)
-let rec partial_composition t1 i t2 =
-    match t1 with
-        |Atom a -> if i = 1 && Atom.is_beat a then beat_action a t2 else raise ValueError
-        |Concatenation (t11, t12) ->
-            let ar = arity t11 in
-            if i <= ar then
-                Concatenation (partial_composition t11 i t2, t12)
-            else
-                Concatenation (t11, partial_composition t12 (i - ar) t2)
-        |Composition (t11, t12) ->
-            let ar = arity t11 in
-            if i <= ar then
-                Composition (partial_composition t11 i t2, t12)
-            else
-                Composition (t11, partial_composition t12 (i - ar) t2)
-        |Performance (p, t') -> Performance (p, partial_composition t' i t2)
-        |Effect (e, t') -> Effect (e, partial_composition t' i t2)
-
-(* Returns the partial composition of the tree pattern t2 into the tree pattern t1 at i-it
- * position if i is a valid integer. Otherwise, returns t1. *)
-let extended_partial_composition t1 i t2 =
-    if 1 <= i && i <= arity t1 then
-        partial_composition t1 i t2
-    else
-        t1
-
 (* Returns the tree pattern obtained by replacing each beat having lbl as label of the tree
  * pattern t1 by the tree pattern t2. Each grafted version of t2 is modified by the action
  * of the replaced beat. *)
@@ -114,18 +86,24 @@ let rec label_composition t1 lbl t2 =
         |Performance (p, t') -> Performance (p, label_composition t' lbl t2)
         |Effect (e, t') -> Effect (e, label_composition t' lbl t2)
 
-(* Returns the tree pattern obtained by the full composition of the tree pattern t with the
- * tree patterns of the list t_lst. This list has to have as length the arity of t. *)
-let full_composition t t_lst =
-    assert (arity t >= List.length t_lst);
-    let with_i = List.combine (List.init (List.length t_lst) (fun x -> x + 1)) t_lst in
-    with_i |> List.rev |> List.fold_left (fun res (i, t') -> partial_composition res i t') t
+(* Returns the tree pattern obtained by assigning the label lbl to each beat of the tree
+ * pattern t. *)
+let rec assign_label t lbl =
+    match t with
+        |Atom a -> Atom (Atom.assign_label a lbl)
+        |Concatenation (t1, t2) ->
+            let t1' = assign_label t1 lbl and t2' = assign_label t2 lbl in
+            Concatenation (t1', t2')
+        |Composition (t1, t2) ->
+            let t1' = assign_label t1 lbl and t2' = assign_label t2 lbl in
+            Composition (t1', t2')
+        |Performance (p, t') -> Performance (p, assign_label t' lbl)
+        |Effect (p, t') -> Effect (p, assign_label t' lbl)
 
 (* Returns the tree pattern obtained by the binary composition of the tree patterns t1 and
  * t2. This performs a partial composition of t2 on each beat of t1. *)
 let binary_composition t1 t2 =
-    let t_lst = List.init (arity t1) (fun _ -> t2) in
-    full_composition t1 t_lst
+    label_composition (assign_label t1 "") "" t2
 
 (* Returns a tree pattern specifying the repetition of k times of the tree pattern t. *)
 let repeat k t =

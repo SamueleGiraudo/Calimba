@@ -92,8 +92,6 @@ rule read = parse
         {Parser.STAR}
     |'#'
         {Parser.SHARP}
-    |'@' integer
-        {Parser.AT_INTEGER (int_of_string (ExtLib.String.lchop (Lexing.lexeme lexbuf)))}
     |'@' name
         {Parser.AT_LABEL (ExtLib.String.lchop (Lexing.lexeme lexbuf))}
     |"@@"

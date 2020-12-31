@@ -24,7 +24,6 @@ let argument_error name index_arg msg =
 %token GT
 %token STAR
 %token SHARP
-%token <int> AT_INTEGER
 %token <string> AT_LABEL
 %token AT_AT
 %token EQUALS
@@ -62,7 +61,6 @@ let argument_error name index_arg msg =
 %nonassoc PREC_REPEAT
 
 %left AT_AT
-%left AT_INTEGER
 %left AT_LABEL
 %left SHARP
 %left STAR
@@ -90,7 +88,8 @@ expression:
     |d=INTEGER
         {Expression.Atom (Atom.construct_beat (Degree.construct d) TimeDegree.zero)}
     |d=INTEGER COLON lbl=NAME
-        {Expression.Atom (Atom.labeled_beat d lbl)}
+        {Expression.Atom
+            (Atom.construct_labeled_beat (Degree.construct d) (TimeDegree.zero) lbl)}
     |exp1=expression STAR exp2=expression
         {Expression.Concatenation (exp1, exp2)}
     |exp1=expression SHARP exp2=expression
@@ -107,8 +106,6 @@ expression:
         {Expression.IncreaseTime exp}
     |exp=expression GT
         {Expression.DecreaseTime exp}
-    |exp1=expression i=AT_INTEGER exp2=expression
-        {Expression.Insertion (exp1, i, exp2)}
     |exp1=expression lbl=AT_LABEL exp2=expression
         {Expression.LabelInsertion (exp1, lbl, exp2)}
     |exp1=expression AT_AT exp2=expression

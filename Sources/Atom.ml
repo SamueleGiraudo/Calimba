@@ -20,14 +20,15 @@ let construct_silence td =
 let construct_beat d td =
     Beat (d, td, None)
 
+(* Return the atom a with lbl as label. If a is a silence, a is returned. *)
+let assign_label a lbl =
+    match a with
+        |Silence _ -> a
+        |Beat (t, td, _) -> Beat (t, td, Some lbl)
+
 (* Returns an atom which is a labeled beat atom with the specified attributes. *)
 let construct_labeled_beat d td lbl =
-    Beat (d, td, Some lbl)
-
-(* Returns an atom which is a labeled beat lasting one unit of time, of degree d, and of
- * label lbl. *)
-let labeled_beat d lbl =
-    Beat (Degree.Degree d, TimeDegree.zero, Some lbl)
+    assign_label (construct_beat d td) lbl
 
 (* Returns a string representation of the atom a. *)
 let to_string a =
@@ -66,7 +67,6 @@ let product a1 a2 =
         |Silence td1, Silence td2 |Silence td1, Beat (_, td2, _)
                 |Beat (_, td1, _), Silence td2 ->
             Silence (TimeDegree.add td1 td2)
-        |Beat (d1, td1, lbl1), Beat (d2, td2, lbl2) ->
-            let lbl = if Option.is_some lbl2 then lbl2 else lbl1 in
-            Beat (Degree.add d1 d2, TimeDegree.add td1 td2, lbl)
+        |Beat (d1, td1, _), Beat (d2, td2, lbl2) ->
+            Beat (Degree.add d1 d2, TimeDegree.add td1 td2, lbl2)
 
