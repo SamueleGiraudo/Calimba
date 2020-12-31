@@ -158,6 +158,14 @@ let print_layout_analyses path =
     if Option.is_some t then
         Expression.interpret_and_analyse (Option.get t) true
 
+(* Print the tree pattern built by the expression specified by the .cal file at path
+ * path. *)
+let print_tree_pattern path =
+    assert (has_good_extension path);
+    let t = path_to_expression path in
+    if Option.is_some t then
+        Expression.interpret_and_print_tree_pattern (Option.get t) true
+
 ;;
 
 (* Main expression. *)
@@ -204,16 +212,19 @@ else if Tools.has_argument "-f" then begin
                 play path;
                 exit 0
             end
+
             (* Writing a PCM file. *)
             else if Tools.has_argument "-w" then begin
                 write path;
                 exit 0
             end
+
             (* Launching a live loop. *)
             else if Tools.has_argument "-l" then begin
                 live_loop path;
                 exit 0
             end
+
             (* Drawing a fragment of the sound. *)
             else if Tools.has_argument "-d" then begin
                 let arg_lst = Tools.next_arguments "-d" 2 in
@@ -236,10 +247,18 @@ else if Tools.has_argument "-f" then begin
                         end
                 end
             end
+
             (* Analysis of the used layouts. *)
             else if Tools.has_argument "-a" then begin
                 print_layout_analyses path
             end
+
+            (* Prints the specified tree pattern. *)
+            else if Tools.has_argument "-t" then begin
+                print_tree_pattern path
+            end
+
+            (* Unknown arguments. *)
             else begin
                 Tools.print_error "Error: unknown argument configuration.";
                 exit 1

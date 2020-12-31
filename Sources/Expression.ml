@@ -455,3 +455,12 @@ let interpret_and_analyse e verbose =
     if verbose then
         Tools.print_information "Printing done."
 
+(* Interprets the expression e and prints its tree pattern. *)
+let interpret_and_print_tree_pattern e verbose =
+    if verbose then
+        Tools.print_information "Printing the tree pattern specified by the program.";
+    let tp = to_tree_pattern e in
+    Printf.printf "%s\n" (TreePattern.to_string tp);
+    if verbose then
+        Tools.print_information "Printing done."
+

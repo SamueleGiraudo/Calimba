@@ -28,9 +28,9 @@ let to_string td =
     let i = to_int td in
     let str =
         if i <= 0 then
-            String.make (-i) '<'
+            String.make (-i) '>'
         else
-            String.make i '>' in
+            String.make i '<' in
     Tools.csprintf Tools.Magenta str
 
 (* Returns the time degree obtained by adding the time degrees td1 and td2. *)

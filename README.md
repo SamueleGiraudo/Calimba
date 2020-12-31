@@ -19,12 +19,13 @@ creations. Welcome!
 This program offers a complete language allowing to create music in a functional programming
 style. Musical phrases can be composed (or inserted one into another) by using operators
 coming from operad and clone theory. The program generates and plays PCM files, so that it
-does not need any specific sound server It comes with its own synthesizer and its own sound
+does not need any specific sound server. It comes with its own synthesizer and its own sound
 manipulation tools. This language does no depend on any heavy external library.
 
 
 ### Main functionalities
-1. Interprets and plays a file written in Calimba language (see specification below).
+1. Interprets and plays a file written in the Calimba language (see the specifications
+   [here](Help.md)).
 1. Offers an environment for live coding.
 1. Analyses the music by drawing its signal and printing some information about the used
    layouts.
@@ -91,14 +92,15 @@ Calimba files have `cal` as extension. Given such a file `Program.cal`, the comm
 All (when well-formed) are expressions: notes, assemblies of notes, context specifications
 (layouts, time layouts, synthesizers, _etc._). For this reason, it is possible to build
 complex expressions by nesting some smaller ones, without any particular restriction.
-Besides, "Let in" expressions can be used to write concise code, where names have restricted
+Besides, `let in` expressions can be used to write concise code, where names have restricted
 scopes.
 
 
 ### Tree patterns and composition
 Any expression reduces to a [tree pattern](Help.md#tree-patterns), the fundamental data
-structure of Calimba programs. Given two tree patterns, it is possible to compose these in
-order to build a bigger tree pattern. This operation is fundamental in the Calimba language.
+structure of Calimba programs. Tree patterns are then converted into sounds. Given two tree
+patterns, it is possible to compose these in order to build a bigger tree pattern. This
+operation is fundamental in the Calimba language.
 
 
 ### Bibliography
@@ -110,6 +112,7 @@ order to build a bigger tree pattern. This operation is fundamental in the Calim
     + S. Giraudo.
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
+
 + About representation of music:
     + P. Hudak,
       An Algebraic Theory of Polymorphic Temporal Media

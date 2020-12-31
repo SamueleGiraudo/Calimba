@@ -624,4 +624,3 @@ put root = 0 19 -2 in
 plays a chord of the layout `2 3 3 2 3 3 3` of the `19` tones equal temperament where the
 root is the note at step `0` of the octave `-2`.
 
-

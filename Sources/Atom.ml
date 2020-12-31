@@ -34,12 +34,11 @@ let to_string a =
     match a with
         |Silence td -> TimeDegree.to_string td
         |Beat (d, td, lbl) ->
-            let str = Printf.sprintf "%s%s"
-                (Degree.to_string d) (TimeDegree.to_string td) in
+            let s = Printf.sprintf "%s%s" (Degree.to_string d) (TimeDegree.to_string td) in
             if Option.is_some lbl then
-                Printf.sprintf "%s:%s" str (Option.get lbl)
+                Printf.sprintf "%s:%s" s (Tools.csprintf Tools.Red (Option.get lbl))
             else
-                str
+                s
 
 (* Tests if the atom a is a beat. *)
 let is_beat a =
@@ -67,6 +66,7 @@ let product a1 a2 =
         |Silence td1, Silence td2 |Silence td1, Beat (_, td2, _)
                 |Beat (_, td1, _), Silence td2 ->
             Silence (TimeDegree.add td1 td2)
-        |Beat (d1, td1, _), Beat (d2, td2, lbl2) ->
-            Beat (Degree.add d1 d2, TimeDegree.add td1 td2, lbl2)
+        |Beat (d1, td1, lbl1), Beat (d2, td2, lbl2) ->
+            let lbl = if Option.is_some lbl2 then lbl2 else lbl1 in
+            Beat (Degree.add d1 d2, TimeDegree.add td1 td2, lbl)
 

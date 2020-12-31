@@ -4,8 +4,8 @@
  *)
 
 (* A tree pattern is either a leaf (a silence or a beat) or the concatenation of two trees,
- * or the composition of two trees, or the modification of a tree. We see a tree pattern
- * as an element of a clone. Each beat is a valid sector for the substitution. *)
+ * or the composition of two trees, or the modification of a tree. We see a tree pattern as
+ * an element of a clone. Each beat is a valid sector for the substitution. *)
 type tree =
     |Atom of Atom.atom
     |Concatenation of tree * tree
@@ -20,14 +20,10 @@ exception ValueError
 let rec to_string t =
     match t with
         |Atom a -> Atom.to_string a
-        |Concatenation (t1, t2) ->
-            Printf.sprintf "*(%s, %s)" (to_string t1) (to_string t2)
-        |Composition (t1, t2) ->
-            Printf.sprintf "#(%s, %s)" (to_string t1) (to_string t2)
-        |Performance (_, t') ->
-            Printf.sprintf "P(%s)" (to_string t')
-        |Effect (_, t') ->
-            Printf.sprintf "E(%s)" (to_string t')
+        |Concatenation (t1, t2) -> Printf.sprintf "*(%s, %s)" (to_string t1) (to_string t2)
+        |Composition (t1, t2) -> Printf.sprintf "#(%s, %s)" (to_string t1) (to_string t2)
+        |Performance (_, t') -> Printf.sprintf "P(%s)" (to_string t')
+        |Effect (_, t') -> Printf.sprintf "E(%s)" (to_string t')
 
 (* Returns the number of leaves of the tree pattern t. *)
 let rec nb_leaves t =

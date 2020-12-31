@@ -9,6 +9,7 @@ exception SyntaxError of string
 (* To handle errors in the values read from parsed files. *)
 exception ValueError of string
 
+(* Representation of the 8 terminal colors in order to specify colored text to print. *)
 type color =
     |Black
     |Red
@@ -18,7 +19,6 @@ type color =
     |Magenta
     |Cyan
     |White
-
 
 (* Return the binary logarithm of x. *)
 let log2 x =
