@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: (jul. 2015), apr. 2020
- * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020
+ * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
 (* Functional representation of a sound. *)
@@ -258,7 +258,7 @@ let play s =
     let thread_writer = Thread.create (fun _ -> write_buffer s) () in
     let thread_reader = Thread.create
         (fun _ ->
-            Thread.delay 1.0;
+            Thread.delay 2.0;
             let cmd = Printf.sprintf "cat %s | %s" buffer_path_file command_play in
             Sys.command cmd)
         ()

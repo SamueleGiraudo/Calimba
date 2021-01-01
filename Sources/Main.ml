@@ -133,7 +133,7 @@ let live_loop path =
         else
             print_string (Tools.csprintf Tools.Green "|");
         flush stdout;
-        Thread.delay 0.5;
+        Thread.delay 1.0;
         let last_modif' = (Unix.stat path).Unix.st_mtime in
         if Option.is_none last_modif || Option.get last_modif < last_modif' then begin
             Tools.print_success "Modification detected.";

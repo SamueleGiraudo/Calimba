@@ -29,13 +29,18 @@ tools. This language does no depend on any heavy external library.
 ### Complete examples
 1. A [simple melody](Examples/SimpleMelody.cal).
 1. A [harmonic progression](Examples/HarmonicProgression.cal).
-1. Some [patterns in interaction](Examples/PatternsInteraction.cal) (TODO).
+1. Some [phrases in interaction](Examples/PhrasesInteraction.cal).
 1. A [phasing based music](Examples/Phasing.cal).
 1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal) (TODO).
 
 
 ## Versions
-+ '0.0011` (2021-01-01)
++ `future` (from 2021-01-10)
+    + TODO
+    + TODO
+    + TODO
+
++ `0.0011` (2021-01-01)
     + A first [documentation](Help.md) is written.
     + A mode to print layout analysis is added.
     + Built-in for [transpositions](Help.md#transpositions) are added.
