@@ -4,3 +4,16 @@
     Modifications: dec. 2020
 }
 
+{The unit duration is set to 250 ms.}
+put duration = 250 in
+
+{We assign to the name p1 a phrase.}
+let p1 = 0 * 2 * 4 * 2 * 0' * 2 * 0 * 0, in
+
+{In the same way, we assign to the name p2 and p3 some phrases.}
+let p2 = (0 # 4),<<< in
+let p3 = p1 # p2 in
+
+{This plays 4 times a phrase consisting in transpositions of p3.}
+repeat 4 p3 * p3+ * p3- * p3++ * p3--
+

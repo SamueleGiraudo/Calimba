@@ -21,8 +21,6 @@ type expression =
     |Atom of Atom.atom
     |Concatenation of expression * expression
     |Composition of expression * expression
-    |IncreaseOctave of expression
-    |DecreaseOctave of expression
     |IncreaseDegrees of expression
     |DecreaseDegrees of expression
     |IncreaseTime of expression
@@ -32,6 +30,8 @@ type expression =
     |Repeat of int * expression
     |Reverse of expression
     |Complement of expression
+    |IncreaseOctave of expression
+    |DecreaseOctave of expression
     |Let of name * expression * expression
     |Put of modification * expression
 
@@ -69,8 +69,6 @@ let rec layouts e =
         |Concatenation (e1, e2) -> List.append (layouts e1) (layouts e2)
         |Composition (e1, e2) -> List.append (layouts e1) (layouts e2)
         |IncreaseOctave e' -> layouts e'
-        |DecreaseOctave e' -> layouts e'
-        |IncreaseDegrees e' -> layouts e'
         |DecreaseDegrees e' -> layouts e'
         |IncreaseTime e' -> layouts e'
         |DecreaseTime e' -> layouts e'
@@ -79,6 +77,8 @@ let rec layouts e =
         |Repeat (_, e') -> layouts e'
         |Reverse e' -> layouts e'
         |Complement e' -> layouts e'
+        |DecreaseOctave e' -> layouts e'
+        |IncreaseDegrees e' -> layouts e'
         |Let (_, e1, e2) -> List.append (layouts e1) (layouts e2)
         |Put (Layout l, e') -> l :: (layouts e')
         |Put (_, e') -> layouts e'
@@ -91,9 +91,9 @@ let rec free_names e =
         |Concatenation (t1, t2) |Composition (t1, t2)
                 |LabeledInsertion (t1, _, t2) |SaturatedInsertion (t1, t2) ->
             List.append (free_names t1) (free_names t2)
-        |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
-                |IncreaseTime e' |DecreaseTime e'
-                |Repeat (_, e') |Reverse e' |Complement e' ->
+        |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
+                |Repeat (_, e') |Reverse e' |Complement e'
+                |IncreaseOctave e' |DecreaseOctave e' ->
             free_names e'
         |Let (name, e1, e2) ->
             List.append
@@ -115,12 +115,6 @@ let rec substitute_free_names e1 name e2 =
             let e1'' = substitute_free_names e1' name e2
             and e2'' = substitute_free_names e2' name e2 in
             Composition (e1'', e2'')
-        |IncreaseOctave e' ->
-            let e'' = substitute_free_names e' name e2 in
-            IncreaseOctave e''
-        |DecreaseOctave e' ->
-            let e'' = substitute_free_names e' name e2 in
-            DecreaseOctave e''
         |IncreaseDegrees e' ->
             let e'' = substitute_free_names e' name e2 in
             IncreaseDegrees e''
@@ -150,6 +144,12 @@ let rec substitute_free_names e1 name e2 =
         |Complement e' ->
             let e'' = substitute_free_names e' name e2 in
             Complement e''
+        |IncreaseOctave e' ->
+            let e'' = substitute_free_names e' name e2 in
+            IncreaseOctave e''
+        |DecreaseOctave e' ->
+            let e'' = substitute_free_names e' name e2 in
+            DecreaseOctave e''
         |Let (name', e1', e2') ->
             let e1'' = substitute_free_names e1' name e2 in
             let e2'' = if name' = name then e2' else substitute_free_names e2' name e2 in
@@ -172,16 +172,6 @@ let to_tree_pattern e =
             |Composition (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
                 TreePattern.Composition (tp1, tp2)
-            |IncreaseOctave e' ->
-                let ct' = Context.update_root ct (Note.increase_octave (Context.root ct)) in
-                let tp = aux ct' e' in
-                let p = Performance.from_context ct' in
-                TreePattern.Performance (p, tp)
-            |DecreaseOctave e' ->
-                let ct' = Context.update_root ct (Note.decrease_octave (Context.root ct)) in
-                let tp = aux ct' e' in
-                let p = Performance.from_context ct' in
-                TreePattern.Performance (p, tp)
             |IncreaseDegrees e' ->
                 let tp = aux ct e' in
                 let b = Atom.construct_beat (Degree.construct 1) TimeDegree.zero in
@@ -213,10 +203,20 @@ let to_tree_pattern e =
             |Complement e' ->
                 let tp = aux ct e' in
                 TreePattern.complement tp
+            |IncreaseOctave e' ->
+                let ct' = Context.update_root ct (Note.increase_octave (Context.root ct)) in
+                let tp = aux ct' e' in
+                let p = Performance.from_context ct' in
+                TreePattern.Performance (p, tp)
+            |DecreaseOctave e' ->
+                let ct' = Context.update_root ct (Note.decrease_octave (Context.root ct)) in
+                let tp = aux ct' e' in
+                let p = Performance.from_context ct' in
+                TreePattern.Performance (p, tp)
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
                 aux ct e'
-            |Put (m, e') ->
+            |Put (m, e') -> begin
                 let ct' = update_context ct m in
                 let tp = aux ct' e' in
                 match m with
@@ -224,6 +224,7 @@ let to_tree_pattern e =
                     |_ ->
                         let p = Performance.from_context ct' in
                         TreePattern.Performance (p, tp)
+            end
     in
     let tp = aux Context.default e in
     let p = Performance.from_context Context.default in
@@ -246,9 +247,9 @@ let invalid_contexts e =
             |Concatenation (e1, e2) |Composition (e1, e2)
                     |LabeledInsertion (e1, _, e2) |SaturatedInsertion (e1, e2) ->
                 List.append (aux ct e1) (aux ct e2)
-            |IncreaseOctave e' |DecreaseOctave e' |IncreaseDegrees e' |DecreaseDegrees e'
-                    |IncreaseTime e' |DecreaseTime e'
-                    |Repeat (_, e') |Reverse e' |Complement e' ->
+            |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
+                    |Repeat (_, e') |Reverse e' |Complement e'
+                    |IncreaseOctave e' |DecreaseOctave e' ->
                 aux ct e'
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
@@ -349,12 +350,11 @@ let interpret_and_analyse e verbose =
             (* Prints the number of steps by octave. *)
             Printf.printf "    Nb steps by octave: %d\n" nbs;
 
-
             (* Prints the number of minimal degrees. *)
             Printf.printf "    Nb of minimal degrees: %d\n" nbmd;
 
             (* Prints the position of the layout in the list of all layouts having the same
-             * umber of steps by octave and the same number of minimal degrees, sorted
+             * number of steps by octave and the same number of minimal degrees, sorted
              * lexicographically. *)
             let all_layouts = Layout.generate nbs nbmd in
             let pos = Tools.occurrences all_layouts l in

@@ -4,3 +4,25 @@
     Modifications: dec. 2020
 }
 
+{The principle of the phasing is to play repeatedly a short phrase, by stacking two voices
+ played at different tempos.}
+
+{Sets the harmonic minor scale.}
+put layout = 2 1 2 2 1 3 1 in
+
+{Sets the A 110 as root note.}
+put root = 0 12 -2 in
+
+{Sets a synthesizer.}
+put synthesizer = 0.1 0.7 500 10 10 in
+
+{Defines a ground phrase p.}
+let p = 0< * 2 * 1> * -1> * -1> in
+
+{Defines a phrase q by repeating p.}
+let q = repeat 256 p in
+
+(put duration = 250 in q)
+#
+(put duration = 255 in q)
+

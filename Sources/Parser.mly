@@ -27,11 +27,11 @@ let argument_error name index_arg msg =
 %token <string> AT_LABEL
 %token AT_AT
 %token EQUALS
-%token PRIME
-%token COMMA
 %token REPEAT
 %token REVERSE
 %token COMPLEMENT
+%token PRIME
+%token COMMA
 %token LET
 %token PUT
 %token IN
@@ -94,10 +94,6 @@ expression:
         {Expression.Concatenation (exp1, exp2)}
     |exp1=expression SHARP exp2=expression
         {Expression.Composition (exp1, exp2)}
-    |exp=expression PRIME
-        {Expression.IncreaseOctave exp}
-    |exp=expression COMMA
-        {Expression.DecreaseOctave exp}
     |exp= expression PLUS
         {Expression.IncreaseDegrees exp}
     |exp= expression MINUS
@@ -122,6 +118,10 @@ expression:
     |COMPLEMENT exp=expression
         %prec PREC_COMPLEMENT
         {Expression.Complement exp}
+    |exp=expression PRIME
+        {Expression.IncreaseOctave exp}
+    |exp=expression COMMA
+        {Expression.DecreaseOctave exp}
     |LET name=NAME EQUALS exp1=expression IN exp2=expression
         %prec PREC_LET
         {Expression.Let (name, exp1, exp2)}

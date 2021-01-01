@@ -34,12 +34,12 @@ let construct_labeled_beat d td lbl =
 let to_string a =
     match a with
         |Silence td -> TimeDegree.to_string td
-        |Beat (d, td, lbl) ->
+        |Beat (d, td, lbl) -> begin
             let s = Printf.sprintf "%s%s" (Degree.to_string d) (TimeDegree.to_string td) in
-            if Option.is_some lbl then
-                Printf.sprintf "%s:%s" s (Tools.csprintf Tools.Red (Option.get lbl))
-            else
-                s
+            match lbl with
+                |None -> s
+                |Some lbl' -> Printf.sprintf "%s:%s" s (Tools.csprintf Tools.Red lbl')
+        end
 
 (* Tests if the atom a is a beat. *)
 let is_beat a =

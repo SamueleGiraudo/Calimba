@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: (aug. 2016), apr. 2020
- * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020
+ * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
 (* Calimba: a program to explore music theory, explore combinatorial representation of
@@ -18,13 +18,15 @@
 
 let name = "Calimba"
 (*let version = "0.0001"*)
-let version = "0.0010"
-let version_date = "2012-12-12"
+(*let version = "0.0010"*)
+(*let version_date = "2020-12-12"*)
+let version = "0.0011"
+let version_date = "2021-01-01"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
 let information =
-    Printf.sprintf "%s\nCopyright (C) 2020--2020 %s\nWritten by %s [%s]\nVersion: %s (%s)"
+    Printf.sprintf "%s\nCopyright (C) 2020--2021 %s\nWritten by %s [%s]\nVersion: %s (%s)"
         name author author email version version_date
 
 let help_string =

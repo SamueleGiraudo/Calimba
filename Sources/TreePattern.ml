@@ -13,9 +13,6 @@ type tree =
     |Performance of Performance.performance * tree
     |Effect of Effect.effect * tree
 
-(* An exception to handle wrong partial compositions. *)
-exception ValueError
-
 (* Returns a string representation of the tree pattern t. *)
 let rec to_string t =
     match t with
@@ -83,8 +80,12 @@ let rec labeled_insertion t1 lbl t2 =
             let t11' = labeled_insertion t11 lbl t2
             and t12' = labeled_insertion t12 lbl t2 in
             Composition (t11', t12')
-        |Performance (p, t') -> Performance (p, labeled_insertion t' lbl t2)
-        |Effect (e, t') -> Effect (e, labeled_insertion t' lbl t2)
+        |Performance (p, t1') ->
+            let t1'' = labeled_insertion t1' lbl t2 in
+            Performance (p, t1'')
+        |Effect (e, t1') ->
+            let t1'' = labeled_insertion t1' lbl t2 in
+            Effect (e, t1'')
 
 (* Returns the tree pattern obtained by assigning the label lbl to each beat of the tree
  * pattern t. *)
@@ -97,8 +98,12 @@ let rec assign_label t lbl =
         |Composition (t1, t2) ->
             let t1' = assign_label t1 lbl and t2' = assign_label t2 lbl in
             Composition (t1', t2')
-        |Performance (p, t') -> Performance (p, assign_label t' lbl)
-        |Effect (p, t') -> Effect (p, assign_label t' lbl)
+        |Performance (p, t') ->
+            let t'' = assign_label t' lbl in
+            Performance (p, t'')
+        |Effect (p, t') ->
+            let t'' = assign_label t' lbl in
+            Effect (p, t'')
 
 (* Returns the tree pattern obtained by the binary composition of the tree patterns t1 and
  * t2. This performs a partial composition of t2 on each beat of t1. *)

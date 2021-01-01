@@ -10,17 +10,12 @@ language, including help for installation, bug reports, feature requests, and sh
 creations. Welcome!
 
 
-## Versions
-+ `0.0010` (2020-12-12)
-    + Initial version
-
-
 ## Quick overview and examples
 This program offers a complete language allowing to create music in a functional programming
-style. Musical phrases can be composed (or inserted one into another) by using operators
-coming from operad and clone theory. The program generates and plays PCM files, so that it
-does not need any specific sound server. It comes with its own synthesizer and its own sound
-manipulation tools. This language does no depend on any heavy external library.
+style. Musical phrases can be inserted one into another by using operators coming from
+operad and clone theory. The program generates and plays PCM files, so that it does not need
+any specific sound server. It comes with its own synthesizer and its own sound manipulation
+tools. This language does no depend on any heavy external library.
 
 
 ### Main functionalities
@@ -34,13 +29,25 @@ manipulation tools. This language does no depend on any heavy external library.
 ### Complete examples
 1. A [simple melody](Examples/SimpleMelody.cal).
 1. A [harmonic progression](Examples/HarmonicProgression.cal).
-1. Some [patterns in interaction](Examples/PatternsInteraction.cal).
+1. Some [patterns in interaction](Examples/PatternsInteraction.cal) (TODO).
 1. A [phasing based music](Examples/Phasing.cal).
-1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal).
+1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal) (TODO).
+
+
+## Versions
++ '0.0011` (2021-01-01)
+    + A first [documentation](Help.md) is written.
+    + A mode to print layout analysis is added.
+    + Built-in for [transpositions](Help.md#transpositions) are added.
+    + Built-in for integer insertion is removed.
+    + The robustness of inputs and outputs is improved.
+    + Some internal optimizations and reorganizations are added.
+
++ `0.0010` (2020-12-12)
+    + Initial version.
 
 
 ## Installation
-
 The following instructions hold for Linux systems like Debian or Archlinux, after 2020.
 
 ### Dependencies
@@ -96,11 +103,13 @@ Besides, `let in` expressions can be used to write concise code, where names hav
 scopes.
 
 
-### Tree patterns and composition
+### Tree patterns and insertion
 Any expression reduces to a [tree pattern](Help.md#tree-patterns), the fundamental data
 structure of Calimba programs. Tree patterns are then converted into sounds. Given two tree
-patterns, it is possible to compose these in order to build a bigger tree pattern. This
-operation is fundamental in the Calimba language.
+patterns, it is possible to assemble these in order to build a bigger tree pattern. This
+operation is fundamental in the Calimba language. Following its use, this operation allows
+us to specify short patterns and consider some slight touch ups of these in order to include
+these in full musical compositions.
 
 
 ### Bibliography
