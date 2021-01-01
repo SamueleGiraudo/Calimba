@@ -17,11 +17,9 @@
 *)
 
 let name = "Calimba"
-(*let version = "0.0001"*)
-(*let version = "0.0010"*)
-(*let version_date = "2020-12-12"*)
-let version = "0.0011"
-let version_date = "2021-01-01"
+(*let version = "0.0001" and version_date = "2020-08-27"*)
+(*let version = "0.0010" and version_date = "2020-12-12"*)
+let version = "0.0011" and version_date = "2021-01-01"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
@@ -129,9 +127,9 @@ let live_loop path =
     let rec aux path last_modif num_iter =
         print_string "\r";
         if num_iter mod 2 = 0 then
-            print_string (Tools.csprintf Tools.Red "-")
+            print_string (Tools.csprintf Tools.Red "X")
         else
-            print_string (Tools.csprintf Tools.Green "|");
+            print_string (Tools.csprintf Tools.Green "O");
         flush stdout;
         Thread.delay 1.0;
         let last_modif' = (Unix.stat path).Unix.st_mtime in

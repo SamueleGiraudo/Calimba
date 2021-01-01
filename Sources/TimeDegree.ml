@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2020
- * Modifications: dec. 2020
+ * Modifications: dec. 2020, jan. 2020
  *)
 
 (* A time degree is an integer value encoding a number increments (resp. decrements) of
@@ -31,7 +31,7 @@ let to_string td =
             String.make (-i) '>'
         else
             String.make i '<' in
-    Tools.csprintf Tools.Magenta str
+    Tools.csprintf Tools.Yellow str
 
 (* Returns the time degree obtained by adding the time degrees td1 and td2. *)
 let add td1 td2 =

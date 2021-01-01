@@ -591,11 +591,18 @@ saturated insertions. Indeed, for any phrase `phr`, the phrase `phr+` (resp. `ph
 equivalent to the phrase `phr @@ 1` (resp. `phr @@ -1`).
 
 
+### Sound modifiers
+By using effects and insertion, it is possible to define ways to change simply the sound
+of a phrase.
+
+CONTINUE
+
+
 ### Microtonality
 There is no particular restrictions on the used layouts: it is indeed possible to consider
 layouts wherein the octave is divided into any number `n` of steps, provided that `n` is
-positive. It is therefore possible to compose music in the `n` tones equal temperament.
-In this case, it is important to specify a root note living in the same equal temperament.
+positive. It is therefore possible to compose music in the `n` tones equal temperament. In
+this case, it is important to specify a root note living in the same equal temperament.
 
 For instance,
 ```

@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, dec. 2020
+ * Modifications: jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
 (* A tree pattern is either a leaf (a silence or a beat) or the concatenation of two trees,
@@ -12,6 +12,11 @@ type tree =
     |Composition of tree * tree
     |Performance of Performance.performance * tree
     |Effect of Effect.effect * tree
+
+(* Return the tree pattern equals to an atom being a beat with d as degree and td as time
+ * degree. *)
+let construct_beat d td =
+    Atom (Atom.construct_beat d td)
 
 (* Returns a string representation of the tree pattern t. *)
 let rec to_string t =

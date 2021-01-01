@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, dec. 2020
+ * Modifications: jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
 (* A modification encode a way to modify the sound specified by an expression. *)
@@ -204,15 +204,16 @@ let to_tree_pattern e =
                 let tp = aux ct e' in
                 TreePattern.complement tp
             |IncreaseOctave e' ->
-                let ct' = Context.update_root ct (Note.increase_octave (Context.root ct)) in
-                let tp = aux ct' e' in
-                let p = Performance.from_context ct' in
-                TreePattern.Performance (p, tp)
+                let tp = aux ct e' in
+                let s = Layout.nb_minimal_degrees (Context.layout ct) in
+                let a = TreePattern.construct_beat (Degree.construct s) TimeDegree.zero in
+                TreePattern.saturated_insertion a tp
             |DecreaseOctave e' ->
-                let ct' = Context.update_root ct (Note.decrease_octave (Context.root ct)) in
-                let tp = aux ct' e' in
-                let p = Performance.from_context ct' in
-                TreePattern.Performance (p, tp)
+                let tp = aux ct e' in
+                let s = Layout.nb_minimal_degrees (Context.layout ct) in
+                let a = TreePattern.construct_beat (Degree.construct (-s)) TimeDegree.zero
+                in
+                TreePattern.saturated_insertion a tp
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
                 aux ct e'
