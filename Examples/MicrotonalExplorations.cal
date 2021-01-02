@@ -1,6 +1,43 @@
 {
     Author: Samuele Giraudo
     Creation: dec. 2020
-    Modifications: dec. 2020
+    Modifications: dec. 2020, jan. 2021
 }
+
+{Sets a 19 tone equal temperament microtonal layout with 8 minimal degrees.}
+put layout = 3 2 2 3 3 2 1 3 in
+
+{Sets the root, unit duration, and synthesizer.}
+put root = 0 19 -1 in
+put duration = 250 in
+put synthesizer = 0.2 0.2 1600 10 20 in
+
+{Sets some effects.}
+put effect = tremolo 125 0.8 in
+put effect = delay 125 0.2 in
+put effect = delay 500 0.1 in
+
+{Let us consider four arpeggios patterns.}
+let arp1 = 0 * 2 * 4 in
+let arp2 = 0 * 2 * 5 in
+let arp3 = 0 * 3 * 4 in
+let arp4 = 0 * 3 * 5 in
+
+{Let us consider four chords patterns.}
+let ch1 = 0 # 2 # 4 in
+let ch2 = 0 # 2 # 5 in
+let ch3 = 0 # 3 # 4 in
+let ch4 = 0 # 3 # 5 in
+
+{Let us define a progression pattern.}
+let prog = 0 * 1 * 2 * 3 * 4 * 5 * 6 * 7 * 8 in
+
+{This plays all the notes in the root octave, ascending and then descending.}
+prog * . * (reverse prog)
+* . *
+{This plays the four arpeggios patterns for each minimal degree.}
+(prog @@ arp1) * (prog @@ arp1) * (prog @@ arp2) * (prog @@ arp3)
+* . *
+{This plays the four chords patterns for each minimal degree.}
+(prog @@ ch1) * (prog @@ ch1) * (prog @@ ch2) * (prog @@ ch3)
 

@@ -210,9 +210,8 @@ let to_tree_pattern e =
                 TreePattern.saturated_insertion a tp
             |DecreaseOctave e' ->
                 let tp = aux ct e' in
-                let s = Layout.nb_minimal_degrees (Context.layout ct) in
-                let a = TreePattern.construct_beat (Degree.construct (-s)) TimeDegree.zero
-                in
+                let s = - (Layout.nb_minimal_degrees (Context.layout ct)) in
+                let a = TreePattern.construct_beat (Degree.construct s) TimeDegree.zero in
                 TreePattern.saturated_insertion a tp
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in

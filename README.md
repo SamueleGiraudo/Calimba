@@ -31,8 +31,8 @@ tools. This language does no depend on any heavy external library.
 1. A [harmonic progression](Examples/HarmonicProgression.cal).
 1. Some [phrases in interaction](Examples/PhrasesInteraction.cal).
 1. A [phasing based music](Examples/Phasing.cal).
-1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal) (TODO).
-
+1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal).
+1. A [sound modifier](Examples/SoundModifier.cal) (TODO).
 
 ## Versions
 + `future` (from 2021-01-10)
