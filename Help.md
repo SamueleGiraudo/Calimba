@@ -46,7 +46,13 @@ where for any note $X$, $X'$ (resp. $X,$) is the note $X$ one octave above (resp
 
 In the Calimba language, we handle degrees instead of notes to keep flexibility. Indeed, as
 we will see in the following, degrees can be interpreted in the context of different scales
-(called layouts here) to be in correspondence with different notes.
+(called layouts here) to be in correspondence with different notes. Moreover, musical
+phrases expressed by degrees instead of by notes can be seen as patterns. For instance a
+triad pattern is formed by root, a third, and a fifth, and this pattern is encoded by the
+degrees $0$, $2$, and $4$ specifying the relative position of the components of the triad.
+This pattern realizes itself in different contexts (for instance as a major triad, a minor
+triad, a diminished triad, or also something else) by using a notion of insertion which will
+be explained later.
 
 
 ### Rests
