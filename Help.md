@@ -72,9 +72,9 @@ is the phrase consisting in the notes $A$, $E$, $A$, and $F$, a rest, and the no
 and $E$ played in this order, one after the other. This phrase lasts $3500$ ms.
 
 
-### Stacking
+### Addition
 To play some notes at the same time, we separate these with the operator `#`, called
-_stacking operator_.
+_addition operator_.
 
 For instance,
 ```
@@ -84,8 +84,8 @@ is the phrase consisting in the notes $A$, $C$, and $E$ played at the same time.
 lasts $500$ ms.
 
 
-### Mixing concatenation and stacking
-The concatenation and stacking operators work not only on notes and rests but also on
+### Mixing concatenation and addition
+The concatenation and addition operators work not only on notes and rests but also on
 phrases. Therefore, it is possible to build complex phrases, by using brackets if needed.
 
 For instance,
@@ -258,9 +258,8 @@ second time with `125` ms as unit duration.
 ### Transpositions
 If `phr` is a phrase, then `phr+` is the phrase obtained from `phr` by incrementing all its
 degrees. Similarly, `phr-` is the phrase obtained from `phr` by decrementing all its
-degrees.
-These operators `+` and `-`, called _transposition operators_ can be stacked in order to
-transpose phrases.
+degrees. These operators `+` and `-`, called _transposition operators_ can be stacked in
+order to transpose phrases.
 
 For instance,
 ```
@@ -448,7 +447,7 @@ and $\lambda_1 = p$. Only the harmonics having coefficients smaller than or equa
 $2^{-16}$ are considered (the coefficients smaller than this value are set to $0$).
 
 A sound with an high value for `p` is more powerful but has more chances to be saturated
-(for instance when several phrases are stacked). A sound with an high value for `r` has more
+(for instance when several phrases are added). A sound with an high value for `r` has more
 harmonics and seems more aggressive.
 
 Here are some examples of the first harmonics coefficients given some values for `p` and
@@ -502,7 +501,7 @@ put effect = clip 0.7 in
 
 #### Delay
 The _delay effect_ `delay` admits two arguments: a first `t` which is a nonnegative integer
-and a second `c` which a nonnegative floating number. This stacks to the sound specified by
+and a second `c` which a nonnegative floating number. This adds to the sound specified by
 `phr` the same sound delayed by `t` ms and scaled by `c`. Here is an example:
 ```
 put effect = delay 100 0.75 in
@@ -532,7 +531,7 @@ Formally, a _tree pattern_ is either
 1. a leaf containing an atom;
 1. or a binary node containing the concatenation symbol and having two tree patterns as
    children;
-1. or a binary node containing the stacking symbol and having two tree patterns as children;
+1. or a binary node containing the addition symbol and having two tree patterns as children;
 1. or a unary node containing a performance and having a tree pattern as child;
 1. or a unary node containing an effect and having a tree pattern as child.
 

@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, oct. 2020, dec. 2020
+ * Modifications: jul. 2020, aug. 2020, oct. 2020, dec. 2020, jan. 2021
  *)
 
 %{
@@ -93,7 +93,7 @@ expression:
     |exp1=expression STAR exp2=expression
         {Expression.Concatenation (exp1, exp2)}
     |exp1=expression SHARP exp2=expression
-        {Expression.Composition (exp1, exp2)}
+        {Expression.Addition (exp1, exp2)}
     |exp= expression PLUS
         {Expression.IncreaseDegrees exp}
     |exp= expression MINUS

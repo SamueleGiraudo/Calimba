@@ -35,9 +35,7 @@ tools. This language does no depend on any heavy external library.
 1. A [sound modifier](Examples/SoundModifier.cal) (TODO).
 
 ## Versions
-+ `future` (from 2021-01-10)
-    + TODO
-    + TODO
++ `future` (from 2021-01-02)
     + TODO
 
 + `0.0011` (2021-01-01)

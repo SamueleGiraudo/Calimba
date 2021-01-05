@@ -20,7 +20,7 @@ type expression =
     |Name of name
     |Atom of Atom.atom
     |Concatenation of expression * expression
-    |Composition of expression * expression
+    |Addition of expression * expression
     |IncreaseDegrees of expression
     |DecreaseDegrees of expression
     |IncreaseTime of expression
@@ -67,7 +67,7 @@ let rec layouts e =
         |Name _ -> []
         |Atom _ -> []
         |Concatenation (e1, e2) -> List.append (layouts e1) (layouts e2)
-        |Composition (e1, e2) -> List.append (layouts e1) (layouts e2)
+        |Addition (e1, e2) -> List.append (layouts e1) (layouts e2)
         |IncreaseOctave e' -> layouts e'
         |DecreaseDegrees e' -> layouts e'
         |IncreaseTime e' -> layouts e'
@@ -88,7 +88,7 @@ let rec free_names e =
     match e with
         |Name name -> [name]
         |Atom _ -> []
-        |Concatenation (t1, t2) |Composition (t1, t2)
+        |Concatenation (t1, t2) |Addition (t1, t2)
                 |LabeledInsertion (t1, _, t2) |SaturatedInsertion (t1, t2) ->
             List.append (free_names t1) (free_names t2)
         |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
@@ -111,10 +111,10 @@ let rec substitute_free_names e1 name e2 =
             let e1'' = substitute_free_names e1' name e2
             and e2'' = substitute_free_names e2' name e2 in
             Concatenation (e1'', e2'')
-        |Composition (e1', e2') ->
+        |Addition (e1', e2') ->
             let e1'' = substitute_free_names e1' name e2
             and e2'' = substitute_free_names e2' name e2 in
-            Composition (e1'', e2'')
+            Addition (e1'', e2'')
         |IncreaseDegrees e' ->
             let e'' = substitute_free_names e' name e2 in
             IncreaseDegrees e''
@@ -169,9 +169,9 @@ let to_tree_pattern e =
             |Concatenation (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
                 TreePattern.Concatenation (tp1, tp2)
-            |Composition (e1, e2) ->
+            |Addition (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
-                TreePattern.Composition (tp1, tp2)
+                TreePattern.Addition (tp1, tp2)
             |IncreaseDegrees e' ->
                 let tp = aux ct e' in
                 let b = Atom.construct_beat (Degree.construct 1) TimeDegree.zero in
@@ -244,7 +244,7 @@ let invalid_contexts e =
         match e with
             |Name _ -> []
             |Atom _ -> if Context.is_inconsistent ct then [ct] else []
-            |Concatenation (e1, e2) |Composition (e1, e2)
+            |Concatenation (e1, e2) |Addition (e1, e2)
                     |LabeledInsertion (e1, _, e2) |SaturatedInsertion (e1, e2) ->
                 List.append (aux ct e1) (aux ct e2)
             |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
