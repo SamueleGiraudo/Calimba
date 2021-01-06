@@ -1,4 +1,6 @@
 # Calimba
+`<</^\|_`
+
 A programming language to create music based on the theory of operads and clones.
 
 Copyright (C) 2020--2021 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/) -
@@ -36,6 +38,8 @@ tools. This language does no depend on any heavy external library.
 
 ## Versions
 + `future` (from 2021-01-02)
+    + The internal representation of phrase is improved.
+    + The syntax for introduce effects has been improved.
     + TODO
 
 + `0.0011` (2021-01-01)

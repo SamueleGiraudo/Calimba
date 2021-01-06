@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, dec. 2020
+ * Modifications: jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
 {
@@ -128,8 +128,6 @@ rule read = parse
         {Parser.DURATION}
     |"synthesizer"
         {Parser.SYNTHESIZER}
-    |"effect"
-        {Parser.EFFECT}
     |"scale"
         {Parser.SCALE}
     |"delay"

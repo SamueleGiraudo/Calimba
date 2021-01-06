@@ -13,9 +13,9 @@ put duration = 250 in
 put synthesizer = 0.2 0.2 1600 10 20 in
 
 {Sets some effects.}
-put effect = tremolo 125 0.8 in
-put effect = delay 125 0.2 in
-put effect = delay 500 0.1 in
+put tremolo = 125 0.8 in
+put delay = 125 0.2 in
+put delay = 500 0.1 in
 
 {Let us consider four arpeggios patterns.}
 let arp1 = 0 * 2 * 4 in

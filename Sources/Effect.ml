@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2020
- * Modifications: dec. 2020
+ * Modifications: dec. 2020, jan. 2021
  *)
 
 (* An effect is a map transforming an input sound into an output one. It is important to
@@ -48,4 +48,11 @@ let tremolo time c =
 let apply e s =
     let Effect map = e in
     map s
+
+let compose e1 e2 =
+    let Effect m1 = e1 and Effect m2 = e2 in
+    Effect (fun s -> m1 (m2 s))
+
+let identity =
+    Effect Fun.id
 

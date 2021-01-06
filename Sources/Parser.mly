@@ -41,7 +41,6 @@ let argument_error name index_arg msg =
 %token TIME
 %token DURATION
 %token SYNTHESIZER
-%token EFFECT
 
 %token SCALE
 %token DELAY
@@ -125,15 +124,18 @@ expression:
     |LET name=NAME EQUALS exp1=expression IN exp2=expression
         %prec PREC_LET
         {Expression.Let (name, exp1, exp2)}
-    |PUT ct=put IN exp=expression
+    |PUT cm=context_mutation IN exp=expression
         %prec PREC_PUT
-        {Expression.Put (ct, exp)}
+        {Expression.ContextMutation (cm, exp)}
+    |PUT em=effect_mutation IN exp=expression
+        %prec PREC_PUT
+        {Expression.EffectMutation (em, exp)}
     |PAR_L exp=expression PAR_R
         {exp}
     |BEGIN exp=expression END
         {exp}
 
-put:
+context_mutation:
     |LAYOUT EQUALS lay=layout
         {Expression.Layout lay}
     |ROOT EQUALS root=note
@@ -152,8 +154,6 @@ put:
             Expression.UnitDuration dur}
     |SYNTHESIZER EQUALS s=synthesizer
         {Expression.Synthesizer s}
-    |EFFECT EQUALS e=effect
-        {Expression.Effect e}
 
 layout:
     |lst=nonempty_list(INTEGER)
@@ -190,24 +190,24 @@ synthesizer_shape:
     |max_dur=INTEGER o_dur=INTEGER c_dur=INTEGER
         {(max_dur, o_dur, c_dur)}
 
-effect:
-    |SCALE c=POS_FLOAT
-        {Effect.scale c}
-    |CLIP c=POS_FLOAT
+effect_mutation:
+    |SCALE EQUALS c=POS_FLOAT
+        {Expression.Scale c}
+    |CLIP EQUALS c=POS_FLOAT
         {if c < 0.0 || c > 1.0 then
             argument_error "clip" 1 "must be between 0.0 and 1.0"
         else
-            Effect.clip c}
-    |DELAY t=INTEGER c=POS_FLOAT
+            Expression.Clip c}
+    |DELAY EQUALS t=INTEGER c=POS_FLOAT
         {if t < 0 then
             argument_error "delay" 1 "must be nonnegative"
         else
-            Effect.delay t c}
-    |TREMOLO t=INTEGER c=POS_FLOAT
+            Expression.Delay (t, c)}
+    |TREMOLO EQUALS t=INTEGER c=POS_FLOAT
         {if t < 0 then
             argument_error "tremolo" 1 "must be nonnegative"
         else if c < 0.0 || c > 1.0 then
             argument_error "tremolo" 2 "must be between 0.0 and 1.0"
         else
-            Effect.tremolo t c}
+            Expression.Tremolo (t, c)}
 

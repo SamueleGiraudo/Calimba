@@ -3,14 +3,21 @@
  * Modifications: jul. 2020, aug. 2020, dec. 2020, jan. 2021
  *)
 
-(* A modification encode a way to modify the sound specified by an expression. *)
-type modification =
+(* A context mutation encodes a modification for the context of the expression. *)
+type context_mutation =
     |Layout of Layout.layout
     |Root of Note.note
     |TimeShape of TimeShape.time_shape
     |UnitDuration of int
     |Synthesizer of Synthesizer.synthesizer
-    |Effect of Effect.effect
+
+(* An effect mutation encodes an effect to add by composition on the sound encoded by the
+ * expression. Each mutation comes with arguments that are the parameters of the effects. *)
+type effect_mutation =
+    |Scale of float
+    |Clip of float
+    |Delay of int * float
+    |Tremolo of int * float
 
 (* Names in expressions. *)
 type name = string
@@ -33,7 +40,8 @@ type expression =
     |IncreaseOctave of expression
     |DecreaseOctave of expression
     |Let of name * expression * expression
-    |Put of modification * expression
+    |ContextMutation of context_mutation * expression
+    |EffectMutation of effect_mutation * expression
 
 (* The errors an expression can contain. *)
 type error =
@@ -51,15 +59,22 @@ let error_to_string err =
         |InvalidContext ct ->
             Printf.sprintf "the context\n%s\nis invalid" (Context.to_string ct)
 
-(* Returns the context obtained by updating the context ct with the modification m. *)
-let update_context ct m =
-    match m with
+(* Returns the context obtained by updating the context ct with the context mutation cm. *)
+let update_context ct cm =
+    match cm with
         |Layout l -> Context.update_layout ct l
         |Root r -> Context.update_root ct r
         |TimeShape ts -> Context.update_time_shape ct ts
         |UnitDuration d -> Context.update_unit_duration ct d
         |Synthesizer s -> Context.update_synthesizer ct s
-        |Effect _ -> ct
+
+(* Returns the effect specified by the effect mutation em. *)
+let effect_mutation_to_effect em =
+    match em with
+        |Scale c -> Effect.scale c
+        |Clip c -> Effect.clip c
+        |Delay (time, c) -> Effect.delay time c
+        |Tremolo (time, c) -> Effect.tremolo time c
 
 (* Returns the list of all layouts used in the expression e. *)
 let rec layouts e =
@@ -80,8 +95,8 @@ let rec layouts e =
         |DecreaseOctave e' -> layouts e'
         |IncreaseDegrees e' -> layouts e'
         |Let (_, e1, e2) -> List.append (layouts e1) (layouts e2)
-        |Put (Layout l, e') -> l :: (layouts e')
-        |Put (_, e') -> layouts e'
+        |ContextMutation (Layout l, e') -> l :: (layouts e')
+        |ContextMutation (_, e') |EffectMutation (_, e') -> layouts e'
 
 (* Returns the free names in the expression e. *)
 let rec free_names e =
@@ -99,7 +114,8 @@ let rec free_names e =
             List.append
                 (free_names e1)
                 (free_names e2 |> List.filter (fun name' -> name' <> name))
-        |Put (_, e') -> free_names e'
+        |ContextMutation (_, e') -> free_names e'
+        |EffectMutation (_, e') -> free_names e'
 
 (* Returns the expression obtained by substituting the free occurrences of the name name in
  * the expression e1 by the expression e2. *)
@@ -154,9 +170,12 @@ let rec substitute_free_names e1 name e2 =
             let e1'' = substitute_free_names e1' name e2 in
             let e2'' = if name' = name then e2' else substitute_free_names e2' name e2 in
             Let (name', e1'', e2'')
-        |Put (ct, e') ->
+        |ContextMutation (cm, e') ->
             let e'' = substitute_free_names e' name e2 in
-            Put (ct, e'')
+            ContextMutation (cm, e'')
+        |EffectMutation (em, e') ->
+            let e'' = substitute_free_names e' name e2 in
+            EffectMutation (em, e'')
 
 (* Returns the tree pattern encoded by the expression e. Raises ValueError if there are
  * unbounded names in e. *)
@@ -216,17 +235,17 @@ let to_tree_pattern e =
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
                 aux ct e'
-            |Put (m, e') -> begin
-                let ct' = update_context ct m in
+            |ContextMutation (cm, e') ->
+                let ct' = update_context ct cm in
                 let tp = aux ct' e' in
-                match m with
-                    |Effect e -> TreePattern.Effect (e, tp)
-                    |_ ->
-                        let p = Performance.from_context ct' in
-                        TreePattern.Performance (p, tp)
-            end
+                let p = Performance.from_context ct' in
+                TreePattern.Performance (p, tp)
+            |EffectMutation (ea, e') ->
+                let tp = aux ct e' in
+                let eff = effect_mutation_to_effect ea in
+                TreePattern.Effect (eff, tp)
     in
-    let tp = aux Context.default e in
+    let tp = aux Context.default e in 
     let p = Performance.from_context Context.default in
     TreePattern.Performance (p, tp)
 
@@ -254,7 +273,8 @@ let invalid_contexts e =
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
                 aux ct e'
-            |Put (m, e') -> aux (update_context ct m) e'
+            |ContextMutation (m, e') -> aux (update_context ct m) e'
+            |EffectMutation (_, e') -> aux ct e'
     in
     aux Context.default e
 

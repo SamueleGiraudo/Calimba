@@ -17,6 +17,7 @@
 *)
 
 let name = "Calimba"
+let logo = "<</^\\|_"
 (*let version = "0.0001" and version_date = "2020-08-27"*)
 (*let version = "0.0010" and version_date = "2020-12-12"*)
 let version = "0.0011" and version_date = "2021-01-01"
@@ -24,8 +25,9 @@ let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
 let information =
-    Printf.sprintf "%s\nCopyright (C) 2020--2021 %s\nWritten by %s [%s]\nVersion: %s (%s)"
-        name author author email version version_date
+    Printf.sprintf "%s\n%s\nCopyright (C) 2020--2021 %s\nWritten by %s [%s]\n\
+        Version: %s (%s)"
+        logo name author author email version version_date
 
 let help_string =
     "Here, PATH is the path to a Calimba file.\n"

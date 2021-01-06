@@ -472,7 +472,7 @@ The default synthesizer has the following parameters:
 ### Effects
 If `phr` is a phrase, the phrase
 ```
-put effect = eff a1 ... ak in phr
+put eff = a1 ... ak in phr
 ```
 plays it under the effect `eff` with the arguments `a1 ... ak`. Let us list the available
 effects.
@@ -484,7 +484,7 @@ This multiplies by `c` the signal of the sound specified by `phr`. If the amplit
 signal is too high at some parts, this amplitude is reduced to a maximal threshold. For this
 reason, a scaling can produce some interesting clipping effects. Here is an example:
 ```
-put effect = scale 1.5 in 1 * 1 * (0 # 4)
+put scale = 1.5 in 1 * 1 * (0 # 4)
 ```
 
 
@@ -494,7 +494,7 @@ $0$ and $1$. This reduce to `c` the amplitude of the signal of the sound specifi
 Depending of the original sound of `phr`, an adequate value for `c` can produce some
 distortion effects. Here is an example:
 ```
-put effect = clip 0.7 in
+put clip = 0.7 in
 0 * (0 # 4 # 0, # 4')<, * 0
 ```
 
@@ -504,7 +504,7 @@ The _delay effect_ `delay` admits two arguments: a first `t` which is a nonnegat
 and a second `c` which a nonnegative floating number. This adds to the sound specified by
 `phr` the same sound delayed by `t` ms and scaled by `c`. Here is an example:
 ```
-put effect = delay 100 0.75 in
+put delay = 100 0.75 in
 0 * (0 # 4) * 1 * 2
 ```
 
@@ -517,7 +517,7 @@ the volume of the sound decreases and increases to its original value. The sound
 to the value specified by `c`: if `c` is close to `1.0`, the tremolo effect is slight, and
 if `c` is close to `0.0`, the tremolo effect becomes more pronounced. Here is an example:
 ```
-put effect = tremolo 125 0.7 in
+put tremolo = 125 0.7 in
 0 * 2 * 4 * (0 # 2 # 4)< * (-1 # 1 # 3)<
 ```
 

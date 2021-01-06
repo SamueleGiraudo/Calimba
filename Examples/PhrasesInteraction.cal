@@ -17,10 +17,10 @@ put time = 2 1 in
 put duration = 300 in
 
 {Sets a synthesizer for crisp sounds.}
-put synthesizer = 0.4 0.6 600 50 20 in
+put synthesizer = 0.2 0.6 600 50 20 in
 
 {Add a slight delay effect.}
-put effect = delay 150 0.33 in
+put delay = 150 0.33 in
 
 {A first phrase on 10 units of time. Some atoms are named by x or by y.}
 let p1 = 0< * 1 * 2 * 0:x * 1:x * 2:x * -1:y * 0:y< in
