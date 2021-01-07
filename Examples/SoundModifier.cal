@@ -4,5 +4,55 @@
     Modifications: jan. 2021
 }
 
-{TODO}
-.
+{We define here a name octaver. The phrase octaver @@ p where p is any phrase is the phrase
+ wherein each beat of p is replaced by the addition of the beat and the one at the octave
+ below. The scaling effect is introduced in order to prevent some clippings. This is a sound
+ modifier.}
+let octaver =
+    put scale = 0.5 in
+    0, # 0
+in
+
+{A sound modifier harmonizing by triads.}
+let harmonizer =
+    put scale = 0.333 in
+    0 # 2 # 4
+in
+
+{A sound modifier introducing several delay effect in order to create some echo.}
+let echoer =
+    put delay = 400 0.1 in
+    put delay = 300 0.2 in
+    put delay = 200 0.2 in
+    put delay = 100 0.2 in
+    0
+in
+
+{A sound modifier introducing a distortion by scaling and then clipping the phrase.}
+let distorter =
+    put clip = 0.15 in
+    put scale = 2.0 in
+    0
+in
+
+{A simple phrase to test.}
+let phrase = 0 * 0> * 1 > * 3> * 4 * . * 3> * 2> * -1> * 0 in
+
+{Plays the phrase.}
+phrase
+
+{Applies octaver on the phrase.}
+* (octaver @@ phrase)
+
+{Applies harmonizer on the phrase.}
+* (harmonizer @@ phrase)
+
+{Applies echoer on the phrase.}
+* (echoer @@ phrase)
+
+{Applies distorted on the phrase.}
+* (distorter @@ phrase)
+
+{Applies the distorter and then the phrase.}
+* (echoer @@ distorter @@ phrase)
+

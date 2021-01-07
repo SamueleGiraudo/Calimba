@@ -34,12 +34,12 @@ tools. This language does no depend on any heavy external library.
 1. Some [phrases in interaction](Examples/PhrasesInteraction.cal).
 1. A [phasing based music](Examples/Phasing.cal).
 1. Some [microtonal explorations](Examples/MicrotonalExplorations.cal).
-1. A [sound modifier](Examples/SoundModifier.cal) (TODO).
+1. A [sound modifier](Examples/SoundModifier.cal).
 
 ## Versions
 + `future` (from 2021-01-02)
-    + The internal representation of phrase is improved.
-    + The syntax for introduce effects has been improved.
+    + The internal representation of phrases is improved.
+    + The syntax for introduce effects is improved.
     + TODO
 
 + `0.0011` (2021-01-01)

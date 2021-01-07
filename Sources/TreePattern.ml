@@ -31,31 +31,46 @@ let rec to_string t =
 let rec nb_leaves t =
     match t with
         |Atom _ -> 1
-        |Concatenation (t1, t2) |Addition (t1, t2) -> nb_leaves t1 + nb_leaves t2
-        |Performance (_, t') |Effect (_, t') -> nb_leaves t'
+        |Concatenation (t1, t2)
+        |Addition (t1, t2) ->
+            nb_leaves t1 + nb_leaves t2
+        |Performance (_, t')
+        |Effect (_, t') ->
+            nb_leaves t'
 
 (* Returns the number of internal nodes of the tree pattern t. *)
 let rec nb_internal_nodes t =
     match t with
         |Atom _ -> 0
-        |Concatenation (t1, t2) |Addition (t1, t2) ->
+        |Concatenation (t1, t2)
+        |Addition (t1, t2) ->
             1 + nb_internal_nodes t1 + nb_internal_nodes t2
-        |Performance (_, t') |Effect (_, t') -> 1 + nb_internal_nodes t'
+        |Performance (_, t')
+        |Effect (_, t') ->
+            1 + nb_internal_nodes t'
 
 (* Returns the height of the tree pattern t. A tree consisting in a single atom has 0 as
  * height. *)
 let rec height t =
     match t with
         |Atom _ -> 0
-        |Concatenation (t1, t2) |Addition (t1, t2) -> 1 + max (height t1) (height t2)
-        |Performance (_, t') |Effect (_, t') -> 1 + height t'
+        |Concatenation (t1, t2)
+        |Addition (t1, t2) ->
+            1 + max (height t1) (height t2)
+        |Performance (_, t')
+        |Effect (_, t') ->
+            1 + height t'
 
-(* Returns the arity, that is the number of beats, of the tree pattern t. *)
-let rec arity t =
+(* Returns the number of beats, of the tree pattern t. This is also called arity of t. *)
+let rec nb_beats t =
     match t with
         |Atom a -> if Atom.is_beat a then 1 else 0
-        |Concatenation (t1, t2) |Addition (t1, t2) -> arity t1 + arity t2
-        |Performance (_, t') |Effect (_, t') -> arity t'
+        |Concatenation (t1, t2)
+        |Addition (t1, t2) ->
+            nb_beats t1 + nb_beats t2
+        |Performance (_, t')
+        |Effect (_, t') ->
+            nb_beats t'
 
 (* Returns the tree pattern obtained by applying the degree d and the time degree td on the
  * tree pattern ts. *)

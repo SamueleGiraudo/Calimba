@@ -79,43 +79,57 @@ let effect_mutation_to_effect em =
 (* Returns the list of all layouts used in the expression e. *)
 let rec layouts e =
     match e with
-        |Name _ -> []
-        |Atom _ -> []
-        |Concatenation (e1, e2) -> List.append (layouts e1) (layouts e2)
-        |Addition (e1, e2) -> List.append (layouts e1) (layouts e2)
-        |IncreaseOctave e' -> layouts e'
-        |DecreaseDegrees e' -> layouts e'
-        |IncreaseTime e' -> layouts e'
-        |DecreaseTime e' -> layouts e'
-        |LabeledInsertion (e1, _, e2) -> List.append (layouts e1) (layouts e2)
-        |SaturatedInsertion (e1, e2) -> List.append (layouts e1) (layouts e2)
-        |Repeat (_, e') -> layouts e'
-        |Reverse e' -> layouts e'
-        |Complement e' -> layouts e'
-        |DecreaseOctave e' -> layouts e'
-        |IncreaseDegrees e' -> layouts e'
-        |Let (_, e1, e2) -> List.append (layouts e1) (layouts e2)
+        |Name _
+        |Atom _ ->
+            []
+        |IncreaseDegrees e'
+        |DecreaseDegrees e'
+        |IncreaseTime e'
+        |DecreaseTime e'
+        |Repeat (_, e')
+        |Reverse e'
+        |Complement e'
+        |IncreaseOctave e'
+        |DecreaseOctave e' ->
+            layouts e'
+        |Concatenation (e1, e2)
+        |Addition (e1, e2)
+        |LabeledInsertion (e1, _, e2)
+        |SaturatedInsertion (e1, e2)
+        |Let (_, e1, e2) ->
+            List.append (layouts e1) (layouts e2)
         |ContextMutation (Layout l, e') -> l :: (layouts e')
-        |ContextMutation (_, e') |EffectMutation (_, e') -> layouts e'
+        |ContextMutation (_, e')
+        |EffectMutation (_, e') ->
+            layouts e'
 
 (* Returns the free names in the expression e. *)
 let rec free_names e =
     match e with
         |Name name -> [name]
         |Atom _ -> []
-        |Concatenation (t1, t2) |Addition (t1, t2)
-                |LabeledInsertion (t1, _, t2) |SaturatedInsertion (t1, t2) ->
-            List.append (free_names t1) (free_names t2)
-        |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
-                |Repeat (_, e') |Reverse e' |Complement e'
-                |IncreaseOctave e' |DecreaseOctave e' ->
+        |IncreaseDegrees e'
+        |DecreaseDegrees e'
+        |IncreaseTime e'
+        |DecreaseTime e'
+        |Repeat (_, e')
+        |Reverse e'
+        |Complement e'
+        |IncreaseOctave e'
+        |DecreaseOctave e' ->
             free_names e'
+        |Concatenation (t1, t2)
+        |Addition (t1, t2)
+        |LabeledInsertion (t1, _, t2)
+        |SaturatedInsertion (t1, t2) ->
+            List.append (free_names t1) (free_names t2)
         |Let (name, e1, e2) ->
             List.append
                 (free_names e1)
                 (free_names e2 |> List.filter (fun name' -> name' <> name))
-        |ContextMutation (_, e') -> free_names e'
-        |EffectMutation (_, e') -> free_names e'
+        |ContextMutation (_, e')
+        |EffectMutation (_, e') ->
+            free_names e'
 
 (* Returns the expression obtained by substituting the free occurrences of the name name in
  * the expression e1 by the expression e2. *)
@@ -212,7 +226,7 @@ let to_tree_pattern e =
                 TreePattern.labeled_insertion tp1 lbl tp2
             |SaturatedInsertion (e1, e2) ->
                 let tp1 = aux ct e1 and tp2 = aux ct e2 in
-                TreePattern.saturated_insertion tp1 tp2 
+                TreePattern.saturated_insertion tp1 tp2
             |Repeat (k, e') ->
                 let tp = aux ct e' in
                 TreePattern.repeat k tp
@@ -240,12 +254,12 @@ let to_tree_pattern e =
                 let tp = aux ct' e' in
                 let p = Performance.from_context ct' in
                 TreePattern.Performance (p, tp)
-            |EffectMutation (ea, e') ->
+            |EffectMutation (em, e') ->
                 let tp = aux ct e' in
-                let eff = effect_mutation_to_effect ea in
+                let eff = effect_mutation_to_effect em in
                 TreePattern.Effect (eff, tp)
     in
-    let tp = aux Context.default e in 
+    let tp = aux Context.default e in
     let p = Performance.from_context Context.default in
     TreePattern.Performance (p, tp)
 
@@ -263,18 +277,26 @@ let invalid_contexts e =
         match e with
             |Name _ -> []
             |Atom _ -> if Context.is_inconsistent ct then [ct] else []
-            |Concatenation (e1, e2) |Addition (e1, e2)
-                    |LabeledInsertion (e1, _, e2) |SaturatedInsertion (e1, e2) ->
-                List.append (aux ct e1) (aux ct e2)
-            |IncreaseDegrees e' |DecreaseDegrees e' |IncreaseTime e' |DecreaseTime e'
-                    |Repeat (_, e') |Reverse e' |Complement e'
-                    |IncreaseOctave e' |DecreaseOctave e' ->
+            |IncreaseDegrees e'
+            |DecreaseDegrees e'
+            |IncreaseTime e'
+            |DecreaseTime e'
+            |Repeat (_, e')
+            |Reverse e'
+            |Complement e'
+            |IncreaseOctave e'
+            |DecreaseOctave e'
+            |EffectMutation (_, e') ->
                 aux ct e'
+            |Concatenation (e1, e2)
+            |Addition (e1, e2)
+            |LabeledInsertion (e1, _, e2)
+            |SaturatedInsertion (e1, e2) ->
+                List.append (aux ct e1) (aux ct e2)
             |Let (name, e1', e2') ->
                 let e' = substitute_free_names e2' name e1' in
                 aux ct e'
             |ContextMutation (m, e') -> aux (update_context ct m) e'
-            |EffectMutation (_, e') -> aux ct e'
     in
     aux Context.default e
 
@@ -311,7 +333,7 @@ let interpret e verbose =
         Printf.printf "Characteristics:\n";
         Printf.printf "    Duration: %d ms (%dh %dm %ds %dms)\n"
             dur_ms dur_hour dur_min dur_sec dur_ms';
-        Printf.printf "    Nb. beats: %d\n" (TreePattern.arity tp);
+        Printf.printf "    Nb. beats: %d\n" (TreePattern.nb_beats tp);
         Printf.printf "    Nb. leaves: %d\n" (TreePattern.nb_leaves tp);
         Printf.printf "    Nb. int. nodes: %d\n" (TreePattern.nb_internal_nodes tp);
         Printf.printf "    Height: %d\n" (TreePattern.height tp)
