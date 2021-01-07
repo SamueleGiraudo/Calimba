@@ -539,7 +539,16 @@ A _performance_ is a map sending each atom to a sound (depending on the layout, 
 note, the time shape, the unit duration, and the synthesizer). An _effect_ is a map sending
 a sound to a sound (adding for instance a delay or a tremolo effect).
 
-Each phrase translates into a tree pattern before to be converted into a sound.
+Each `.cal` contains a phrase which translates as a tree pattern, then to a sound, and
+finally to a PCM file, as summarized by the diagram
+```
+ Input                       Internal processing                    Output
++------+     +-----------------------------------------------+     +------+
+| .cal |     | +--------+     +--------------+     +-------+ |     | .pcm |
+|      | --> | | Phrase | --> | Tree pattern | --> | Sound | | --> |      |
+| file |     | +--------+     +--------------+     +-------+ |     | file |
++------+     +-----------------------------------------------+     +------+
+```
 
 
 ### Named degrees
