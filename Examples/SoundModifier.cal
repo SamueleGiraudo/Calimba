@@ -13,12 +13,6 @@ let octaver =
     0, # 0
 in
 
-{A sound modifier harmonizing by triads.}
-let harmonizer =
-    put scale = 0.333 in
-    0 # 2 # 4
-in
-
 {A sound modifier introducing several delay effect in order to create some echo.}
 let echoer =
     put delay = 400 0.1 in
@@ -43,9 +37,6 @@ phrase
 
 {Applies octaver on the phrase.}
 * (octaver @@ phrase)
-
-{Applies harmonizer on the phrase.}
-* (harmonizer @@ phrase)
 
 {Applies echoer on the phrase.}
 * (echoer @@ phrase)

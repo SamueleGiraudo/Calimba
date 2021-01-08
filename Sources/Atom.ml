@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2020
- * Modifications: dec. 2020
+ * Modifications: dec. 2020, jan. 2021
  *)
 
 (* A label is a name that a beat can optionally hold. *)
@@ -64,8 +64,9 @@ let complement a =
  * for the composition of tree patterns. *)
 let product a1 a2 =
     match a1, a2 with
-        |Silence td1, Silence td2 |Silence td1, Beat (_, td2, _)
-                |Beat (_, td1, _), Silence td2 ->
+        |Silence td1, Silence td2
+        |Silence td1, Beat (_, td2, _)
+        |Beat (_, td1, _), Silence td2 ->
             Silence (TimeDegree.add td1 td2)
         |Beat (d1, td1, _), Beat (d2, td2, lbl2) ->
             Beat (Degree.add d1 d2, TimeDegree.add td1 td2, lbl2)

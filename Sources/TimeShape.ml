@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2020
- * Modifications: aug. 2020, dec. 2020
+ * Modifications: aug. 2020, dec. 2020, jan. 2021
  *)
 
 (* A time shape specifies how the durations of beats and rests are altered. This is a pair
@@ -15,28 +15,21 @@ type time_shape = {
     divider : int
 }
 
-(* Tests if ts is a valid time shape. *)
-let is_valid ts =
-    ts.multiplier >= 1 && ts.divider >= 1
-
 (* Returns the time shape with the specified attributes. *)
 let construct multiplier divider =
-    let ts = {multiplier = multiplier; divider = divider} in
-    assert (is_valid ts);
-    ts
+    assert (divider >= 1);
+    assert (divider < multiplier);
+    {multiplier = multiplier; divider = divider}
 
 (* Returns a string representation of the time shape ts. *)
 let to_string ts =
-    assert (is_valid ts);
     Tools.csprintf Tools.Green (Printf.sprintf "%d/%d" ts.multiplier ts.divider)
 
 (* Returns the multiplier of the time shape ts. *)
 let multiplier ts =
-    assert (is_valid ts);
     ts.multiplier
 
 (* Returns the divider of the time shape ts. *)
 let divider ts =
-    assert (is_valid ts);
     ts.divider
 

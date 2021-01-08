@@ -145,6 +145,8 @@ context_mutation:
             argument_error "time" 1 "must be positive"
         else if d <= 0 then
             argument_error "time" 2 "must be positive"
+        else if m <= d then
+            argument_error "time" 1 "must be greater than the second"
         else
             Expression.TimeShape (TimeShape.construct m d)}
     |DURATION EQUALS dur=INTEGER

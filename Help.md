@@ -94,7 +94,7 @@ For instance,
 ```
 is a correct phrase.
 
-Without brackets, `*` has an higher priority than `#`.
+Without brackets, `*` has a higher priority than `#`.
 
 If `phr1` and `phr2` are two phrases having different durations, `phr1 # phr2` is also
 well-defined and the result is obtained by extending the shortest phrase by a silence
@@ -212,8 +212,8 @@ next section.
 
 
 ### Time shapes
-A _time shape_ is formed by a _time multiplier_ `m` and a _time divider_ `d`. An atom having
-`t` as time degree lasts $(m / d)^t$ units of time.
+A _time shape_ is formed by a _time multiplier_ `m` and a _time divider_ `d` such that `1 <=
+d < m`. An atom having `t` as time degree lasts $(m / d)^t$ units of time.
 
 The operator `<` (resp. `>`) increases (resp. decreases) the time degrees of all the atoms
 of the phrase on which it applies. Therefore, since the time multiplier of the default time
@@ -467,6 +467,13 @@ The default synthesizer has the following parameters:
 + `d = 20`;
 + `p = 0.28`;
 + `r = 0.29`.
+
+If `phr` is a phrase, the phrase
+```
+put synthesizer = p r m a d in phr
+```
+plays it with the help of the synthesizer specified by the arguments `p`, `r`, `m`, `a`, and
+`d`.
 
 
 ### Effects
