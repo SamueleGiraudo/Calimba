@@ -96,6 +96,7 @@ Calimba files have `cal` as extension. Given such a file `Program.cal`, the comm
 + `./calimba -f Program.cal -d start duration` draws in a graphical window the fragment of
   the signal of the music specified by the program, starting from `start` ms and lasting
   `duration` ms.
++ `./calimba -f Program.cal -t` prints the tree pattern specified by the program.
 + `./calimba -f Program.cal -a` prints some analysis information about the used layouts in
   the program.
 

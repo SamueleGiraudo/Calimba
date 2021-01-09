@@ -8,10 +8,6 @@
  *)
 
 (* TODO
-    - Improve comments.
-    - Robustness.
-    - External documentation.
-    - Rename "composition" of tree pattern in "stacking".
     - Check that the operations on phrases commute with operations on tree patterns (before
       evaluation or after).
 *)
@@ -45,6 +41,8 @@ let help_string =
         ^ "-f PATH -d START DURATION\n"
         ^ "    -> Draw the sound signal of PATH starting at START and lasting DURATION.\n"
         ^ "       These values are in ms.\n"
+        ^ "-f PATH -t\n"
+        ^ "    -> Prints the tree pattern of PATH.\n"
         ^ "-f PATH -a\n"
         ^ "    -> Prints some analysis information of the used layouts in FILE.\n"
 
