@@ -132,7 +132,7 @@ these in full musical compositions.
 
 + About representation of music:
     + P. Hudak,
-      An Algebraic Theory of Polymorphic Temporal Media
+      An Algebraic Theory of Polymorphic Temporal Media.
       Practical Aspects of Declarative Languages.
       Lecture Notes in Computer Science, vol 3057, 2004.
 

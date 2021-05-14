@@ -25,7 +25,7 @@ let log2 x =
     (Float.log x) /. (Float.log 2.0)
 
 (* If x is none, def is returned. Otherwise, the image by the map tr of the value contained
-* in x is returned. *)
+ * in x is returned. *)
 let transform_option_default tr x def =
     match x with
         |Some x' -> tr x'
