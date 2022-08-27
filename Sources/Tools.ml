@@ -1,41 +1,37 @@
 (* Author: Samuele Giraudo
  * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, dec. 2020
+ * Modifications: jul. 2020, aug. 2020, dec. 2020, may 2021, aug. 2021, nov. 2021,
+ * dec. 2021, may 2022, aug. 2022
  *)
 
-(* To handle syntax errors in parsing. *)
-exception SyntaxError of string
+(* About numbers. *)
 
-(* To handle errors in the values read from parsed files. *)
-exception ValueError of string
+(* Returns the rounded integer version of the float x. *)
+let to_rounded_int x =
+   int_of_float (Float.round x)
 
-(* Representation of the 8 terminal colors in order to specify colored text to print. *)
-type color =
-    |Black
-    |Red
-    |Green
-    |Yellow
-    |Blue
-    |Magenta
-    |Cyan
-    |White
+(* Returns the integer being the truncation of the float x. If x is too big or to small to
+ * be converted into an integer, then max_int or min_int is returned. *)
+let bounded_int_of_float x =
+    if x >= float_of_int max_int then
+        max_int
+    else if x <= float_of_int min_int then
+        min_int
+    else
+        Float.to_int x
 
-(* Return the binary logarithm of x. *)
-let log2 x =
-    (Float.log x) /. (Float.log 2.0)
 
-(* If x is none, def is returned. Otherwise, the image by the map tr of the value contained
- * in x is returned. *)
-let transform_option_default tr x def =
-    match x with
-        |Some x' -> tr x'
+(* About optional values. *)
+
+(* Returns def if the optional value opt is None. Otherwise, returns the value carried by
+ * opt. *)
+let option_value opt def =
+    match opt with
+        |Some x -> x
         |None -> def
 
-(* Returns the remainder of the Euclidean division of a by b. This value is always
- * positive. *)
-let remainder a b =
-    let res = a mod b in
-    if res >= 0 then res else res + b
+
+(* About lists. *)
 
 (* Returns the prefix of length n of the list lst. *)
 let rec prefix_list lst n =
@@ -44,36 +40,85 @@ let rec prefix_list lst n =
         |[], _ -> []
         |x :: lst', n -> x :: (prefix_list lst' (n - 1))
 
-(* Returns the Cartesian product of the two lists lst1 and lst2. *)
-let cartesian_product lst1 lst2 =
-    lst1 |> List.map (fun a -> lst2 |> List.map (fun b -> (a, b))) |> List.flatten
 
-(* Returns the list of all occurrences (positions) of x in the list lst. *)
-let occurrences lst x =
-    lst |> List.fold_left
-        (fun (res, i)  a -> if a  = x then (i :: res, i + 1) else (res, i + 1))
-        ([], 0)
-        |> fst |> List.rev
+(* About characters and strings. *)
 
-(* Returns the list of integers such that the i-th value is the number of occurrences of
- * the element first + i in the list of integers lst. The returned list has length
- * last - first + 1. *)
-let occurrence_vector lst first last =
-    List.init (last - first + 1) (fun i -> i + first) |> List.map
-        (fun i -> lst |> List.filter (fun x -> x = i) |> List.length)
+(* Returns the string obtained by indenting each line of the string str by k spaces. *)
+let indent k str =
+    assert (k >= 0);
+    let ind = String.make k ' ' in
+    str |> String.fold_left
+        (fun (res, c') c ->
+            let s = String.make 1 c in
+            if c' = Some '\n' then (res ^ ind ^ s, Some c) else (res ^ s, Some c))
+        (ind, None)
+        |> fst
 
-(* Returns the accuracy of the observed value observed w.r.t. the expected value expected.
- * These values are floats. *)
-let accuracy expected observed =
-    (observed -. expected) /. expected
+(* Tests if the character c is an alphabetic character. *)
+let is_alpha_character c =
+    ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
 
-(* Returns -1 (resp. 1) if the value candidate_1 (candidate_2) approximate better than
- * candidate_2 (resp. candidate_1) the value expected. If candidate_1 and candidate_2 are
- * equal, 0 is returned. *)
-let compare_accuracies expected candidate_1 candidate_2 =
-    compare
-        (Float.abs (accuracy expected candidate_1))
-        (Float.abs (accuracy expected candidate_2))
+(* Tests if the character c is a character allowed in aliases. *)
+let is_plain_character c =
+     (is_alpha_character c) || ('0' <= c && c <= '9') || c = '_'
+
+
+(* About strings representing paths. *)
+
+(* Returns the extension of the file at path path. Raises Not_found if path has no
+ * extension. *)
+let extension path =
+    let i = String.rindex path '.' in
+    String.sub path i ((String.length path) - i)
+
+(* Tests if the file at path path has the extension ext (with the point). *)
+let has_extension ext path =
+    if not (String.contains path '.') then
+        false
+    else
+        extension path = ext
+
+(* Returns the string obtained from the path path by removing its file extension, including
+ * the '.'. *)
+let remove_extension path =
+    assert (String.contains path '.');
+    let i = String.rindex path '.' in
+    String.sub path 0 i
+
+(* Returns the path obtained by suppressing the last part of the path path, by keeping the
+ * `/`. For instance, if path is "aa/ab/abc", then "aa/ab/" is returned. If path has no
+ * occurrence of '/', the empty path is returned. *)
+let trim_path path =
+    try
+        let i = String.rindex path '/' in
+        String.sub path 0 (i + 1)
+    with
+        |Not_found -> ""
+
+(* Returns the path obtained from the path path by simplifying the "..". For instance, if
+ * path is "a/b/c/../../d/e/..", then "a/d" is returned. *)
+let simplify_path path =
+    let tmp = String.split_on_char '/' path in
+    tmp |> List.fold_left
+        (fun res u -> if u = ".." then List.tl res else u :: res)
+        []
+     |> List.rev |> String.concat "/"
+
+(* Returns a path that does not correspond to any existing file by adding a string "_N"
+ * just before the extension of the path path, where N is an adequate number. *)
+let new_file_name path =
+    let path' = remove_extension path and ext' = extension path in
+    let rec aux i =
+        let res_path = Printf.sprintf "%s_%d%s" path' i ext' in
+        if Sys.file_exists res_path then
+            aux (i + 1)
+        else
+            res_path
+    in
+    aux 0
+
+
+(* About program arguments. *)
 
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =
@@ -81,7 +126,7 @@ let has_argument arg =
 
 (* Returns the list of at most the nb arguments following the argument arg in the current
  * execution environment. The list can be shorten than nb if there are less that nb such
- * arguments. The list is empty if arg is not an argument of the currect execution
+ * arguments. The list is empty if arg is not an argument of the current execution
  * environment. *)
 let next_arguments arg nb =
     assert (nb >= 1);
@@ -94,6 +139,48 @@ let next_arguments arg nb =
             |_ :: args' -> search_suffix args'
     in
     prefix_list (search_suffix args) nb
+
+
+(* About files. *)
+
+(* A type to represent positions in a file. *)
+type file_position = {
+    path: string;
+    line: int;
+    column: int
+}
+
+(* Returns the file position having path as path, line a line number and column as column
+ * number. *)
+let construct_file_position path line column =
+    assert (path <> "");
+    assert (0 <= line);
+    assert (0 <= column);
+    {path = path; line = line; column = column}
+
+(* Returns the file position specified by the lexing position pos. *)
+let position_to_file_position pos =
+    {path = pos.Lexing.pos_fname;
+    line = pos.Lexing.pos_lnum;
+    column = pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1}
+
+(* Returns a string representation of the file position fp. *)
+let file_position_to_string fp =
+    Printf.sprintf "@%s L%d C%d" fp.path fp.line fp.column
+
+
+(* About colors and inputs/outputs. *)
+
+(* Representation of the 8 terminal colors in order to specify colored text to print. *)
+type color =
+    |Black
+    |Red
+    |Green
+    |Yellow
+    |Blue
+    |Magenta
+    |Cyan
+    |White
 
 (* Returns the code for each color corresponding to the coloration code in the terminal. *)
 let color_code col =
@@ -114,15 +201,25 @@ let csprintf col str =
 (* Prints the string str as an error. *)
 let print_error str =
     print_string (csprintf Red str);
-    print_newline ()
+    flush stdout
 
 (* Prints the string str as an information. *)
-let print_information str =
+let print_information_1 str =
     print_string (csprintf Blue str);
-    print_newline ()
+    flush stdout
+
+(* Prints the string str as an information. *)
+let print_information_2 str =
+    print_string (csprintf Magenta str);
+    flush stdout
+
+(* Prints the string str as an information. *)
+let print_information_3 str =
+    print_string (csprintf Yellow str);
+    flush stdout
 
 (* Prints the string str as a success. *)
 let print_success str =
     print_string (csprintf Green str);
-    print_newline ()
+    flush stdout
 

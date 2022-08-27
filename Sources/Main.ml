@@ -1,28 +1,29 @@
 (* Author: Samuele Giraudo
  * Creation: (aug. 2016), apr. 2020
- * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020, jan. 2021
+ * Modifications: apr. 2020, may 2020, jul. 2020, aug. 2020, dec. 2020, jan. 2021, may 2021,
+ * aug. 2021, nov. 2021, dec. 2021, jan. 2022, may 2022, aug. 2022
  *)
 
-(* Calimba: a program to explore music theory, explore combinatorial representation of
- * music, and synthesize sounds.
- *)
-
-(* TODO
-    - Check that the operations on phrases commute with operations on tree patterns (before
-      evaluation or after).
-*)
+(* Calimba - A program to program music. *)
 
 let name = "Calimba"
 let logo = "<</^\\|_"
-(*let version = "0.0001" and version_date = "2020-08-27"*)
-(*let version = "0.0010" and version_date = "2020-12-12"*)
-let version = "0.0011" and version_date = "2021-01-01"
+(*let version = "0.0001" and version_date = "2020-08-27" *)
+(*let version = "0.0010" and version_date = "2020-12-12" *)
+(*let version = "0.0011" and version_date = "2021-01-01" *)
+(*let version = "0.0100" and version_date = "2021-05-30" *)
+(*let version = "0.0101" and version_date = "2021-08-20" *)
+(*let version = "0.0110" and version_date = "2021-12-29"*)
+(*let version = "0.0111" and version_date = "2022-01-01"*)
+(*let version = "0.1000" and version_date = "2022-05-10"*)
+(*let version = "0.1001" and version_date = "2022-05-30"*)
+let version = "0.1010" and version_date = "2022-08-27"
 let author = "Samuele Giraudo"
-let email = "samuele.giraudo@u-pem.fr"
+let email = "samuele.giraudo@univ-eiffel.fr"
 
 let information =
-    Printf.sprintf "%s\n%s\nCopyright (C) 2020--2021 %s\nWritten by %s [%s]\n\
-        Version: %s (%s)"
+    Printf.sprintf "%s\n%s\nCopyright (C) 2020--2022 %s\nWritten by %s [%s]\n\
+        Version: %s (%s)\n"
         logo name author author email version version_date
 
 let help_string =
@@ -33,241 +34,96 @@ let help_string =
         ^ "-h\n"
         ^ "    -> Print the help.\n"
         ^ "-f PATH -p\n"
-        ^ "    -> Plays tPATH.\n"
+        ^ "    -> Plays the program PATH.\n"
         ^ "-f PATH -w\n"
-        ^ "    -> Writes the associated PCM file from PATH.\n"
-        ^ "-f PATH -l\n"
-        ^ "    -> Launches a live loop on PATH.\n"
-        ^ "-f PATH -d START DURATION\n"
-        ^ "    -> Draw the sound signal of PATH starting at START and lasting DURATION.\n"
-        ^ "       These values are in ms.\n"
-        ^ "-f PATH -t\n"
-        ^ "    -> Prints the tree pattern of PATH.\n"
-        ^ "-f PATH -a\n"
-        ^ "    -> Prints some analysis information of the used layouts in FILE.\n"
-
-(* The extension of Calimba files. *)
-let file_extension =
-    ".cal"
-
-(* Returns the extension of the file at path path. *)
-let extension path =
-    let i = String.rindex path '.' in
-    String.sub path i ((String.length path) - i)
-
-(* Tests if the file at path path has the good extension. *)
-let has_good_extension path =
-    if not (String.contains path '.') then
-        false
-    else
-        extension path = file_extension
-
-(* Returns the string obtained from the path path by removing its file extension, including
- * the point. *)
-let remove_extension path =
-    assert (String.contains path '.');
-    let i = String.rindex path '.' in
-    String.sub path 0 i
-
-(* Returns an option on the expression specified by the .cal file at path path. None is
- * returned when there is an error in the program. *)
-let path_to_expression path =
-    assert (has_good_extension path);
-    let t =
-        try
-             Some (Lexer.value_from_file_path path Parser.program Lexer.read)
-        with
-            |Lexer.Error msg -> begin
-                let str = Printf.sprintf "There are errors in the program:\n    %s." msg in
-                Tools.print_error str;
-                None
-            end
-    in
-    if Option.is_none t then
-        None
-    else
-        let errors = Expression.errors (Option.get t) in
-        if errors = [] then begin
-            Tools.print_success "The program is correct.";
-            t
-        end
-        else begin
-            let error_str = errors |> List.map (fun r -> Expression.error_to_string r)
-                |> String.concat "\n" in
-            let str = Printf.sprintf
-                "There are static errors in the program:\n    %s." error_str in
-            Tools.print_error str;
-            None
-        end
-
-(* Plays the .cal file at path path. *)
-let play path =
-    assert (has_good_extension path);
-    let t = path_to_expression path in
-    if Option.is_some t then
-        Expression.interpret_and_play (Option.get t) true
-
-(* Creates a PCM file from the .cal file at path path. Its name is obtained from the one of
- * the .cal file by replacing its extension by .pcm. *)
-let write path =
-    assert (has_good_extension path);
-    let path' = (remove_extension path) ^ ".pcm" in
-    if Sys.file_exists path' then
-        Tools.print_error (Printf.sprintf "Error: a file %s exists already." path')
-    else
-        let t = path_to_expression path in
-        if Option.is_some t then
-            Expression.interpret_and_write (Option.get t) path' true
-
-(* Creates a live loop reading and playing the .cal file at path path. This inspects if the
- * file is modified. If this is the case, the file is played (and the current play is
- * stopped. *)
-let live_loop path =
-    assert (has_good_extension path);
-    let rec aux path last_modif num_iter =
-        print_string "\r";
-        if num_iter mod 2 = 0 then
-            print_string (Tools.csprintf Tools.Red "X")
-        else
-            print_string (Tools.csprintf Tools.Green "O");
-        flush stdout;
-        Thread.delay 1.0;
-        let last_modif' = (Unix.stat path).Unix.st_mtime in
-        if Option.is_none last_modif || Option.get last_modif < last_modif' then begin
-            Tools.print_success "Modification detected.";
-            Sys.command "killall aplay" |> ignore;
-            Thread.create (fun _ -> play path) () |> ignore
-        end;
-        aux path (Some (last_modif')) (num_iter + 1)
-    in
-    aux path None 1 |> ignore
-
-(* Draws the signal of the sound specified by the .cal file at path path. The drawn portion
- * starts at start_ms ms and lasts len_ms ms. *)
-let draw path start_ms len_ms =
-    assert (has_good_extension path);
-    let t = path_to_expression path in
-    if Option.is_some t then
-        Expression.interpret_and_draw (Option.get t) start_ms len_ms true
-
-(* Print an analysis of each layout used in the expression specified by the .cal file at
- * path path. *)
-let print_layout_analyses path =
-    assert (has_good_extension path);
-    let t = path_to_expression path in
-    if Option.is_some t then
-        Expression.interpret_and_analyse (Option.get t) true
-
-(* Print the tree pattern built by the expression specified by the .cal file at path
- * path. *)
-let print_tree_pattern path =
-    assert (has_good_extension path);
-    let t = path_to_expression path in
-    if Option.is_some t then
-        Expression.interpret_and_print_tree_pattern (Option.get t) true
+        ^ "    -> Generates the associated PCM file of the program PATH.\n"
+        ^ "-f PATH -d\n"
+        ^ "    -> Generates the associated PNG file of the program PATH.\n"
+        ^ "-f PATH -e\n"
+        ^ "    -> Prints the final expression of the program PATH.\n"
+        ^ "The last four commands can be followed by\n"
+        ^ "    -b START LENGTH\n"
+        ^ "where START is the starting time and LENGTH is the length of the desired bunch "
+        ^ "of the sound. These values are in seconds and are optional.\n"
 
 ;;
 
 (* Main expression. *)
 
+Random.self_init ();
+
 (* Creation of the buffer directory if it does not exist. *)
-let cmd = Printf.sprintf "mkdir -p %s" Sound.buffer_path_directory in
+let cmd = Printf.sprintf "mkdir -p %s" Buffer.path_directory in
 Sys.command cmd |> ignore;
 
+(* Version. *)
+if Tools.has_argument "-v" then
+    Tools.print_success information
 
-if Tools.has_argument "-r" then
-    Random.init 0
-else
-    Random.self_init ();
+(* Help. *)
+else if Tools.has_argument "-h" then
+    Tools.print_information_1 help_string
 
-if Tools.has_argument "-v" then begin
-    Tools.print_success information;
-    exit 0
-end
-else if Tools.has_argument "-h" then begin
-    Tools.print_information help_string;
-    exit 0
-end
+(* Reading file from path. *)
 else if Tools.has_argument "-f" then begin
     let arg_lst = Tools.next_arguments "-f" 1 in
-    if not (List.length arg_lst >= 1) then begin
-        Tools.print_error "Error: a path must follow the -f argument.";
-        exit 1
-    end
+    if arg_lst = [] then
+        Tools.print_error "Error: a path must follow the -f argument.\n"
     else begin
-        let path = List.nth arg_lst 0 in
-        if not (Sys.file_exists path) then begin
-            Tools.print_error (Printf.sprintf "Error: there is no file %s." path);
-            exit 1
-        end
-        else if not (has_good_extension path) then begin
-            Tools.print_error
-                (Printf.sprintf
-                    "Error: the file %s has not %s as extension." path file_extension);
-            exit 1
-        end
+        let path = List.hd arg_lst in
+        if not (Sys.file_exists path) then
+            Printf.sprintf "Error: there is no file %s.\n" path |> Tools.print_error
+        else if not (Tools.has_extension File.extension path) then
+            Printf.sprintf "Error: the file %s has not %s as extension.\n"
+                path File.extension
+                |> Tools.print_error
         else begin
-            (* Playing. *)
-            if Tools.has_argument "-p" then begin
-                play path;
-                exit 0
-            end
+            (* Detecting a bunch specification. *)
+            let bunch =
+                try
+                    match Tools.next_arguments "-b" 2 with
+                        |[] -> Execution.construct_bunch None None
+                        |[x1] -> Execution.construct_bunch (Some (float_of_string x1)) None
+                        |x1 :: x2 :: _ ->
+                            Execution.construct_bunch
+                                (Some (float_of_string x1)) (Some (float_of_string x2))
+                with
+                    |Failure _ -> begin
+                        Tools.print_error "Error: after -b, there must be 0, 1, or 2 float \
+                            arguments.\n";
+                        Tools.print_information_1 "Default bunch has be assigned.\n";
+                        Execution.construct_bunch None None
+                    end
+            in
 
             (* Writing a PCM file. *)
-            else if Tools.has_argument "-w" then begin
-                write path;
-                exit 0
-            end
+            if Tools.has_argument "-w" then begin
+                let path' = (Tools.remove_extension path) ^ ".pcm" |> Tools.new_file_name in
+                Execution.interpret_path_and_write_pcm path path' bunch
+            end;
 
-            (* Launching a live loop. *)
-            else if Tools.has_argument "-l" then begin
-                live_loop path;
-                exit 0
-            end
+            (* Writing an SVG file. *)
+            if Tools.has_argument "-d" then begin
+                let path' = (Tools.remove_extension path) ^ ".svg" |> Tools.new_file_name in
+                Execution.interpret_path_and_write_svg path path' bunch
+            end;
 
-            (* Drawing a fragment of the sound. *)
-            else if Tools.has_argument "-d" then begin
-                let arg_lst = Tools.next_arguments "-d" 2 in
-                if not (List.length arg_lst >= 2) then begin
-                    Tools.print_error
-                        "Error: two positive integers must follow the -d argument.";
-                    exit 1
-                end
-                else begin
-                    try
-                        let start_ms = int_of_string (List.nth arg_lst 0) in
-                        let len_ms = int_of_string (List.nth arg_lst 1) in
-                        draw path start_ms len_ms;
-                        exit 0
-                    with
-                        |Failure _ -> begin
-                            Tools.print_error
-                                "Error: the two argument of -d must be integers.";
-                            exit 1
-                        end
-                end
-            end
+            (* Writing a CAL file containing the final expression. *)
+            if Tools.has_argument "-e" then begin
+                let path' = (Tools.remove_extension path) ^ File.extension
+                    |> Tools.new_file_name in
+                Execution.interpret_path_and_write_cal path path'
+            end;
 
-            (* Analysis of the used layouts. *)
-            else if Tools.has_argument "-a" then begin
-                print_layout_analyses path
-            end
-
-            (* Prints the specified tree pattern. *)
-            else if Tools.has_argument "-t" then begin
-                print_tree_pattern path
-            end
-
-            (* Unknown arguments. *)
-            else begin
-                Tools.print_error "Error: unknown argument configuration.";
-                exit 1
+            (* Playing. *)
+            if Tools.has_argument "-p" then begin
+                Execution.interpret_path_and_play path bunch
             end
         end
     end
 end
-else
-    print_string "Use option -h to print help.\n";
 
-exit 0
+(* Unknown arguments. *)
+else
+    Tools.print_error "Error: a path to a .cal file must be specified.\n"
 

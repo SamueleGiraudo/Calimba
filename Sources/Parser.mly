@@ -1,73 +1,44 @@
 (* Author: Samuele Giraudo
- * Creation: jul. 2020
- * Modifications: jul. 2020, aug. 2020, oct. 2020, dec. 2020, jan. 2021
+ * Creation: may 2021
+ * Modifications: may 2021, jun. 2021, aug. 2021, nov. 2021, dec. 2021, jan. 2022,
+ * mar. 2022, may 2022, aug. 2022
  *)
 
-%{
-
-(* Raises an exception Tools.ArgumentError with, as message string, the data provided by the
- * construction name name, the index index_arg of the argument, and the message msg. *)
-let argument_error name index_arg msg =
-    let str = Printf.sprintf "the arg. %d of [%s] %s" index_arg name msg in
-    raise (Tools.ValueError str)
-
-%}
-
-%token PAR_L PAR_R
+%token L_PAR R_PAR
 %token BEGIN END
-
-%token POINT
-%token COLON
-%token PLUS
-%token MINUS
-%token LT
-%token GT
-%token STAR
-%token SHARP
-%token <string> AT_LABEL
-%token AT_AT
-%token EQUALS
-%token REPEAT
-%token REVERSE
-%token COMPLEMENT
-%token PRIME
-%token COMMA
-%token LET
-%token PUT
-%token IN
-
-%token LAYOUT
-%token ROOT
-%token TIME
-%token DURATION
-%token SYNTHESIZER
-
+%token PERCENT
+%token PLUS STAR CIRCUMFLEX
+%token RESET
 %token SCALE
-%token DELAY
-%token CLIP
-%token TREMOLO
-
-%token <int> INTEGER
-%token <float> POS_FLOAT
-%token <string> NAME
-
+%token CYCLES
+%token VERTICAL HORIZONTAL
+%token TIME
+%token PRIME COMMA
+%token LT GT
+%token DOLLAR
+%token IF
+%token THEN ELSE
+%token SET
+%token ON OFF RANDOM
+%token SEMICOLON
+%token L_BRACKET R_BRACKET
+%token LET
+%token EQUAL
+%token IN
+%token PUT
+%token <string> STRING
+%token <float> NUMBER
 %token EOF
 
-%nonassoc PREC_LET
-%nonassoc PREC_PUT
-%nonassoc PREC_COMPLEMENT
-%nonassoc PREC_REVERSE
-%nonassoc PREC_REPEAT
-
-%left AT_AT
-%left AT_LABEL
-%left SHARP
+%left IN
+%left ELSE
+%left PLUS
 %left STAR
+%left CIRCUMFLEX
+%left L_BRACKET
 
 %nonassoc PRIME
 %nonassoc COMMA
-%nonassoc PLUS
-%nonassoc MINUS
 %nonassoc LT
 %nonassoc GT
 
@@ -76,140 +47,111 @@ let argument_error name index_arg msg =
 %%
 
 program:
-    |exp=expression EOF
-        {exp}
+    |e=expression EOF {e}
 
 expression:
-    |name=NAME
-        {Expression.Name name}
-    |POINT
-        {Expression.Atom (Atom.construct_silence (TimeDegree.construct 0))}
-    |d=INTEGER
-        {Expression.Atom (Atom.construct_beat (Degree.construct d) TimeDegree.zero)}
-    |d=INTEGER COLON lbl=NAME
-        {Expression.Atom
-            (Atom.construct_labeled_beat (Degree.construct d) (TimeDegree.zero) lbl)}
-    |exp1=expression STAR exp2=expression
-        {Expression.Concatenation (exp1, exp2)}
-    |exp1=expression SHARP exp2=expression
-        {Expression.Addition (exp1, exp2)}
-    |exp= expression PLUS
-        {Expression.IncreaseDegrees exp}
-    |exp= expression MINUS
-        {Expression.DecreaseDegrees exp}
-    |exp=expression LT
-        {Expression.IncreaseTime exp}
-    |exp=expression GT
-        {Expression.DecreaseTime exp}
-    |exp1=expression lbl=AT_LABEL exp2=expression
-        {Expression.LabeledInsertion (exp1, lbl, exp2)}
-    |exp1=expression AT_AT exp2=expression
-        {Expression.SaturatedInsertion (exp1, exp2)}
-    |REPEAT k=INTEGER exp=expression
-        %prec PREC_REPEAT
-        {if k <= 0 then
-            argument_error "repeat" 1 "must be positive"
-        else
-            Expression.Repeat (k, exp)}
-    |REVERSE exp=expression
-        %prec PREC_REVERSE
-        {Expression.Reverse exp}
-    |COMPLEMENT exp=expression
-        %prec PREC_COMPLEMENT
-        {Expression.Complement exp}
-    |exp=expression PRIME
-        {Expression.IncreaseOctave exp}
-    |exp=expression COMMA
-        {Expression.DecreaseOctave exp}
-    |LET name=NAME EQUALS exp1=expression IN exp2=expression
-        %prec PREC_LET
-        {Expression.Let (name, exp1, exp2)}
-    |PUT cm=context_mutation IN exp=expression
-        %prec PREC_PUT
-        {Expression.ContextMutation (cm, exp)}
-    |PUT em=effect_mutation IN exp=expression
-        %prec PREC_PUT
-        {Expression.EffectMutation (em, exp)}
-    |PAR_L exp=expression PAR_R
-        {exp}
-    |BEGIN exp=expression END
-        {exp}
+    |L_PAR e=expression R_PAR {e}
+    |PERCENT i=NUMBER {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.Beat (info, Tools.bounded_int_of_float i)
+    }
+    |e=scale {e}
+    |e=reset {e}
+    |e=binary_operation {e}
+    |IF st=flag_status fl=flag THEN e1=expression ELSE e2=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.FlagTest (info, st, fl, e1, e2)
+    }
+    |SET st=flag_status fl=flag IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.FlagModification (info, st, fl, e)
+    }
+    |e=expression L_BRACKET e_lst=separated_list(SEMICOLON, expression) R_BRACKET {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.Composition (info, e, e_lst)
+    }
+    |alias=STRING {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.Alias (info, alias)
+    }
+    |LET alias=STRING EQUAL e1=expression IN e2=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.AliasDefinition (info, alias, e1, e2)
+    }
+    |PUT path=STRING {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.Put (info, path)
+    }
+    |e=sugar {e}
 
-context_mutation:
-    |LAYOUT EQUALS lay=layout
-        {Expression.Layout lay}
-    |ROOT EQUALS root=note
-        {Expression.Root root}
-    |TIME EQUALS m=INTEGER d=INTEGER
-        {if m <= 0 then
-            argument_error "time" 1 "must be positive"
-        else if d <= 0 then
-            argument_error "time" 2 "must be positive"
-        else if m <= d then
-            argument_error "time" 1 "must be greater than the second"
-        else
-            Expression.TimeShape (TimeShape.construct m d)}
-    |DURATION EQUALS dur=INTEGER
-        {if dur <= 0 then
-            argument_error "duration" 1 "must be positive"
-        else
-            Expression.UnitDuration dur}
-    |SYNTHESIZER EQUALS s=synthesizer
-        {Expression.Synthesizer s}
+scale:
+    |SCALE CYCLES x=NUMBER IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info, Expression.UpdateCycleNumber x, e)
+    }
+    |SCALE VERTICAL x=NUMBER IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.UnaryOperation (info, Expression.VerticalScaling x, e)
+    }
+    |SCALE HORIZONTAL x=NUMBER IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.UnaryOperation (info, Expression.HorizontalScaling x, e)
+    }
 
-layout:
-    |lst=nonempty_list(INTEGER)
-        {if not (Layout.is_valid_list lst) then
-            argument_error "layout" 1 "is not a valid layout"
-        else
-            Layout.construct lst}
+reset:
+    |RESET CYCLES IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info, Expression.ResetCycleNumber, e)
+    }
 
-note:
-    |step=INTEGER nb=INTEGER oct=INTEGER
-        {if step < 0 then
-            argument_error "root" 1 "must be nonnegative"
-        else if nb < 1 then
-            argument_error "root" 2 "must be positive"
-        else if step >= nb then
-            argument_error "root" 1 "must be smaller than the nb. of steps by octave"
-        else
-            Note.construct step nb oct}
+binary_operation:
+    |e1=expression PLUS e2=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.BinaryOperation (info, Expression.Addition, e1, e2)
+    }
+    |e1=expression STAR e2=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.BinaryOperation (info, Expression.Concatenation, e1, e2)
+    }
+    |e1=expression CIRCUMFLEX e2=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.BinaryOperation (info, Expression.Multiplication, e1, e2)
+    }
 
-synthesizer:
-    |t=timbre sh=synthesizer_shape
-        {let (max_dur, o_dur, c_dur) = sh in Synthesizer.construct t max_dur o_dur c_dur}
+flag:
+    |DOLLAR fl=STRING {fl}
 
-timbre:
-    |scale=POS_FLOAT coeff=POS_FLOAT
-        {if scale > 1.0 then
-            argument_error "synthesizer" 1 "must be not greater than 1.0"
-        else if coeff >= 1.0 then
-            argument_error "synthesizer" 2 "must be smaller than 1.0"
-        else
-            Timbre.scale scale (Timbre.geometric coeff)}
+flag_status:
+    |ON {Expression.On}
+    |OFF {Expression.Off}
+    |RANDOM {Expression.Random}
 
-synthesizer_shape:
-    |max_dur=INTEGER o_dur=INTEGER c_dur=INTEGER
-        {(max_dur, o_dur, c_dur)}
-
-effect_mutation:
-    |SCALE EQUALS c=POS_FLOAT
-        {Expression.Scale c}
-    |CLIP EQUALS c=POS_FLOAT
-        {if c < 0.0 || c > 1.0 then
-            argument_error "clip" 1 "must be between 0.0 and 1.0"
-        else
-            Expression.Clip c}
-    |DELAY EQUALS t=INTEGER c=POS_FLOAT
-        {if t < 0 then
-            argument_error "delay" 1 "must be nonnegative"
-        else
-            Expression.Delay (t, c)}
-    |TREMOLO EQUALS t=INTEGER c=POS_FLOAT
-        {if t < 0 then
-            argument_error "tremolo" 1 "must be nonnegative"
-        else if c < 0.0 || c > 1.0 then
-            argument_error "tremolo" 2 "must be between 0.0 and 1.0"
-        else
-            Expression.Tremolo (t, c)}
+sugar:
+    |BEGIN e=expression END {e}
+    |e=expression PRIME {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info, Expression.UpdateCycleNumber 2.0, e)
+    }
+    |e=expression COMMA {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info, Expression.UpdateCycleNumber 0.5, e)
+    }
+    |e=expression LT {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info,
+            Expression.UpdateCycleNumber 2.0,
+            Expression.UnaryOperation (info, Expression.HorizontalScaling 2.0, e))
+    }
+    |e=expression GT {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info,
+            Expression.UpdateCycleNumber 0.5,
+            Expression.UnaryOperation (info, Expression.HorizontalScaling 0.5, e))
+    }
+    |SCALE TIME x=NUMBER IN e=expression {
+        let info = Information.construct (Tools.position_to_file_position $startpos) in
+        Expression.CycleOperation (info,
+            Expression.UpdateCycleNumber x,
+            Expression.UnaryOperation (info, Expression.HorizontalScaling x, e))
+    }
 

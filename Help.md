@@ -1,636 +1,773 @@
-# Calimba language
-This page describes the way to build programs in the Calimba language.
+---
+title: The Calimba language
+author: Samuele Giraudo
+date: August 2022
+geometry: "left=3.0cm,right=3.0cm,top=3.0cm,bottom=3.0cm"
+output: pdf_document
+lang: en
+fontsize: 10 pt
+---
+
+This page describes the way to build programs in the Calimba language. This is the official
+documentation of the language.
 
 
-## General conventions
+# A first example
+Let us consider a commented example, which is a small program specifying a small music.
+
+This is a Calimba program:
+```
+{Sets the fundamental frequency to 220 Hz.}
+scale cycles 220 in
+
+{Sets the unit duration to 0.5 s.}
+scale time 0.5 in
+
+{Definition of a note of 220 Hz and 1 s.}
+let n1 =
+    %1
+in
+
+{Definition of a note from n1 by multiplying by 1.25 its frequency.}
+let n2 =
+    scale cycles 1.25 in
+    n1
+in
+
+{Definition of a note from n1 by multiplying by 1.5 its frequency.}
+let n3 =
+    scale cycles 1.5 in
+    n1
+in
+
+{Definition of a silence.}
+let silence =
+    scale vertical 0 in
+    %1
+in
+
+{Definition of a pattern which can be seen as a function admitting two inputs, %1 and %2.
+ This pattern uses concatenations "*", octave decrementation ",", and speed doublings ">".}
+let pattern =
+    %1 * %1 * %2 * %2, * silence * (%1 * %2)> * (%1 * silence * %2 * %2)>>
+in
+
+{The phrase to be played, constructed from the pattern, where each %1 is replaced by n1 and
+ each %2 is replaced by (scale vertical 0.5 in n2) + (scale vertical 0.5 in n3).}
+pattern[n1; (scale vertical 0.5 in n2) + (scale vertical 0.5 in n3)]
+```
+Let us call it `Example.cal`.
+
+The command
+```
+./calimba -f Example.cal -p
+```
+allows us to listen the music specified by the program.
+
+
+# Calimba programs
+The syntax of the Calimba language is presented here.
+
+
+## First notions
+This part presents the elementary notions of the language.
+
+
+### Expressions
+The _expression_ is the main data structure of a Calimba program. In fact, a Calimba program
+is an expression. Any expression `expr` specifies a sound, called _sound_ of `expr`. Two
+expressions are _equivalent_ if their sounds are equal. Given some expressions, it is
+possible to build bigger ones by associating these through operations. We describe in the
+sequel how to build such expressions and explain what are their sounds.
+
+
+### Interpretations
+A file containing a Calimba program must have the extension `.cal`. Each `.cal` file
+contains an expression `expr` which specifies a file containing an encoding of the sound of
+`expr`.
+
+The expression `expr` is first
+translated into a simple expression, then as sound encoded by a functional data structure,
+and finally into a PCM file, as summarized by the diagram
+```
+ Input                           Internal processing                         Output
++------+     +--------------------------------------------------------+     +------+
+| .cal |     | +------------+     +-------------------+     +-------+ |     | .pcm |
+|      | --> | | Expression | --> | Simple expression | --> | Sound | | --> |      |
+| file |     | +------------+     +-------------------+     +-------+ |     | file |
++------+     +--------------------------------------------------------+     +------+
+```
+This process is the _interpretation_ of a `.cal` file.
+
+
+### General notions and conventions
+The language is case sensitive and blank characters (spaces, tabulations, and line breaks)
+are not significant.
+
 Comments are enclosed into symbols `{` and `}`. Nested comments are allowed.
 
-_Names_ are nonempty strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and
-starting with an alphabetic symbol or `_`.
+Brackets `(` and `)` can be used to disambiguate expressions involving many operators. The
+keywords `begin` and `end` are respectively synonyms of `(` and `)`. They can help for
+readability.
+
+A _name_ is a token consisting in a nonempty string made of symbols between `a` and `z`,
+between `A` and `Z`, between `0` and `9`, or `_`, and starting with an alphabetic symbol.
+The length of a name must be at most $255$.
 
 
-## Elementary notions
+### Beats
+A _beat_ is a token of the form `%N` where `N` is an integer between $1$ and $1024$, called
+_index_. For instance, `%1`, `%8`, and `%221` are beats. A beat itself is an expression
+(and, in fact, it is the simplest possible expression) and its sound consists in a
+sinusoidal wave of a certain number of cycles. This value can be specified (this is
+explained later) and is $1$ by default. The index of a beat does not intervene in its sound
+(its role is explained latter)..
 
-### Notes and degrees
-A _degree_ is an integer (positive as well as negative) expressed in the decimal numeral
-system. Each degree specifies a note in the following way. By default (because this behavior
-is configurable, this will be exposed later), `0` is the note $A$ of frequency $440$ Hz, and
-each positive (resp. negative) degree `d` specifies a note located `d` steps above (resp.
-below) the origin `0` in the diatonic scale. Here is a part of this correspondence
-
-| Degree | Note  |
-|--------|-------|
-| ...    | ...   |
-|  -9    | $F,,$ |
-|  -8    | $G,,$ |
-|  -7    | $A,$  |
-|  -6    | $B,$  |
-|  -5    | $C,$  |
-|  -4    | $D,$  |
-|  -3    | $E,$  |
-|  -2    | $F,$  |
-|  -1    | $G,$  |
-| **0**  | $A$   |
-|   1    | $B$   |
-|   2    | $C$   |
-|   3    | $D$   |
-|   4    | $E$   |
-|   5    | $F$   |
-|   6    | $G$   |
-|   7    | $A'$  |
-|   8    | $B'$  |
-|   9    | $C'$  |
-| ...    | ...   |
-
-where for any note $X$, $X'$ (resp. $X,$) is the note $X$ one octave above (resp. below).
-
-In the Calimba language, we handle degrees instead of notes to keep flexibility. Indeed, as
-we will see in the following, degrees can be interpreted in the context of different scales
-(called layouts here) to be in correspondence with different notes. Moreover, musical
-phrases expressed by degrees instead of by notes can be seen as patterns. For instance a
-triad pattern is formed by root, a third, and a fifth, and this pattern is encoded by the
-degrees $0$, $2$, and $4$ specifying the relative position of the components of the triad.
-This pattern realizes itself in different contexts (for instance as a major triad, a minor
-triad, a diminished triad, or also something else) by using a notion of insertion which will
-be explained later.
+Moreover, by default, the sound of a beat lasts $1$ s and has $1$ as amplitude. In this
+way, the default sound of a beat has a frequency of $1$ Hz.
 
 
-### Rests
-A rest is specified by a `.` (a period). It is interpreted as an absence of a sound.
+## Scaling operations
+We describe here some operations acting on the number of cycles, the amplitude, or the
+duration of an expression.
 
 
-### Concatenation
-To play notes and rests one after the other, we separate these with the operator `*`, called
-_concatenation operator_. Each note and rest lasts one unit of time, which is worth by
-default $500$ ms.
+### Cycles
+Given an expression `expr` and a floating point number `X`,
+```
+scale cycles X in expr
+```
+is an expression having as sound the sound of `expr` wherein the number of cycles of its
+beats are scaled by `X`.
+
+This operation is the _cycle scaling_ by the factor `X`.
 
 For instance,
 ```
-0 * 4 * 0 * 5 * . * 5 * 4
+scale cycles 27.5 in %3
 ```
-is the phrase consisting in the notes $A$, $E$, $A$, and $F$, a rest, and the notes $F$
-and $E$ played in this order, one after the other. This phrase lasts $3500$ ms.
+is an expression having a sound of $27.5$ Hz as frequency, lasting $1$ s, and having $1$ as
+amplitude.
 
+Moreover, given an expression `expr`,
+```
+reset cycles in expr
+```
+is an expression having as sound the sound of `expr`. The interest of this operation is
+that, when the expression `reset cycles in expr` is nested inside cycle scaling operations
+like in `scale cycles X in reset cycles in expr` where `X` is a floating point number, the
+scaling operation has no effect.
 
-### Addition
-To play some notes at the same time, we separate these with the operator `#`, called
-_addition operator_.
+This operation is the _cycle reset_.
 
 For instance,
 ```
-0 # 2 # 4
+scale cycles 27.5 in
+reset cycles in
+scale cycles 110 in
+%2
 ```
-is the phrase consisting in the notes $A$, $C$, and $E$ played at the same time. This phrase
-lasts $500$ ms.
+is an expression having a sound of $110$ Hz as frequency, lasting $1$ s, and having $1$ as
+amplitude. The first scaling is reset so that it does not influence the result, and the last
+scaling is applied to the beat `%2`. Compare this with the expression
+```
+scale cycles 27.5 in
+scale cycles 110 in
+%2
+```
+which has a sound of $3025$ Hz as frequency ($3025 \ \mathrm{Hz} = 27.5 \times 110 \times 1
+\ \mathrm{Hz}$).
 
 
-### Mixing concatenation and addition
-The concatenation and addition operators work not only on notes and rests but also on
-phrases. Therefore, it is possible to build complex phrases, by using brackets if needed.
+### Amplitudes
+Given an expression `expr` and a floating point number `X`,
+```
+scale vertical X in expr
+```
+is an expression having as sound the sound of `expr` where its amplitude is scaled by `X`.
+In other terms, the sound of `expr` is the sound obtained by multiplying by `X` each value
+of the wave of the sound of `expr`. If such an obtained value is larger than $1$ (resp.
+smaller than $-1$), the obtained value is set to $1$ (resp. $-1$). This mean simply that the
+signal is cut so that its amplitude is $1$.
+
+This operation is the _vertical scaling_ by the factor `X`.
 
 For instance,
 ```
-(0 * . * 2) # (. * (-1 # 3) * .) # (7 * 1 * 2)
+scale cycles 440 in
+scale vertical 0.75 in
+%1
 ```
-is a correct phrase.
+is an expression having a sound of $440$ Hz as frequency, lasting $1$ s, and having $0.75$
+as amplitude.
 
-Without brackets, `*` has a higher priority than `#`.
-
-If `phr1` and `phr2` are two phrases having different durations, `phr1 # phr2` is also
-well-defined and the result is obtained by extending the shortest phrase by a silence
-lasting the right amount of time.
+As already explained, the sound of an expression is cut in order to not have an amplitude
+greater than $1$ if the absolute value of the scaling factor is to high. For instance
+```
+scale cycles 440 in
+scale vertical 2 in
+%1
+```
+is an expression having a sound of $440$ Hz as frequency, lasting $1$ s, having $1$ as
+amplitude, and such that its signal is a clipped sinusoid.
 
 
 ### Durations
-Given a degree or a rest `a`, `a<` refers to the same degree or rest but lasts $2$ units of
-time instead of $1$. Similarly, `a>` refers to the same degree or rest but lasts $1 / 2$
-units of time. These operators `<` and `>` can be stacked so that `<` doubles the duration
-and `>` divides it by half. Here are some examples
-
-| Degrees of rests with duration signs | Units of time |
-|--------------------------------------|---------------|
-| ...                                  | ...           |
-| `a>>>`                               | $1 / 8$       |
-| `a>>`                                | $1 / 4$       |
-| `a>`                                 | $1 / 2$       |
-| `a`                                  | $1$           |
-| `a<`                                 | $2$           |
-| `a<<`                                | $4$           |
-| `a<<<`                               | $8$           |
-| ...                                  | ...           |
-
-These operators can be applied also on phrases to change the durations of all their degrees
-and rests. For instance,
+Given an expression `expr` and a nonnegative floating point number `X`,
 ```
-(0 # 2 # 4) * .< * (0 # 2 # 4)<< * (1< * 2 * 3)>
+scale horizontal X in expr
 ```
-is a phrase wherein an $A$ minor chord is played for $1$ unit of time, then a rest of $2$
-units of time, then the same chord is played for $4$ units of time, and finally the sequence
-of notes $B$, $C$ and $D$ is played where the first lasts $1$ unit of time, and the second
-and third last $1 / 2$ units of time.
+is an expression having as sound the sound of `expr` where its duration is scaled by `X`.
 
-
-### Octaves
-Given a degree `d`, `d'` is the degree specifying the same note as the one specified by `d`
-but one octave higher. Similarly, `d,` (`d` followed by a comma) specifies the same note as
-the one specified by `d` but one octave below. Therefore, since the default layout has $7$
-degrees by octave, for any degree `d`, `d'` refers to the degree `d + 7`, and `d,` refers to
-the degree `d - 7`. These operators `'` and `,` can be stacked in order to express degrees
-in different octaves.
-
-These operators can be applied also on phrases to change the octave of the notes they
-specify. For instance,
-```
-(0 * 2 * 4 * (0' # 4')) * (0 * 2 * 4 * (0' # 4')),,
-```
-is a phrase wherein a first phrase is played and then the same phrase is played two octaves
-below.
-
-
-## Basic notions
-
-### Begin end
-To clarify some parts of a program, it can be useful to have at disposal different kinds of
-brackets. For this reason, we can use `begin` and `end`, acting respectively as `(` and `)`.
-
-
-### Layouts
-A _layout_ is formed by a sequence of positive integers specifying an interval structure and
-thus a scale. Here are some common layouts in the $12$ tones equal temperament:
-
-| Layout        | Name              | Notes                                               |
-|---------------|-------------------|-----------------------------------------------------|
-| 2 1 2 2 1 2 2 | Natural minor     | $A$, $B$, $C$, $D$, $E$, $F$, $G$                   |
-| 2 2 1 2 2 2 1 | Natural major     | $A$, $B$, $C\sharp$, $D$, $E$, $F\sharp$, $G\sharp$ |
-| 2 1 2 2 1 3 1 | Harmonic minor    | $A$, $B$, $C$, $D$, $E$, $F$, $G\sharp$             |
-| 1 3 1 2 1 2 2 | Phrygian dominant | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G$        |
-| 1 3 1 2 1 3 1 | Gypsy major       | $A$, $A\sharp$, $C\sharp$ $D$, $E$, $F$, $G\sharp$  |
-| 3 2 2 3 2     | Pentatonic minor  | $A$, $C$, $D$, $E$, $G$                             |
-| 2 2 3 2 3     | Pentatonic major  | $A$, $B$, $C\sharp$, $E$, $F\sharp$                 |
-| 2 1 4 1 4     | Hirajoshi         | $A$, $B$, $C$, $E$, $F$                             |
-| 4 1 2 4 1     | Ryukyu            | $A$, $C\sharp$, $D$, $E$, $G\sharp$                 |
-
-The default layout is the natural minor one. It is possible to change the underlying layout
-with
-```
-put layout = i1 i2 ... ik in phr
-```
-where `i1 i2 ... ik` is the desired layout, and `phr` is the phrase on which this layout
-applies. For instance
-```
-put layout = 2 3 2 2 3 in 0< * 4,< * 1> * 2>
-*
-put layout = 2 1 2 2 1 3 1 in 0< * 4,< * 1> * 2>
-```
-plays a phrase in the $A$ minor pentatonic layout and then the same phrase in the $A$
-harmonic minor layout.
-
-
-### Root notes
-By default, the note specified by the degree `0` is the note $A$ of frequency $440$ Hz. It
-is possible to change it with
-```
-put root = st nst oct in phr
-```
-where `st` is the step number of the note, `nst` is the number of steps by octave in the
-`nst`-tone equal temperament, `oct` is the octave number (this number can be negative to
-reach low pitched notes), and `phr` is the phrase on which this root note applies. For
-instance,
-```
-put root = 2 12 -2 in 0 * 1 * 2
-*
-put root = 3 12 1 in 0 * 1 * 2
-```
-plays a phrase in the natural minor layout first with $B$ as root note two octaves below the
-octave $0$ and then with $C$ as root note one octave above the octave $0$.
-
-
-### Atoms and time degrees
-An _atom_ is a degree or a rest together with an integer specifying its duration. This
-integer is a _time degree_. Its default value is `0` and its role will be explained in the
-next section.
-
-
-### Time shapes
-A _time shape_ is formed by a _time multiplier_ `m` and a _time divider_ `d` such that `1 <=
-d < m`. An atom having `t` as time degree lasts $(m / d)^t$ units of time.
-
-The operator `<` (resp. `>`) increases (resp. decreases) the time degrees of all the atoms
-of the phrase on which it applies. Therefore, since the time multiplier of the default time
-shape is `2` and the time divider is `1`, `<` (resp. `>`) doubles the durations (resp.
-divides by half) of all the atoms of the phrase on which it applies.
-
-It is possible to change the underlying time shape with
-```
-put time = m d in phr
-```
-where `m` and `d` specify the time shape and `phr` is a phrase. For instance,
-```
-put time = 2 1 in 0<< * 0'> * . * 4
-*
-put time = 3 2 in 0<< * 0'> * . * 4
-```
-plays first a phrase such that the degree `0` is played on $(2 / 1)^2 = 4$ times, then `0'`
-is played on $(2 / 1)^{-1} = 1 / 2$ times, then a rest of $(2 / 1)^0 = 1$ time is played,
-and the degree `4` is played on $(2 / 1)^0 = 1$ time. In the second phrase, the degree `0`
-is played on $(3 / 2)^2 = 9 / 4$ times, then `0'` is played on $(3 / 2)^{-1} = 2 / 3$ times,
-then a rest of $(3 / 2)^0 = 1$ times is played, and the degree `4` is played on $(3 / 2)^0 =
-1$ times.
-
-
-### Unit duration
-The _unit duration_ is the duration in ms of the unit of time. It is possible to change the
-unit duration with
-```
-put duration = t in phr
-```
-where `t` is is a duration in ms and `phr` is a phrase. This sets to `t` the unit duration
-for the phrase `phr`. For instance,
-```
-put duration = 250 in 0 * 4> * 2> * 6
-*
-put duration = 125 in 0 * 4> * 2> * 6
-```
-plays twice the phrase `0 * 4> * 2> * 6`, one time with `250` ms for the unit duration and a
-second time with `125` ms as unit duration.
-
-
-### Transpositions
-If `phr` is a phrase, then `phr+` is the phrase obtained from `phr` by incrementing all its
-degrees. Similarly, `phr-` is the phrase obtained from `phr` by decrementing all its
-degrees. These operators `+` and `-`, called _transposition operators_ can be stacked in
-order to transpose phrases.
+This operation is the _horizontal scaling_ by the factor `X`.
 
 For instance,
 ```
-0 * 2 * 4 * (0 * 2 * 4)+++ * (0 * 2 * 4)--
+scale cycles 440 in
+scale horizontal 2 in
+%1
 ```
-is a phrase wherein `0 * 2 * 4` is played, then `3 * 5 * 7`, and then `-2 * 0 * 2` are
-played.
+is an expression having a sound of $220$ Hz as frequency, lasting $2$ s, and having $1$ as
+amplitude. The frequency of $220$ Hz comes from the fact that since the duration of the
+sound of the expression `%1` has been scaled by the factor $2$, the sound lasts $2$ s. Since
+the sound has $440$ cycles, its frequency is $220 \ \mathrm{Hz} = 440 \ \mathrm{cycles} \ /
+\ 2 \ \mathrm{s}$.
 
 
-### Let in
-Given a phrase, it is possible to assign it a name in order to play it when wanted and
-possibly several times by referring to it by its name. We achieve this with
+### Times
+As we have noticed in the previous section, the horizontal scaling operation modifies the
+duration of the sound, but, since this operation preserves the number of cycles of each
+beat, the frequency is also modified. Therefore, the horizontal scaling is not enough to
+change the speed of the sound of an expression.
+
+Given an expression `expr` and a nonnegative floating point number `X`,
 ```
-let name = phr1 in phr2
+scale cycles X in
+scale horizontal X in
+expr
 ```
-where `name` is a name, and `phr1` and `phr2` are two phrases. This plays the phrase `phr2`
-wherein all free occurrences of `name` are replaced by `phr1`. For instance,
+is an expression having as sound the sound of `expr` where its duration is scaled by `X`.
+This expression is equivalent to the more concise one
 ```
-let arp = 0 * 2 * 4 in
-arp, * 0'> * arp
-```
-attaches the name `arp` to the phrase `0 * 2 * 4` and plays this phrase one octave below,
-then `0'>`, and finally `arp`. This phrase is equivalent to
-```
-(0 * 2 * 4), * 0'> * (0 * 2 * 4)
+scale time X in expr
 ```
 
-It is possible to nest these constructions. For instance, the phrase
-```
-let arp1 = 0 * 2 * 4 * 0' in
-let arp2 = arp1++ in
-let seq = arp1> * arp2 * arp1 in
-seq * (arp1 # arp2)
-```
-is equivalent to the phrase
-```
-(0 * 2 * 4 * 0')> * (2 * 4 * 6 * 2') * (0 * 2 * 4 * 0')
-    * ((0 * 2 * 4 * 0') # (2 * 4 * 6 * 2'))
-```
+This operation is the _time scaling_ by the factor `X`.
 
-Let us clarify what is meant by "replacing all free occurrences". In the phrase
+For instance,
 ```
-let x = 1 * 3 in
-x * (let x = 0 # 2 in x * 0)
+scale cycles 220 in
+scale time 0.5 in
+%1
 ```
-the first occurrence of `x` (first character of the second line) is replaced by `1 * 3`, but
-the second one (fourth character starting from the end of the second line) is not replaced
-by `1 * 3` since this occurrence of `x` in the phrase `let x = 0 # 2 in x * 0` is not free.
-It is indeed captured by the second `let in`. For these reasons, this phrase is equivalent
-to
-```
-(1 * 3) * ((0 # 2) * 0)
-```
+is an expression having a sound of $220$ Hz as frequency, lasting $0.5$ s, and having $1$
+as amplitude.
 
 
-### Built-in structures
-There are three other main built-in structures. In what follows, `phr` is any phrase.
+### Some syntactical sugar
+Given an expression `expr`,
+```
+expr<
+```
+is an expression equivalent to
+```
+scale time 2 in expr
+```
+
+Given an expression `expr`,
+```
+expr>
+```
+is an expression equivalent to
+```
+scale time 0.5 in expr
+```
+
+Given an expression `expr`,
+```
+expr,
+```
+is an expression equivalent to
+```
+scale cycles 0.5 in expr
+```
+
+Given an expression `expr`,
+```
+expr'
+```
+is an expression equivalent to
+```
+scale cycles 2 in expr
+```
+
+## Binary operations
+We describe here three operations taking as inputs two expressions.
 
 
-#### Repeat
-The phrase
+### Concatenation
+Given two expressions `expr1` and `expr2`,
 ```
-repeat k phr
+expr1 * expr2
 ```
-where `k` is a positive integer plays `k` times `phr`.
+is an expression having as sound the sound of `expr1` followed by the sound of `expr2`. This
+operation is associative and noncommutative.
+
+This operation is the _concatenation_.
+
+For instance,
+```
+(scale cycles 220 in %1)
+*
+(scale cycles 330 in %1)
+```
+is an expression having as sound a first sound of $220$ Hz as frequency, lasting $1$ s,
+and having $1$ as amplitude, followed by a second sound of $330$ Hz as frequency, lasting
+$1$ s, and having $1$ as amplitude. This sound lasts $2$ s.
+
+As another example,
+```
+scale time 0.5 in
+(scale cycles 220 in scale time 3 in %1)
+*
+(scale cycles 330 in %1)
+*
+(scale cycles 440 in scale time 0.5 in scale vertical 0.75 in %1)
+```
+is an expression having as sound a first sound of $220$ Hz as frequency, lasting $1.5$ s,
+and having $1$ as amplitude, followed by a second sound of $330$ Hz as frequency, lasting
+$0.5$ s, and having $1$ as amplitude, followed by a third sound of $440$ Hz as frequency,
+lasting $0.25$ s, and having $0.75$ as amplitude. This sound lasts $2.25$ s. Note that the
+first time scaling operation acts on the three subexpressions associated by the
+concatenations.
 
 
-#### Reverse
-The phrase
+### Addition
+Given two expressions `expr1` and `expr2`,
 ```
-reverse phr
+expr1 + expr2
 ```
-plays `phr` from the end to the beginning.
+is an expression having as sound the sound of `expr1` played at the same time with the sound
+of `expr2`. If the sounds of `expr1` and `expr2` do not have the same duration, a null
+signal is virtually added to the end of the shorter sound. As it is the case for the
+vertical scaling operation, the signal of the obtained sound is cut. This operation is
+associative and commutative.
+
+This operation is the _addition_.
+
+For instance,
+```
+scale cycles 110 in
+scale time 2.5 in
+%1
++
+(scale cycles 1.5 in %1)
++
+(scale cycles 2 in scale time 2 in %1)
+```
+is an expression having as sound a sound of $110$ Hz, lasting $2.5$ s, and having $1$ as
+amplitude, played at the same time with a sound of $165$ Hz, lasting $2.5$ s, and having $1$
+as amplitude, played at the same time with a sound of $220$ Hz, lasting $5$ s, and having
+$1$ as amplitude. The two first sounds last virtually $5$ s, where a silent sound is
+concatenated at their end. The sound of the expression is distorted since the sum of
+amplitudes of the three added sounds is greater than $1$. Note that the first cycle scaling
+operation and the first time scaling operation act on the three subexpressions associated by
+the additions.
+
+As another example, let us take the previous one by first vertically scaling the three added
+expressions in order to not have a distorted sound as result. This is implemented by the
+expression
+```
+scale cycles 110 in
+scale time 2.5 in
+(scale vertical 0.33 in %1)
++
+(scale vertical 0.33 in scale cycles 1.5 in %1)
++
+(scale vertical 0.33 in scale cycles 2 in scale time 2 in %1)
+```
+wherein each sound of the three added ones is vertically scaled by the factor of
+approximately $1 / 3$.
 
 
-#### Complement
-The phrase
+### Multiplication
+Given two expressions `expr1` and `expr2`,
 ```
-complement phr
+expr1 ^ expr2
 ```
-plays `phr` wherein all its degrees are complemented. The _complement_ of a degree `d` is
-the degree `-d`.
+is an expression having as sound the sound obtained by multplying each value of the wave of
+the sound of `expr1` with the value at the same position of the wave of the sound of
+`expr2`. If the sounds of `expr1` and `expr2` do not have the same duration, a null signal
+is virtually added to the end of the shorter sound. Since all values of the waves of the
+sounds of `expr1` and `expr2` are in the range $[-1, 1]$, all values of the wave of the
+sound of `expr1 ^ expr2` belong to the same range, so that the resulting sound is
+automatically cut. This operation is associative and commutative.
 
-For instance, the phrases
+This operation is the _multiplication_.
+
+For instance,
 ```
-1 * -1' * 3,
+scale cycles 110 in
+(scale time 2 in %1)
+^
+(scale cycles 0.0125 in %1)
+```
+is an expression having as sound a sound of $110$ Hz, lasting $1$ s, and having $1$ as
+amplitude, wherein the values of its wave are multiplied by the values of a sound of $1.375$
+Hz, lasting $1$ s, and having $1$ as amplitude. The sound of the expression ends with a
+silent sound lasting $1$ s, so that its whole duration is $2$ s.
+
+
+### Mixing binary operations
+An expression using concatenations, additions, and multiplications without brackets is
+equivalent to the bracketed expression wherein multiplications have higher priority than
+concatenations, and concatenations have higher priority than additions.
+
+
+## Meta constructions
+Aliases, inclusions, compositions, and flags are presented. All expressions using these
+constructions are equivalent to expressions using only the previous ones, namely beats,
+cycle scaling, cycle reset, vertical scaling, horizontal scaling, concatenation, addition,
+and multiplication.
+
+
+### Aliases
+Given a name `NAME` and two expressions `expr1` and `expr2`,
+```
+let NAME = expr1 in expr2
+```
+is an expression equivalent to the one obtained by replacing all free occurrences of `NAME`
+in `expr2` by `expr1`.
+
+This allows us to name an expression (here `expr1`, with the name `NAME`) and use it in
+another expression (here `expr2`), possibly several times. The name `NAME` is an _alias_ for
+the expression `expr1`.
+
+For instance,
+```
+let note_1 =
+    scale cycles 220 in %1
+in
+note_1 * note_1' * note_1<
+```
+is an expression equivalent to
+```
+(scale cycles 220 in %1) * (scale cycles 220 in %1)' * (scale cycles 220 in %1)<
+```
+
+It is of course possible to nest these constructions. For instance,
+```
+let note_1 =
+    scale cycles 220 in %1
+in
+let note_2 =
+    scale cycles 1.5 in note_1
+in
+let phrase =
+    let sub_phrase = note_1 * note_2 in
+    sub_phrase * sub_phrase> * sub_phrase>>
+in
+phrase
+```
+is an expression equivalent to
+```
+(scale cycles 220 in %1) * (scale cycles 1.5 in scale cycles 220 in %1)
+*
+((scale cycles 220 in %1) * (scale cycles 1.5 in scale cycles 220 in %1))>
+*
+((scale cycles 220 in %1) * (scale cycles 1.5 in scale cycles 220 in %1))>>
+```
+
+Let us clarify what is meant by "replacing all free occurrences". Consider the expression
+```
+let note_1 =
+    scale cycles 220 in %1
+in
+let note_2 =
+    scale cycles 1.5 in note_1
+in
+let x =
+    note_1 * note_2
+in
+x
+*
+begin
+    let x =
+        (scale vertical 0.5 in note_1)
+        +
+        (scale vertical 0.5 in note_2)
+    in
+    x * note_1
+end
+```
+This expression is equivalent to the one where the first occurrence of the alias `x` (in the
+10-th line) is replaced by `note_1 * note_2`. On the contrary, this expression is not
+equivalent to the one where the second occurrence of the alias `x` (in the 18-th line) is
+replaced by `note_1 * note_2` since this occurrence of `x` is not free. It is indeed
+captured by the second `let x = ... in ... `. This expression is equivalent to the one where
+this occurrence of `x` is replaced by the expression `(scale vertical 0.5 in note_1) +
+(scale vertical 0.5 in note_2)`. For these reasons, this expression is equivalent to
+```
+(scale cycles 220 in %1)
+*
+(scale cycles 1.5 in scale cycles 220 in %1)
+*
+((scale vertical 0.5 in scale cycles 220 in %1)
++
+(scale vertical 0.5 in scale cycles 1.5 in scale cycles 220 in %1))
+*
+(scale cycles 220 in %1)
+```
+
+
+### Inclusions
+Given a path `PATH` to file containing a Calimba program,
+```
+put PATH
+```
+is an expression equivalent to the one obtained by replacing it by the expression inside the
+Calimba program located at `PATH`. This is the _inclusion_ of `PATH`.
+
+The path `PATH` is the path without the extension `.cal` relative to the file from which the
+inclusion is made to a file containing Calimba program. The length of a path is at most
+$255$. A path is made of alphanumerical characters or characters `_`, `.`, or `/`.
+
+For instance, if `Sequence.cal` and `Main.cal` are two files belonging to a same directory
+and with the respective following contents
+```
+{Sequence.cal}
+let note_1 =
+    scale cycles 220 in
+    %1
+in
+let note_2 =
+    scale cycles 1.5 in
+    note_1
+in
+note_1 * note_2 * note_1' * (note_1 * note_2,)>
+
 ```
 and
 ```
--1 * 1, * -3'
+{Main.cal}
+let seq = put Sequence in
+seq * seq< * seq>>
 ```
-are equivalent.
+then the expression contained in `Main.cal` is equivalent to the one obtained by replacing
+each occurrence of the alias `seq` by the expression contained in `Sequence.cal`.
 
 
-## Intermediate notions
-
-### Synthesizers
-Phrases are played by using synthesizers whose characteristics make it possible to model a
-wide range of totally different sounds. A synthesizer is specified by
-
-1. the maximal duration `m` in ms of the produced sounds;
-1. the duration `a` of the attack in ms of the produced sounds;
-1. the duration `d` of the decay in ms of the produced sounds;
-1. the power `p` of the produced sounds, which is a floating number between $0$ and $1$;
-1. the geometric ratio `r` for of the coefficients of the harmonics of the produced sounds,
-   which is a floating number strictly between $0$ and $1$.
-
-The first three components describe the _shape_ of the sound. Given a degree of duration `t`
-ms, the shape modifies the associated sounds as depicted here
+### Compositions
+Given an expression `expr` and expressions `expr_1`, ..., `expr_N`,
 ```
----___ /         \
-      /--___      \
-     /XXXXXX---___ \
-    /XXXXXXXXXXXXX--\___
-   /XXXXXXXXXXXXXXXXX\  ---___
-  /XXXXXXXXXXXXXXXXXXX\       ---___
- /XXXXXXXXXXXXXXXXXXXXX\            ---___
-/XXXXXXXXXXXXXXXXXXXXXXX\                 ---___
-+--------------------m-------------------------+
-+---a--+         +--d---+
-+-----------t-----------+
+expr[expr_1; ...; expr_N]
 ```
-More precisely, this diagram is obtained by drawing the following segments: a first
-connecting $(0, 0)$ and $(a, 1)$, a second connecting $(t - d, 1)$ and $(t, 0)$, and a third
-connecting $(0, 1)$ and $(m, 0)$. The area under these three segments (containing the `%` in
-the picture) is applied to the signal of the sound in order to obtain a signal having
-specified form.
+is an expression equivalent to the one obtained by replacing, for all indices $i$ between
+$1$ and $N$, all occurrences of the beats `%i` by the expressions `expr_i`.
 
-Let us consider some examples:
-
-+ If $(m, a, d, t) = (1000, 250, 125, 500)$, we obtain the diagram
-```
----___    _/    \
-      ---/__     \
-       _/XXX---___\
-      /XXXXXXXXXXX-\-___
-    _/XXXXXXXXXXXXXX\   ---___
-   /XXXXXXXXXXXXXXXXX\        ---___
- _/XXXXXXXXXXXXXXXXXXX\             ---___
-/XXXXXXXXXXXXXXXXXXXXXX\                  ---___
-
-+--------------------1000----------------------+
-+----250---+    +--125-+
-+----------500---------+
-```
-
-+ If $(m, a, d, t) = (1000, 250, 125, 250)$, we obtain the diagram
-```
----_\_    _/
-     \---/__
-      \_/   ---___
-      /\          ---___
-    _/XX\               ---___
-   /XXXXX\                    ---___
- _/XXXXXXX\                         ---___
-/XXXXXXXXXX\                              ---___
-
-+--------------------1000----------------------+
-+----250---+
-    +--125-+
-+---250----+
-```
-
-+ If $(m, a, d, t) = (1000, 250, 125, 1500)$, we obtain the diagram
-```
----___    _/                                                    \
-      ---/--___                                                  \
-       _/XXXXXX---___                                             \
-      /XXXXXXXXXXXXX---___                                         \
-    _/XXXXXXXXXXXXXXXXXXXX---___                                    \
-   /XXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                               \
- _/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                          \
-/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX---___                     \
-
-+--------------------1000------------------------+
-+----250---+                                                    +--125-+
-+---------------------------------1500---------------------------------+
-```
-
-
-The fourth and fifth components `p` and `r` describe the coefficients of the harmonics of
-the sounds produced by additive synthesis. Let us denote by $\lambda_i$ the coefficient of
-the $i$-th harmonics of the produced sound. Then, we have $\lambda_{i + 1} = r \lambda_i$
-and $\lambda_1 = p$. Only the harmonics having coefficients smaller than or equal as
-$2^{-16}$ are considered (the coefficients smaller than this value are set to $0$).
-
-A sound with an high value for `p` is more powerful but has more chances to be saturated
-(for instance when several phrases are added). A sound with an high value for `r` has more
-harmonics and seems more aggressive.
-
-Here are some examples of the first harmonics coefficients given some values for `p` and
-`r`:
-
-|  `p`  |  `r`  | Harmonics coefficients                                                   |
-|-------|-------|--------------------------------------------------------------------------|
-| $1.0$ | $0.1$ | $1.0$, $0.1$, $0.01$, $0.001$, $0.0001$                                  |
-| $0.5$ | $0.1$ | $0.5$, $0.05$, $0.005$, $0.0005$, $0.0001$                               |
-| $1.0$ | $0.2$ | $1.0$, $0.2$, $0.04$, $0.008$, $0.0016$, $0.0003$, $0.0001$              |
-| $0.5$ | $0.2$ | $0.5$, $0.1$, $0.02$, $0.004$, $0.0008$, $0.0002$, $0.00003$             |
-
-The default synthesizer has the following parameters:
-
-+ `m = 4000`;
-+ `a = 40`;
-+ `d = 20`;
-+ `p = 0.28`;
-+ `r = 0.29`.
-
-If `phr` is a phrase, the phrase
-```
-put synthesizer = p r m a d in phr
-```
-plays it with the help of the synthesizer specified by the arguments `p`, `r`, `m`, `a`, and
-`d`.
-
-
-### Effects
-If `phr` is a phrase, the phrase
-```
-put eff = a1 ... ak in phr
-```
-plays it under the effect `eff` with the arguments `a1 ... ak`. Let us list the available
-effects.
-
-
-#### Scale
-The _scale effect_ `scale` admits one argument `c` which is a nonnegative floating number.
-This multiplies by `c` the signal of the sound specified by `phr`. If the amplitude of the
-signal is too high at some parts, this amplitude is reduced to a maximal threshold. For this
-reason, a scaling can produce some interesting clipping effects. Here is an example:
-```
-put scale = 1.5 in 1 * 1 * (0 # 4)
-```
-
-
-#### Clip
-The _clip effect_ `clip` admits one argument `c` which is a floating number strictly between
-$0$ and $1$. This reduce to `c` the amplitude of the signal of the sound specified by `phr`.
-Depending of the original sound of `phr`, an adequate value for `c` can produce some
-distortion effects. Here is an example:
-```
-put clip = 0.7 in
-0 * (0 # 4 # 0, # 4')<, * 0
-```
-
-
-#### Delay
-The _delay effect_ `delay` admits two arguments: a first `t` which is a nonnegative integer
-and a second `c` which a nonnegative floating number. This adds to the sound specified by
-`phr` the same sound delayed by `t` ms and scaled by `c`. Here is an example:
-```
-put delay = 100 0.75 in
-0 * (0 # 4) * 1 * 2
-```
-
-
-#### Tremolo
-The _tremolo effect_ `tremolo` admits two arguments: a first `t` which is a positive integer
-and a second `c` which is a floating number between $0$ and $1$. This changes the sound
-specified by `phr` in order to introduce a tremolo effect so that, periodically each `t` ms,
-the volume of the sound decreases and increases to its original value. The sound decreases
-to the value specified by `c`: if `c` is close to `1.0`, the tremolo effect is slight, and
-if `c` is close to `0.0`, the tremolo effect becomes more pronounced. Here is an example:
-```
-put tremolo = 125 0.7 in
-0 * 2 * 4 * (0 # 2 # 4)< * (-1 # 1 # 3)<
-```
-
-
-## Advanced notions
-
-### Tree patterns
-The fundamental data structure under the hood of the Calimba language is the tree pattern.
-Formally, a _tree pattern_ is either
-
-1. a leaf containing an atom;
-1. or a binary node containing the concatenation symbol and having two tree patterns as
-   children;
-1. or a binary node containing the addition symbol and having two tree patterns as children;
-1. or a unary node containing a performance and having a tree pattern as child;
-1. or a unary node containing an effect and having a tree pattern as child.
-
-A _performance_ is a map sending each atom to a sound (depending on the layout, the root
-note, the time shape, the unit duration, and the synthesizer). An _effect_ is a map sending
-a sound to a sound (adding for instance a delay or a tremolo effect).
-
-Each `.cal` contains a phrase which translates as a tree pattern, then to a sound, and
-finally to a PCM file, as summarized by the diagram
-```
- Input                       Internal processing                    Output
-+------+     +-----------------------------------------------+     +------+
-| .cal |     | +--------+     +--------------+     +-------+ |     | .pcm |
-|      | --> | | Phrase | --> | Tree pattern | --> | Sound | | --> |      |
-| file |     | +--------+     +--------------+     +-------+ |     | file |
-+------+     +-----------------------------------------------+     +------+
-```
-
-
-### Named degrees
-It is possible to give a name `u` to a degree `d` in a phrase by writing `s:u`. For
-instance, in
-```
-(0 * 1 * 4:d1) # 7:d2<
-```
-the third degree `4` is named as `d1` and the fourth degree `7` is named as `d2`. These two
-degrees are _named degrees_.
-
-
-### Insertions
-
-#### Named insertion
-Given two phrases `phr1` and `phr2`, and a name `u`,
-```
-phr1 @u phr2
-```
-is the phrase obtained by replacing each degree of `phr1` having `u` as name by a slightly
-modified version of `phr2`. More precisely, if `d` is a named degree of `phr1` with name
-`u`, this degree is replaced by the phrase `phr2` wherein each degree is incremented by `d`
-and each atom has its time degree incremented by the time degree of the atom of `d`.
-
-For instance, the phrase
-```
-(1:d1 * 0:d2 * 2:d1 * 2:d1<) @d1 (1 # 3)
-```
-is equivalent to the phrase
-```
-(2 # 4) * 0:d2 * (3 # 5) * (3< # 5<)
-```
-
-
-#### Saturated insertion
-Given two phrases `phr1` and `phr2`,
-```
-phr1 @@ phr2
-```
-is the phrase obtained by replacing each degree of `phr1` by `phr2` (subjected to the same
-modifications as for the case of named insertions).
-
-For instance, the phrase
-```
-(2< * 3 * . * 0) @@ ((0 # 4) * 1)
-```
-is equivalent to the phrase
-```
-((2< # 6<) * 3<) * ((3 # 7) * 4) * . * ((0 # 4) * 1)
-```
-
-The effects of the transposition operators `+` and `-` can be emulated with suitable
-saturated insertions. Indeed, for any phrase `phr`, the phrase `phr+` (resp. `phr-`) is
-equivalent to the phrase `phr @@ 1` (resp. `phr @@ -1`).
-
-
-### Sound modifiers
-By using effects and insertion, it is possible to define ways to change simply the sound
-of a phrase.
-
-CONTINUE
-
-
-### Microtonality
-There is no particular restrictions on the used layouts: it is indeed possible to consider
-layouts wherein the octave is divided into any number `n` of steps, provided that `n` is
-positive. It is therefore possible to compose music in the `n` tones equal temperament. In
-this case, it is important to specify a root note living in the same equal temperament.
+This operation is the _composition_.
 
 For instance,
 ```
-put layout = 2 3 3 2 3 3 3 in
-put root = 0 19 -2 in
-0 # 2 # 4
+let note_1 =
+    scale cycles 220 in
+    %1
+in
+let note_2 =
+    scale cycles 1.5 in
+    note_1
+in
+let pattern =
+    %1 * ((scale vertical 0.5 in %1) + scale vertical 0.5 in %2) * (%2 * %1)> * %3
+in
+pattern[note_1; note_2; note_1 * note_2]
 ```
-plays a chord of the layout `2 3 3 2 3 3 3` of the `19` tones equal temperament where the
-root is the note at step `0` of the octave `-2`.
+is an expression equivalent to
+```
+let note_1 =
+    scale cycles 220 in
+    %1
+in
+let note_2 =
+    scale cycles 1.5 in
+    note_1
+in
+note_1
+*
+((scale vertical 0.5 in note_1) + scale vertical 0.5 in note_2)
+*
+(note_2 * note_1)>
+*
+(note_1 * note_2)
+```
+
+The composition operation is the reason for existence of the indices of the beats. It allow
+us to build easily complex expressions and brings a high-level dimension to the language.
+
+
+### Flags
+A _flag_ is a token of the form `$NAME` where `NAME` is a name. A _flag status_ is either
+`on`, `off`, or `random`.
+
+Given a flag status `st`, a flag `$fl`, and an expression `expr`,
+```
+set st $fl in expr
+```
+is the expression `expr` wherein the flag `$fl` is
+
++ on if `st` is `on`;
++ off if `st` is `off`;
++ has probability $1 / 2$ to be on and probability $1 / 2$ to be off if `st` is `random`.
+
+The interest of flags comes with the following construction. Given a flag status `st`, a
+flag `$fl`, and two expressions `expr1` and `expr2`,
+```
+if st $fl then
+    expr1
+else
+    expr2
+```
+is an expression equivalent to
+
++ `expr1` if `st` is `on` and `$fl` is on, or `st` is off and `$fl` is off;
++ `expr2` if `st` is `on` and `$fl` is off, or `st` is off and `$fl` is on;
++ `expr1` with a probability $1 / 2$ and `expr2` with a probability $1 / 2$ if `st` is
+`random`.
+
+For instance,
+```
+scale cycles 220 in
+set on $flag1 in
+set on $flag2 in
+if off $flag2 then
+    %1
+else begin
+    (scale cycles 1.5 in %1) * %1
+end
+```
+is an expression equivalent to
+```
+scale cycles 220 in
+set on $flag1 in
+set on $flag2 in
+(scale cycles 1.5 in %1) * %1
+```
+Moreover,
+```
+scale cycles 220 in
+set on $flag1 in
+set on $flag2 in
+if random $flag2 then
+    %1
+else begin
+    (scale cycles 1.5 in %1) * %1
+end
+```
+has probability $1 / 2$ to be equivalent to the previous expression and probability $1 / 2$
+to be equivalent to
+```
+scale cycles 220 in
+set on $flag1 in
+set on $flag2 in
+%1
+```
+
+
+# Constructions
+
+## Elementary constructions
+
+### Silences
+A _silence_ is an expression having as sound a silence sound. The expression
+```
+{Silence_1}
+scale vertical 0 in
+%1
+```
+is a silence.
+
+
+### Repetitions
+A _repetitor_ is an expression `expr` such that, when composed with another expression
+`expr_1`, is equivalent to the expression `expr_1` concatenated with itself a certain number
+of times. The expression
+```
+{Repetitor_2}
+%1 * %1
+```
+is a repetitor as well as the expressions
+```
+{Repetitor_3}
+%1 * %1 * %1
+```
+and
+```
+{Repetitor_4}
+%1 * %1 * %1 * %1
+```
+
+
+### Chords
+A _chord_ is an expression `expr` such that, when composed with other expressions
+`expr_1`, ..., `expr_n`, is equivalent to the expression where `expr_1`, ..., `expr_n` are
+added after to be vertically scaled in order to do not provoke any distortion. The
+expression
+```
+{Chord_2}
+(scale vertical 0.5 in %1)
++
+(scale vertical 0.5 in %2)
+```
+is a chord, as well as the expression
+
+```
+{Chord_3}
+(scale vertical 0.333 in %1)
++
+(scale vertical 0.333 in %2)
++
+(scale vertical 0.333 in %3)
+
+```
+
+
+### Let ring
+TODO
+
+
+## Building synthesizers
+
+### Timbres
+TODO
+
+
+### Envelopes
+TODO
+
+## Building effects
+
+### Octavers
+TODO
+
+### Delays
+TODO
+
+### Detuners
+TODO
+
+## Scales
+TODO
+
+### Definitions
+TODO
+
+### Transpositions
+TODO
+
+## Randomizations
+TODO
+
+
+# Examples
+TODO
 
