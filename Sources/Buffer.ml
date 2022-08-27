@@ -130,13 +130,16 @@ let write_pcm_file path =
 let write_svg_file path =
     assert (not (Sys.file_exists path));
     assert (Tools.extension path = ".svg");
-    let width = 1024 and height = 256 in
+    let height = 256 in
+    let width = 1024.0 +. 128.0 *. duration () |> Tools.to_rounded_int in
     let nb_values = nb_values () in
     let max_value = 1 lsl ((depth * 8) - 1) |> float in
     let factor_x = float width -. 1.0 and factor_y = float height -. 1.0 in
     let buffer = open_in path_file in
     let f_out = open_out path in
     Printf.fprintf f_out "<svg width=\"%d\" height=\"%d\">\n" width height;
+    Printf.fprintf f_out "<polyline fill=\"none\" stroke=\"black\" stroke-width=\"0.25\"\n";
+    Printf.fprintf f_out "points=\"\n";
     let rec write_points i previous_line =
         if i < int_of_float nb_values then begin
             let x = float i /. nb_values in
@@ -144,12 +147,13 @@ let write_svg_file path =
             let y = float (bytes_to_value byte_lst) /. max_value in
             let x' = factor_x *. x |> Tools.to_rounded_int in
             let y' = factor_y *. (-. y +. 1.0) /. 2.0 |> Tools.to_rounded_int in
-            let line = Printf.sprintf "<circle cx=\"%d\" cy=\"%d\" r=\"0.25\"/>\n" x' y' in
+            let line = Printf.sprintf "%d,%d\n" x' y' in
             if line <> previous_line then output_string f_out line;
             write_points (i + 1) line
         end
     in
     write_points 0 "";
+    Printf.fprintf f_out "\"/>\n";
     Printf.fprintf f_out "</svg>\n";
     close_in buffer;
     close_out f_out
