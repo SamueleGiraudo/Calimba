@@ -37,8 +37,7 @@ let syntax_error_from_lexer err =
 
 (* Returns a string representation of the error err. *)
 let to_string err =
-    Information.to_string err.information
-    ^ ": " ^
+    Information.to_string err.information ^ ": " ^
     match err.kind with
         |InvalidAlias alias -> Printf.sprintf "invalid alias %s" alias
         |InvalidBeat i -> Printf.sprintf "invalid beat %d" i;

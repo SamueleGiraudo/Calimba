@@ -236,7 +236,7 @@ let interpret_path_and_write_cal path res_path =
     assert (Tools.extension res_path = File.extension);
     let e = interpret_path_to_simple_expression path in
     if Option.is_some e then begin
-        Printf.sprintf "Printing final expression in file %s...\n" res_path
+        Printf.sprintf "Writing final expression in file %s...\n" res_path
             |> Tools.print_information_1;
         let f = open_out res_path in
         output_string f (Expression.to_string (Option.get e));

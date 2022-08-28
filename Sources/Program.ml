@@ -73,7 +73,7 @@ let substitute_free_aliases e1 alias e2 =
 
 (* Returns the expression obtained by composing the expression e with the list e_lst of
  * expressions. This replaces each beat i of e by the i-th element of e_lst (starting from
- * 0). The expression e has to be inclusion and alias free. *)
+ * 1). The expression e has to be inclusion and alias free. *)
 let compose e e_lst =
     assert (Statistics.is_inclusion_free e);
     assert (Statistics.is_alias_free e);

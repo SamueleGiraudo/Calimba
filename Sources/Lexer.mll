@@ -36,14 +36,6 @@ let error_kind_to_string ek =
         |UnexpectedCharacter c -> Printf.sprintf "unexpected character %c" c
         |Parsing -> "parsing error"
 
-(* Modifies the lexing buffer lexbuf so that it contains the next line. *)
-let next_line lexbuf =
-    let pos = lexbuf.Lexing.lex_curr_p in
-    lexbuf.Lexing.lex_curr_p <-
-        {pos with
-            Lexing.pos_bol = lexbuf.Lexing.lex_curr_pos;
-            Lexing.pos_lnum = pos.Lexing.pos_lnum + 1}
-
 (* Returns the file position obtained from the lexing buffer lexbuf. *)
 let lexbuf_to_position lexbuf =
     let pos = lexbuf.Lexing.lex_curr_p in
@@ -51,6 +43,14 @@ let lexbuf_to_position lexbuf =
         pos.Lexing.pos_fname
         pos.Lexing.pos_lnum
         (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)
+
+(* Modifies the lexing buffer lexbuf so that it contains the next line. *)
+let next_line lexbuf =
+    let pos = lexbuf.Lexing.lex_curr_p in
+    lexbuf.Lexing.lex_curr_p <-
+        {pos with
+            Lexing.pos_bol = lexbuf.Lexing.lex_curr_pos;
+            Lexing.pos_lnum = pos.Lexing.pos_lnum + 1}
 
 (* Raises Error with information about the unexpected character c. *)
 let unexpected_character_error lexbuf c =

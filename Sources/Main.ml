@@ -27,24 +27,17 @@ let information =
         logo name author author email version version_date
 
 let help_string =
-    "Here, PATH is the path to a Calimba file.\n"
-    ^ "Available arguments:\n"
-        ^ "-v\n"
-        ^ "    -> Print the version of the application.\n"
-        ^ "-h\n"
-        ^ "    -> Print the help.\n"
-        ^ "-f PATH -p\n"
-        ^ "    -> Plays the program PATH.\n"
-        ^ "-f PATH -w\n"
-        ^ "    -> Generates the associated PCM file of the program PATH.\n"
-        ^ "-f PATH -d\n"
-        ^ "    -> Generates the associated PNG file of the program PATH.\n"
-        ^ "-f PATH -e\n"
-        ^ "    -> Prints the final expression of the program PATH.\n"
-        ^ "The last four commands can be followed by\n"
-        ^ "    -b START LENGTH\n"
-        ^ "where START is the starting time and LENGTH is the length of the desired bunch "
-        ^ "of the sound. These values are in seconds and are optional.\n"
+      "Usage: ./calimba -f PATH -[v|h|p|w|d|e] [-b START LEN]\n"
+    ^ "where:\n"
+    ^ "    + PATH is a path to a Calimba program in a .cal file.\n"
+    ^ "    + -v prints the version of the application.\n"
+    ^ "    + -h prints the help.\n"
+    ^ "    + -f plays the sound specified by the program PATH.\n"
+    ^ "    + -w generates the associated PCM file of the program PATH.\n"
+    ^ "    + -d generates the associated SVG file of the program PATH.\n"
+    ^ "    + -e generates the final expression of the program PATH.\n"
+    ^ "    + -b START LENGTH specifies, by the starting time and the length in seconds, \
+        the bunch of the sound the previous options have to consider.\n"
 
 ;;
 
