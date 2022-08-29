@@ -1,0 +1,22 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+(scale vertical 0.274 in scale cycles 1 in %1)
++
+(scale vertical 0.262 in scale cycles 2 in %1)
++
+(scale vertical 0.219 in scale cycles 3 in %1)
++
+(scale vertical 0.082 in scale cycles 4 in %1)
++
+(scale vertical 0.027 in scale cycles 5 in %1)
++
+(scale vertical 0.082 in scale cycles 6 in %1)
++
+(scale vertical 0.054 in scale cycles 7 in %1)
+

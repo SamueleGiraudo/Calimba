@@ -1,0 +1,14 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let s = put ../Tool/Silence in
+
+(scale vertical 0.500 in %1)
++
+((scale horizontal 0.125 in s[%2]) * (scale vertical 0.500 in %1))
+

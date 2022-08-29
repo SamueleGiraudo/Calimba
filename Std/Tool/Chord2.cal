@@ -1,0 +1,12 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+(scale vertical 0.5 in %1)
++
+(scale vertical 0.5 in %2)
+
