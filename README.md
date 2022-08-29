@@ -25,8 +25,8 @@ the documentation of the language are [here](Help.md).
 
 ## First example
 Here is a commentated [Calimba program](Examples/Example1.cal) playing a harmonic
-progression. Here is the corresponding [WAV file](Example1.wav) and [PNG file](Example1.png)
-of a picture of the wave of the sound.
+progression. Here is the corresponding [WAV file](Examples/Example1.wav) and [PNG
+file](Examples/Example1.png) of a picture of the wave of the sound.
 
 
 ## Versions
