@@ -138,7 +138,7 @@ let write_svg_file path =
     let buffer = open_in path_file in
     let f_out = open_out path in
     Printf.fprintf f_out "<svg width=\"%d\" height=\"%d\">\n" width height;
-    Printf.fprintf f_out "<polyline fill=\"none\" stroke=\"black\" stroke-width=\"0.25\"\n";
+    Printf.fprintf f_out "<polyline fill=\"none\" stroke=\"black\" stroke-width=\"0.5\"\n";
     Printf.fprintf f_out "points=\"\n";
     let rec write_points i previous_line =
         if i < int_of_float nb_values then begin

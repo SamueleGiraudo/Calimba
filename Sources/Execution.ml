@@ -56,6 +56,7 @@ let generate_buffer s =
             Thread.create
                 (fun _ ->
                     let rec loop () =
+                        Thread.delay information_print_delay;
                         if not !generation_complete then begin
                             let time = Unix.gettimeofday () in
                             Printf.sprintf "Generation: %5.1f%% \
@@ -66,7 +67,6 @@ let generate_buffer s =
                                 (Buffer.duration () /. (time -. start_generation))
                                 |> Tools.print_information_2
                         end;
-                        Thread.delay information_print_delay;
                         loop ()
                     in
                     loop ())
@@ -100,6 +100,7 @@ let play_buffer () =
             Thread.create
                 (fun _ ->
                     let rec loop () =
+                        Thread.delay information_print_delay;
                         if !playing then begin
                             let time = Unix.gettimeofday () in
                             let play_duration = time -. !start_play_time in
@@ -109,7 +110,6 @@ let play_buffer () =
                                 (Buffer.duration ())
                                 |> Tools.print_information_3
                         end;
-                        Thread.delay information_print_delay;
                         loop ()
                     in
                     loop ())

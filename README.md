@@ -19,12 +19,14 @@ theory. The program generates and plays PCM files, so that it does not need any 
 sound server. It allows us to synthesize sounds and create effects. This language does no
 depend on any heavy external library.
 
-Calimba interprets and plays files written in the Calimba language (see the specifications
-[here](Help.md)).
+Calimba interprets and plays files written in the Calimba language. The specifications and
+the documentation of the language are [here](Help.md).
 
 
-## First examples
-TODO
+## First example
+Here is a commentated [Calimba program](Examples/Example1.cal) playing a harmonic
+progression. Here is the corresponding [WAV file](Example1.wav) and [PNG file](Example1.png)
+of a picture of the wave of the sound.
 
 
 ## Versions

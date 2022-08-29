@@ -14,8 +14,8 @@ type error_kind =
 
 (* A type to communicate about parsing or lexing errors. *)
 type error = {
-    kind: error_kind;
-    position: Tools.file_position
+    position: Tools.file_position;
+    kind: error_kind
 }
 
 (* An exception raised when an error is encountered. *)
@@ -54,15 +54,15 @@ let next_line lexbuf =
 
 (* Raises Error with information about the unexpected character c. *)
 let unexpected_character_error lexbuf c =
-    Error {kind = UnexpectedCharacter c; position = lexbuf_to_position lexbuf} |> raise
+    Error {position = lexbuf_to_position lexbuf; kind = UnexpectedCharacter c} |> raise
 
 (* Raises Error with information about an unclosed comment. *)
 let unclosed_comment_error lexbuf =
-    Error {kind = UnclosedComent; position= lexbuf_to_position lexbuf} |> raise
+    Error {position = lexbuf_to_position lexbuf; kind = UnclosedComent} |> raise
 
 (* Raises Error with information about a parsing error. *)
 let parsing_error lexbuf =
-    Error {kind = Parsing; position = lexbuf_to_position lexbuf} |> raise
+    Error {position = lexbuf_to_position lexbuf; kind = Parsing} |> raise
 
 (* Returns the value computed by the parser parser_axiom, with the lexer lexer_axiom, and
  * with the lexing buffer lexbuf. If there is an error, the exception Error is raised. *)

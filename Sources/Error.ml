@@ -18,11 +18,11 @@ type error_kind =
 (* The type to represent information about an error. *)
 type error = {
 
-    (* The kind of the error. *)
-    kind: error_kind;
-
     (* Some information about the subexpression where the error appears. *)
-    information: Information.information
+    information: Information.information;
+
+    (* The kind of the error. *)
+    kind: error_kind
 }
 
 (* An exception to handle cases where an expression has a inappropriate form. *)
@@ -31,9 +31,9 @@ exception ValueError
 (* Returns the error obtained from the lexer error err. The kind of the returned error is
  * SyntaxError. *)
 let syntax_error_from_lexer err =
-    let kind = SyntaxError (Lexer.error_to_error_kind err) in
     let info = Information.construct (Lexer.error_to_position err) in
-    {kind = kind; information = info}
+    let kind = SyntaxError (Lexer.error_to_error_kind err) in
+    {information = info; kind = kind}
 
 (* Returns a string representation of the error err. *)
 let to_string err =

@@ -1,0 +1,62 @@
+{Global setings.}
+
+{Sets the fundamental frequency to 220 Hz.}
+scale cycles 220 in
+
+{Sets the unit of time to 0.25 s.}
+scale time 0.25 in
+
+
+{Global definitions.}
+
+{Define the seven degrees D0, ..., D6 of the natural minor scale.}
+let next = put ../Std/Pitch12/NaturalMinor in
+let D0 = %1 in
+let D1 = D0[next] in
+let D2 = D1[next] in
+let D3 = D2[next] in
+let D4 = D3[next] in
+let D5 = D4[next] in
+let D6 = D5[next] in
+
+{A tool to repeat two times a sound.}
+let r2 = put ../Std/Tool/Repeat3 in
+
+{A tool to superimpose two phrases without distortion.}
+let c2 = put ../Std/Tool/Chord2 in
+
+{A synthesizer.}
+let synth = put ../Std/Synth/WetWood in
+
+{A delay effect.}
+let eff = put ../Std/Effect/Delay500 in
+
+
+{Definitions of phrases.}
+
+{This bounds the new name p1 to the sequence of the notes obtained by concatenating
+ (operation *) some degrees of the current scale. The operator ' increase the note one
+ octave up and the operator , decrease the note one octave down.}
+let p1 = D0 * D2 * D4 * D2 * D0' * D2 * D0 * D0, in
+
+{This bounds the new name p2 to the phrase consisting in D0 and D4 played at the same time
+ (a power chord), one octave down, and slowed down 8 times (the operator < doubles the
+ duration of the notes).}
+let p2 = c2[D0; D4],<<< in
+
+{This bounds the new name p3 to the superposition of the phrases p1 and p2.}
+let p3 = c2[p1; p2] in
+
+{This bounds the new name p to a new phrase formed from the previous ones. The bracket
+ operator [...] is for phrase composition. For instance, p3[D2; %2] is the phrase p3
+ transposed two degrees up (by following the natural minor scale.}
+let p = r2[p3 * p3[D1; %2] * p3[D6; %2], * p3[D2; %2] * p3[D5; %2], * p3[D6; %2], * p2] in
+
+
+{Main phrase.}
+
+{This is the main expression of the program. By composition, this is the phrase p plugged
+ with the synthesizer synth (defined above). An effect eff is also plugged. This effect
+ is a delay (defined above).}
+eff[p[synth; %2]; %2]
+
