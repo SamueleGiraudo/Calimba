@@ -101,7 +101,7 @@ The [standard library](Std) contains definitions of synthesizers, effects, scale
 transformations (repetitions, chords, let ring constructions), and randomization tools.
 
 
-### Examples
+### Documentation of standard library
 TODO
 
 
