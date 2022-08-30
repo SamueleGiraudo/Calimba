@@ -1,3 +1,9 @@
+{Example 1.}
+
+
+{Comments are enclosed into { and }.}
+
+
 {Global setings.}
 
 {Sets the fundamental frequency to 220 Hz.}
@@ -41,7 +47,8 @@ let p1 = D0 * D2 * D4 * D2 * D0' * D2 * D0 * D0, in
 
 {This bounds the new name p2 to the phrase consisting in D0 and D4 played at the same time
  (a power chord), one octave down, and slowed down 8 times (the operator < doubles the
- duration of the notes).}
+ duration of the notes). In the same way, the operator > divides by two the duration of the
+ note (it is not used in this expression).}
 let p2 = c2[D0; D4],<<< in
 
 {This bounds the new name p3 to the superposition of the phrases p1 and p2.}

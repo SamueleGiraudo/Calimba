@@ -23,10 +23,16 @@ Calimba interprets and plays files written in the Calimba language. The specific
 the documentation of the language are [here](Help.md).
 
 
-## First example
-Here is a commentated [Calimba program](Examples/Example1.cal) playing a harmonic
-progression. Here is the corresponding [WAV file](Examples/Example1.wav) and [PNG
-file](Examples/Example1.png) of a picture of the wave of the sound.
+## First examples
+Here are some simple and commentated examples illustrating some features of the language:
+
++ [A Calimba program](Examples/Example1.cal) playing a harmonic progression. Here is the
+  corresponding [WAV file](Examples/Example1.wav) and [PNG file](Examples/Example1.png) of a
+  picture of the wave of the sound.
++ [A Calimba program](Examples/Example2.cal) playing a pattern modified by the composition
+  operation (the fundamental operation of the language). Here is the corresponding [WAV
+  file](Examples/Example2.wav) and [PNG file](Examples/Example2.png) of a picture of the wave
+  of the sound.
 
 
 ## Versions
