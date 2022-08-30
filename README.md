@@ -27,12 +27,12 @@ the documentation of the language are [here](Help.md).
 Here are some simple and commentated examples illustrating some features of the language:
 
 + [A Calimba program](Examples/Example1.cal) playing a harmonic progression. Here is the
-  corresponding [WAV file](Examples/Example1.wav) and [PNG file](Examples/Example1.png) of a
-  picture of the wave of the sound.
+  corresponding [WAV file](Examples/Example1.wav) to listen it, and the [PNG
+  file](Examples/Example1.png) of a picture of the wave of the sound.
 + [A Calimba program](Examples/Example2.cal) playing a pattern modified by the composition
   operation (the fundamental operation of the language). Here is the corresponding [WAV
-  file](Examples/Example2.wav) and [PNG file](Examples/Example2.png) of a picture of the wave
-  of the sound.
+  file](Examples/Example2.wav) to listen it, and the [PNG file](Examples/Example2.png) of a
+  picture of the wave of the sound.
 
 
 ## Versions
@@ -72,15 +72,15 @@ This creates an executable `calimba`. The following sections explain how to use 
 ## User guide
 This [page](Help.md) contains the description of the Calimba language.
 
-Calimba files have `cal` as extension. Given such a file `Program.cal`, the command
+Calimba files have `.cal` as extension. Given such a file `Program.cal`, the command
 
 + `./calimba -f Program.cal -p` generates the sound specified by the program and starts
-  playing it once the key Enter is pressed;
+  playing it once the ENTER key is pressed;
 
 + `./calimba -f Program.cal -w` creates the PCM file `Program_N.pcm` containing the sound
   specified by the program. `N` is the smallest decimal value starting from `0` so that the
   target file does not preexist. The default sampling rate is $48000$ Hz and the depth is
-  $4$ bytes.
+  $4$ bytes (signed 32 bytes).
 
 + `./calimba -f Program.cal -d` creates a SVG file `Program_N.svg` containing the wave of
   the sound specified by the program. `N` is the smallest decimal value starting from `0` so
@@ -92,8 +92,12 @@ Calimba files have `cal` as extension. Given such a file `Program.cal`, the comm
 
 These four commands can be followed by `-b START LENGTH` where START is the starting time
 and LENGTH is the length of the desired bunch of the sound. These values are in seconds and
-are optional. For instance, `./calimba -f Program.cal -p -b 8 3.5` plays the sound specified
-by the program starting from $8$ s and lasting $3.5$ s.
+are optional. For instance,
+
++ `./calimba -f Program.cal -p -b 8 3.5` plays the sound specified by the program starting
+  from $8$ s and lasting $3.5$ s;
++ `./calimba -f Program.cal -w -b 10` creates the PCM file of the sound specified by the
+  program starting from $10$ s.
 
 
 ### Standard library
@@ -101,7 +105,7 @@ The [standard library](Std) contains definitions of synthesizers, effects, scale
 transformations (repetitions, chords, let ring constructions), and randomization tools.
 
 
-### Documentation of standard library
+### Documentation of the standard library
 TODO
 
 
