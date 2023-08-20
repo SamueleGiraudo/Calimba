@@ -9,11 +9,14 @@ scale cycles 110 in
 {Sets the unit of time to 0.35 s.}
 scale time 0.35 in
 
+{Reduces the general volume.}
+scale vertical 0.3 in
+
 
 {Global definitions.}
 
 {Define the seven degrees D0, ..., D6 of the Phrygian scale.}
-let next = put ../Std/Pitch12/Phrygian in
+let next = put ../Stdlib/Pitch12/Phrygian in
 let D0 = %1 in
 let D1 = D0[next] in
 let D2 = D1[next] in
@@ -23,20 +26,20 @@ let D5 = D4[next] in
 let D6 = D5[next] in
 
 {A tool to create silences.}
-let s = put ../Std/Tool/Silence in
+let s = put ../Stdlib/Tool/Silence in
 
 {A tool to create an empty phrase. This is useful to alter a phrase by deleting some of its
  notes by compositions.}
-let e = put ../Std/Tool/Empty in
+let e = put ../Stdlib/Tool/Empty in
 
 {A tool to repeat two times a sound.}
-let r2 = put ../Std/Tool/Repeat2 in
+let r2 = put ../Stdlib/Tool/Repeat2 in
 
 {A tool to superimpose two phrases without distortion.}
-let c2 = put ../Std/Tool/Chord2 in
+let c2 = put ../Stdlib/Tool/Chord2 in
 
 {A synthesizer.}
-let synth = put ../Std/Synth/EveningFlight in
+let synth = put ../Stdlib/Synth/EveningFlight in
 
 
 {Definitions of phrases.}

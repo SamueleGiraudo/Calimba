@@ -1,0 +1,15 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let sh = put ../Shape/Curve in
+let eff = put ../Effect/SlightDetune in
+let timb = put ../Timbre/ThinLamella in
+let c2 = put ../Tool/Chord2 in
+
+sh ^ c2[timb; eff]
+

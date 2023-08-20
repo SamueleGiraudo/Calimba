@@ -1,0 +1,12 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let ch2 = put Choose2 in
+
+ch2[ch2[%1; %2]; ch2[%3; %4]]
+

@@ -1,25 +1,25 @@
 (* Author: Samuele Giraudo
  * Creation: may 2021
  * Modifications: may 2021, jun. 2021, aug. 2021, nov. 2021, dec. 2021, jan. 2022,
- * mar. 2022, may 2022, aug. 2022
+ * mar. 2022, may 2022, aug. 2022, jul. 2023
  *)
 
 {
 
 (* A type for the kinds of possible errors during the phase of the lexer. *)
-type error_kind =
+type error_kinds =
     |UnclosedComent
     |UnexpectedCharacter of char
     |Parsing
 
 (* A type to communicate about parsing or lexing errors. *)
-type error = {
-    position: Tools.file_position;
-    kind: error_kind
+type errors = {
+    position: FilePositions.file_positions;
+    kind: error_kinds
 }
 
 (* An exception raised when an error is encountered. *)
-exception Error of error
+exception Error of errors
 
 (* Returns the kind of the error err. *)
 let error_to_error_kind err =
@@ -39,7 +39,7 @@ let error_kind_to_string ek =
 (* Returns the file position obtained from the lexing buffer lexbuf. *)
 let lexbuf_to_position lexbuf =
     let pos = lexbuf.Lexing.lex_curr_p in
-    Tools.construct_file_position
+    FilePositions.construct
         pos.Lexing.pos_fname
         pos.Lexing.pos_lnum
         (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)

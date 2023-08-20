@@ -8,6 +8,10 @@ lang: en
 fontsize: 10 pt
 ---
 
+WARNING: This page is completely out of date. A new updated version is planned in the
+medium/long term (August 2023).
+
+
 This page describes the way to build programs in the Calimba language. This is the official
 documentation of the language.
 

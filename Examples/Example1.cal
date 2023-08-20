@@ -16,7 +16,7 @@ scale time 0.25 in
 {Global definitions.}
 
 {Define the seven degrees D0, ..., D6 of the natural minor scale.}
-let next = put ../Std/Pitch12/NaturalMinor in
+let next = put ../Stdlib/Pitch12/NaturalMinor in
 let D0 = %1 in
 let D1 = D0[next] in
 let D2 = D1[next] in
@@ -26,16 +26,16 @@ let D5 = D4[next] in
 let D6 = D5[next] in
 
 {A tool to repeat two times a sound.}
-let r2 = put ../Std/Tool/Repeat3 in
+let r2 = put ../Stdlib/Tool/Repeat3 in
 
 {A tool to superimpose two phrases without distortion.}
-let c2 = put ../Std/Tool/Chord2 in
+let c2 = put ../Stdlib/Tool/Chord2 in
 
 {A synthesizer.}
-let synth = put ../Std/Synth/WetWood in
+let synth = put ../Stdlib/Synth/WetWood in
 
 {A delay effect.}
-let eff = put ../Std/Effect/Delay500 in
+let eff = put ../Stdlib/Effect/Delay500 in
 
 
 {Definitions of phrases.}

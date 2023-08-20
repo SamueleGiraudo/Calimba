@@ -1,0 +1,12 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let cur = put Curve in
+
+cur[scale vertical 32 in %1]
+

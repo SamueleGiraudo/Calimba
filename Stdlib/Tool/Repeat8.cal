@@ -1,0 +1,12 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let r7 = put Repeat7 in
+
+r7 * %1
+

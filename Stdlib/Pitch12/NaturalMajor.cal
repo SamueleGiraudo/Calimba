@@ -1,0 +1,43 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let u = put Up in
+let u2 = put Up2 in
+
+if on $deg_0 then
+    set off $deg_0 in
+    set on $deg_1 in
+    u2
+else if on $deg_1 then
+    set off $deg_1 in
+    set on $deg_2 in
+    u2
+else if on $deg_2 then
+    set off $deg_2 in
+    set on $deg_3 in
+    u
+else if on $deg_3 then
+    set off $deg_3 in
+    set on $deg_4 in
+    u2
+else if on $deg_4 then
+    set off $deg_4 in
+    set on $deg_5 in
+    u2
+else if on $deg_5 then
+    set off $deg_5 in
+    set on $deg_6 in
+    u2
+else if on $deg_6 then
+    set off $deg_6 in
+    set on $deg_0 in
+    u
+else
+    set on $deg_1 in
+    u2
+

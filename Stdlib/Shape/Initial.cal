@@ -1,0 +1,15 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let s = put ../Tool/Silence in
+let cur = put Curve in
+
+(scale horizontal 0.2 in cur)
+*
+(scale horizontal 0.9 in s[%1])
+

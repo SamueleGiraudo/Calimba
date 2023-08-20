@@ -1,0 +1,16 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let sh = put ../Shape/Rectangle in
+let eff_1 = put ../Effect/SlightDetune in
+let eff_2 = put ../Effect/MediumDetune in
+let eff_3 = put ../Effect/StrongDetune in
+let c3 = put ../Tool/Chord3 in
+
+sh ^ c3[eff_1; eff_2; eff_3]
+

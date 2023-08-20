@@ -1,5 +1,8 @@
 # Versions
 
++ `0.`1011` (2023-07-20)
+    + Complete syntactic and paradigmatic overhaul of the language.
+
 + `0.1010` (2022-08-27)
     + The error management is improved.
     + The syntax is updated and improved.

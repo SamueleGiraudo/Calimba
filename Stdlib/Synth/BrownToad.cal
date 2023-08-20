@@ -1,0 +1,13 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let sh = put ../Shape/Initial in
+let timb = put ../Timbre/BurntRubber in
+
+sh ^ timb
+

@@ -1,0 +1,22 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let s = put Silence in
+let s2 = put Silence2 in
+let s3 = put Silence3 in
+let s4 = put Silence4 in
+let c5 = put Chord5 in
+
+c5[
+    scale time 5 in %1;
+    s[%6] * (scale time 4 in %2);
+    s2[%6] * (scale time 3 in %3);
+    s3[%6] * (scale time 2 in %4);
+    s4[%6] * %3
+]
+

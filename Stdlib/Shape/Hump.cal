@@ -1,0 +1,18 @@
+{
+    Author: Samuele Giraudo
+    Creation: aug. 2022
+    Modifications: aug. 2022
+
+    Part of the Calimba standard library.
+}
+
+let cur = put Curve in
+
+cur
++
+cur[scale cycles 2 in scale time 0.500 in %1]
++
+cur[scale cycles 3 in scale time 0.333 in %1]
++
+cur[scale cycles 4 in scale time 0.250 in %1]
+

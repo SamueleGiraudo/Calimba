@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: may 2021
  * Modifications: may 2021, jun. 2021, aug. 2021, nov. 2021, dec. 2021, jan. 2022,
- * mar. 2022, may 2022, aug. 2022
+ * mar. 2022, may 2022, aug. 2022, jul. 2023
  *)
 
 %token L_PAR R_PAR
@@ -42,7 +42,7 @@
 %nonassoc LT
 %nonassoc GT
 
-%start <Expression.expression> program
+%start <Expressions.expressions> program
 
 %%
 
@@ -52,106 +52,114 @@ program:
 expression:
     |L_PAR e=expression R_PAR {e}
     |PERCENT i=NUMBER {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.Beat (info, Tools.bounded_int_of_float i)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.Beat (info, Beats.Beat (Scalars.bounded_int_of_float i))
     }
     |e=scale {e}
     |e=reset {e}
     |e=binary_operation {e}
     |IF st=flag_status fl=flag THEN e1=expression ELSE e2=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.FlagTest (info, st, fl, e1, e2)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.FlagTest (info, st, Flags.Flag fl, e1, e2)
     }
     |SET st=flag_status fl=flag IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.FlagModification (info, st, fl, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.FlagModification (info, st, Flags.Flag fl, e)
     }
     |e=expression L_BRACKET e_lst=separated_list(SEMICOLON, expression) R_BRACKET {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.Composition (info, e, e_lst)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.Composition (info, e, e_lst)
     }
     |alias=STRING {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.Alias (info, alias)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.Alias (info, alias)
     }
     |LET alias=STRING EQUAL e1=expression IN e2=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.AliasDefinition (info, alias, e1, e2)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.AliasDefinition (info, alias, e1, e2)
     }
     |PUT path=STRING {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.Put (info, path)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.Put (info, path)
     }
     |e=sugar {e}
 
 scale:
     |SCALE CYCLES x=NUMBER IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info, Expression.UpdateCycleNumber x, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar x in
+        Expressions.CycleOperation (info, Expressions.UpdateCycleNumber sc, e)
     }
     |SCALE VERTICAL x=NUMBER IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.UnaryOperation (info, Expression.VerticalScaling x, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar x in
+        Expressions.UnaryOperation (info, Expressions.VerticalScaling sc, e)
     }
     |SCALE HORIZONTAL x=NUMBER IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.UnaryOperation (info, Expression.HorizontalScaling x, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar x in
+        Expressions.UnaryOperation (info, Expressions.HorizontalScaling sc, e)
     }
 
 reset:
     |RESET CYCLES IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info, Expression.ResetCycleNumber, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.CycleOperation (info, Expressions.ResetCycleNumber, e)
     }
 
 binary_operation:
     |e1=expression PLUS e2=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.BinaryOperation (info, Expression.Addition, e1, e2)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.BinaryOperation (info, Expressions.Addition, e1, e2)
     }
     |e1=expression STAR e2=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.BinaryOperation (info, Expression.Concatenation, e1, e2)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.BinaryOperation (info, Expressions.Concatenation, e1, e2)
     }
     |e1=expression CIRCUMFLEX e2=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.BinaryOperation (info, Expression.Multiplication, e1, e2)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        Expressions.BinaryOperation (info, Expressions.Multiplication, e1, e2)
     }
 
 flag:
     |DOLLAR fl=STRING {fl}
 
 flag_status:
-    |ON {Expression.On}
-    |OFF {Expression.Off}
-    |RANDOM {Expression.Random}
+    |ON {Flags.On}
+    |OFF {Flags.Off}
+    |RANDOM {Flags.Random}
 
 sugar:
     |BEGIN e=expression END {e}
     |e=expression PRIME {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info, Expression.UpdateCycleNumber 2.0, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar 2.0 in
+        Expressions.CycleOperation (info, Expressions.UpdateCycleNumber sc, e)
     }
     |e=expression COMMA {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info, Expression.UpdateCycleNumber 0.5, e)
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar 0.5 in
+        Expressions.CycleOperation (info, Expressions.UpdateCycleNumber sc, e)
     }
     |e=expression LT {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info,
-            Expression.UpdateCycleNumber 2.0,
-            Expression.UnaryOperation (info, Expression.HorizontalScaling 2.0, e))
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar 2.0 in
+        Expressions.CycleOperation (info,
+            Expressions.UpdateCycleNumber sc,
+            Expressions.UnaryOperation (info, Expressions.HorizontalScaling sc, e))
     }
     |e=expression GT {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info,
-            Expression.UpdateCycleNumber 0.5,
-            Expression.UnaryOperation (info, Expression.HorizontalScaling 0.5, e))
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar 0.5 in
+        Expressions.CycleOperation (info,
+            Expressions.UpdateCycleNumber sc,
+            Expressions.UnaryOperation (info, Expressions.HorizontalScaling sc, e))
     }
     |SCALE TIME x=NUMBER IN e=expression {
-        let info = Information.construct (Tools.position_to_file_position $startpos) in
-        Expression.CycleOperation (info,
-            Expression.UpdateCycleNumber x,
-            Expression.UnaryOperation (info, Expression.HorizontalScaling x, e))
+        let info = Information.construct (FilePositions.from_position $startpos) in
+        let sc = Scalars.Scalar x in
+        Expressions.CycleOperation (info,
+            Expressions.UpdateCycleNumber sc,
+            Expressions.UnaryOperation (info, Expressions.HorizontalScaling sc, e))
     }
 
