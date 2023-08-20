@@ -71,8 +71,7 @@ This [page](Help.md) contains the description of the Calimba language.
 Calimba program files must have `.cal` as extension. The main command is
 
 ```
-./calimba [--help] [--version] --file PATH [--verbose] [--bunch START LEN] [--text]
-[--write] [--draw] [--play]
+./calimba [--help] [--version] --file PATH [--verbose] [--bunch START LEN] [--text] [--write] [--draw] [--play]
 ```
 
 where
